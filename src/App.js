@@ -1,20 +1,27 @@
-import React, {useEffect, useState} from 'react'
+import React from 'react'
+import { BrowserRouter, Routes, Route } from'react-router-dom';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Forgot from './pages/Forgot';
+import Home from './pages/Home';
+import Reset from './pages/Reset';
+import Admin from './pages/AdminDashboard';
+import "./index.css";
 
-function App() {
-  const [data, setData] = useState([{}]);
-
-  useEffect(() => {
-    fetch("/api").then(
-      (response) => response.json()
-    ).then(
-      (data) => {
-        setData(data);
-      }
-    )
-  }, []);
-
-  return (
-    <div className='text-emerald-500'>App</div>
+ function App() {
+return (
+  <div className="App">
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/forgot" element={<Forgot />} />
+        <Route path="/reset" element={<Reset />} />
+        <Route path ="/admin" element={<Admin />} />
+        </Routes>
+        </BrowserRouter>
+        </div>
   )
 }
 
