@@ -13,8 +13,6 @@ module.exports = {
       'light-grey': '#F5F5F5',
       't': '#F5F5F5',
       'error': '#FF0000',
-      'success': '#4CAF50',
-      'iborder' : "#babfbb"
     },
     fontFamily: {
       'poppins': ['Poppins', 'sans-serif'],

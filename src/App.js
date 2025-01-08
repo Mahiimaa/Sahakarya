@@ -5,7 +5,8 @@ import Signup from './pages/Signup';
 import Forgot from './pages/Forgot';
 import Home from './pages/Home';
 import Reset from './pages/Reset';
-import Admin from './pages/AdminDashboard';
+import AdminHome from './pages/AdminHome';
+import ChangePassword from './pages/changePassword';
 import "./index.css";
 
  function App() {
@@ -18,7 +19,8 @@ return (
         <Route path="/home" element={<Home />} />
         <Route path="/forgot" element={<Forgot />} />
         <Route path="/reset" element={<Reset />} />
-        <Route path ="/admin" element={<Admin />} />
+        <Route path ="/admin" element={<AdminHome/>} />
+        <Route path="/changePassword" element={<ChangePassword />} />
         </Routes>
         </BrowserRouter>
         </div>

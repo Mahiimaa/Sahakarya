@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { IoChevronBackOutline } from "react-icons/io5";
 import axios from "axios";
 
 const Forgot = () => {
-  const apiUrl = process.env.REACT_APP_API_BASE_URL
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const [email, setEmail] = useState("");
   const [showOtp, setShowOtp] = useState(false);
@@ -13,12 +13,27 @@ const Forgot = () => {
   const [emailBoxVisiblity, setEmailFormVisiblity] = useState(true);
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // For error handling
+  const [timer, setTimer] = useState(60); // Timer for OTP expiry
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let interval;
+    if (showOtp && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (timer === 0) {
+      clearInterval(interval);
+      setError("OTP has expired. Please request a new one.");
+    }
+    return () => clearInterval(interval);
+  }, [showOtp, timer]);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
   };
-
-  const navigate = useNavigate();
 
   const handleChange = (index, event) => {
     const { value } = event.target;
@@ -42,15 +57,22 @@ const Forgot = () => {
         { email },
         { withCredentials: true }
       );
-
-      setEmailFormVisiblity(false);
-      setShowOtp(true);
+  
+      if (response.data.error) {
+        alert(response.data.error);  // Show error message to user if there's an issue
+      } else {
+        setEmailFormVisiblity(false);
+        setShowOtp(true);
+      }
+  
       setLoading(false);
     } catch (error) {
-      console.log(error);
+      setLoading(false);
+      console.error(error);
+      alert("There was an issue processing your request. Please try again later.");
     }
   };
-
+  
   const handleBack = () => {
     if (emailBoxVisiblity && !showOtp) {
       navigate("/");
@@ -58,13 +80,13 @@ const Forgot = () => {
       setEmailFormVisiblity(true);
       setShowOtp(false);
       setOtp(""); // Reset OTP state
-      // Clear OTP input fields
       inputRefs.forEach((ref) => ref.current && (ref.current.value = ""));
     }
   };
 
   const handleOTPSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Reset errors
     try {
       const response = await axios.post(
         `${apiUrl}/api/submitOTP`,
@@ -77,13 +99,14 @@ const Forgot = () => {
       }
     } catch (error) {
       console.log(error);
+      setError("Invalid OTP. Please try again.");
     }
   };
 
   return (
     <div className="flex h-screen w-screen justify-center items-center relative ">
       <button
-        className=" hidden desk:absolute desk:left-16 desk:top-16 bg-p text-white border-2 border-button desk:flex justify-center items-center px-6 py-2 text-xl font-medium text-button gap-2"
+        className="hidden desk:absolute desk:left-16 desk:top-16 bg-p text-white border-2 border-button desk:flex justify-center items-center px-6 py-2 text-xl font-medium text-button gap-2"
         onClick={handleBack}
       >
         <IoChevronBackOutline /> Back
@@ -95,23 +118,22 @@ const Forgot = () => {
           className="flex flex-col gap-6 justify-center items-center p-4"
         >
           <p className="font-poppins font-bold text-main text-p">Forgot Password?</p>
-          <p className="font-poppins text-s">
-            Enter your email
-          </p>
+          <p className="font-poppins text-s">Enter your email</p>
           <input
             type="email"
             placeholder="Enter your email..."
             autoFocus
             onChange={handleEmailChange}
-            className=" border border-iborder px-6 py-3 outline-none rounded-md"
+            className="border border-iborder px-6 py-3 outline-none rounded-md"
             required
           />
           <button
             className="border outline-none bg-p rounded-md text-white px-2 py-2"
             disabled={loading}
           >
-            Request OTP
+            {loading ? "Loading..." : "Request OTP"}
           </button>
+          {error && <p className="text-red-500">{error}</p>}
         </form>
       )}
 
@@ -129,15 +151,18 @@ const Forgot = () => {
                   value={otp[index] || ""}
                   onChange={(event) => handleChange(index, event)}
                   maxLength="1"
+                  disabled={timer === 0} // Disable input if OTP expired
                 />
               ))}
             </div>
 
-            <p className="text-red-500">* Your OTP expires in 1 minute</p>
+            <p className="text-red-500">* Your OTP expires in {timer}s</p>
+            {error && <p className="text-red-500">{error}</p>}
 
             <button
               className="bg-p text-white w-fit px-6 py-3 rounded flex self-center"
               type="submit"
+              disabled={timer === 0}
             >
               Verify OTP
             </button>
