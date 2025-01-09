@@ -23,18 +23,19 @@ const UserSchema = new mongoose.Schema({
   role: 
   { 
     type: String, 
+    enum: ['user', 'admin'],
     default: 'user' 
   },
   resetToken: String,
   resetTokenExpiry: Date
-}, {
+}, 
+{
   timestamps: true
 });
 
-// Method to compare passwords
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Export the model
-module.exports = mongoose.model('User', UserSchema); // Model name is singular by convention
+
+module.exports = mongoose.model('User', UserSchema); 
