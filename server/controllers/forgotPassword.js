@@ -108,7 +108,7 @@ const requestOTP = async (req, res) => {
     const emailTemplate = createOTPEmailTemplate(otp);
     
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL,
       to: email,
       subject: emailTemplate.subject,
       html: emailTemplate.html
@@ -169,7 +169,7 @@ const submitOTP = async (req, res) => {
       { email },
       { 
         resetToken,
-        resetTokenExpiry: Date.now() + 3600000 // 1 hour
+        resetTokenExpiry: Date.now() + 3600000 
       },
       { new: true }
     );
