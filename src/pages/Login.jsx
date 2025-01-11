@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import logo from "../assets/logo.png";
+import { useLocation } from 'react-router-dom';
 import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
+  const location = useLocation();
+  const message = location.state?.message || '';
   const navigate = useNavigate();
   const [user, setUser] = useState({
     email: '',
@@ -15,16 +18,18 @@ function Login() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-    
-    if (token) {
-      if (role === "admin") {
-        navigate("/adminhome");  
+    const checkAuth = () => {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+      if (token && role) {
+        navigate(role === "admin" ? "/adminhome" : "/home");
       } else {
-        navigate("/home");  
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
       }
-    }
+    };
+    
+    checkAuth();
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -35,26 +40,58 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (!apiUrl) {
+        setError("API configuration error. Please check your environment variables.");
+        return;
+      }
+
       const response = await axios.post(`${apiUrl}/api/login`, user);
+      console.log('Login response:', response.data);
+      if (!response.data) {
+        setError("No response data received from server");
+        return;
+      }
+
+      if (!response.data.token) {
+        setError("Authentication token not received");
+        return;
+      }
+
+      if (!response.data.role) {
+        setError("User role not received");
+        return;
+      }
+
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("role", response.data.role); 
-      navigate("/home");
-      if (response.data.role === "admin") {
-        navigate("/admin-home");  
-        navigate("/home");  
-      }
+      navigate(response.data.role === "admin" ? "/adminhome" : "/home");
+      
     } catch (err) {
-      if (err.response?.status === 401) {
-        setError(err.response.data.message || "Invalid credentials");
+      console.error("Full login error:", err);
+      
+      if (err.response) {
+        if (err.response.status === 401) {
+          setError(err.response.data.message || "Invalid credentials");
+        } else if (err.response.status === 400) {
+          setError(err.response.data.message || "Invalid input");
+        } else if (err.response.status === 404) {
+          setError("Login service not found. Please try again later.");
+        } else if (err.response.status === 500) {
+          setError("Server error. Please try again later.");
+        } else {
+          setError(err.response.data.message || "Login failed");
+        }
+      } else if (err.request) {
+        setError("No response from server. Please check your internet connection.");
       } else {
-        setError(err.response?.data?.message || "An unexpected error occurred");
+        setError("Error making login request. Please try again.");
       }
-      console.error("Login error:", err);
     }
   };
 
   return (
     <div className='flex flex-col justify-center items-center mt-20'>
+      {message && <div className="text-p font-poppins mb-4">{message}</div>}
       <div className="flex justify-between items-center gap-96">
         <img className="hidden desk:block w-80 h-80 py-4" src={logo} alt="logo" />
         <div className="flex flex-col justify-center items-center">
@@ -101,7 +138,7 @@ function Login() {
                   <Link to="/forgot" className="self-end text-p">Forgot password?</Link>
                 </div>
               </div>
-              {error && <p className="text-error">{error}</p>}
+              {error && <p className="text-error text-red-500">{error}</p>}
               <div className="flex flex-col justify-center items-center mt-6">
                 <button className="bg-p text-h2 p-2 px-28 rounded-md text-white">Log in</button>
                 <div className="flex gap-2">

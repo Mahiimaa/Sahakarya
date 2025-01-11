@@ -15,23 +15,31 @@ function Signup() {
 
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
     setError(""); 
   };
 
+  const handleToggleRole = () => {
+    setUser((prevUser) => ({
+      ...prevUser,
+      role: prevUser.role === 'user' ? 'admin' : 'user',
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (user.password !== user.confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
-
+    console.log(user);
     try {
       const response = await axios.post(`${apiUrl}/api/signup`, user);
-      alert(response.data.message);
+      setMessage(response.data.message);
       
       navigate("/", {
         state: {
@@ -39,19 +47,38 @@ function Signup() {
         }
       });
     } catch (error) {
-      alert(error.response?.data?.message || "Something went wrong");
+      setError(error.response?.data?.message || "Something went wrong");
       setError(error.response?.data?.message || "Error during signup");
     }
   };
 
   return (
     <div className='flex flex-col justify-center items-center mt-20'>
+      {message && <div className="text-p font-poppins mb-4">{message}</div>}
       <div className="flex justify-between items-center gap-96">
         <img className="hidden desk:block w-80 h-80 py-4" src={logo} alt="logo" />
         <div className="flex flex-col justify-center items-center">
           <img className="w-32 h-26 py-4" src={logo} alt="logo" />
           <div className="flex flex-col justify-center items-center">
-            <p className='text-p font-bold font-poppins text-main'>Sign Up</p>
+            <p className='text-p font-bold font-poppins text-main mb-2'>Sign Up</p>
+            <div className="flex items-center">
+              <button
+                className={`px-4 py-2 rounded-full ${
+                  user.role === 'user' ? 'bg-p text-white' : 'bg-gray-300 text-gray-700'
+                }`}
+                onClick={handleToggleRole}
+              >
+                User
+              </button>
+              <button
+                className={`ml-2 px-4 py-2 rounded-full ${
+                  user.role === 'admin' ? 'bg-p text-white' : 'bg-gray-300 text-gray-700'
+                }`}
+                onClick={handleToggleRole}
+              >
+                Admin
+              </button>
+            </div>
             <form className='flex flex-col justify-center items-center mt-8 gap-8' onSubmit={handleSubmit}>
               <div className="flex flex-col gap-2">
                 <label className="flex font-poppins text-h3">Email address:</label>
@@ -100,19 +127,6 @@ function Signup() {
                   value={user.confirmPassword}
                   onChange={handleChange} 
                 />
-              </div>
-
-              {/* Role Selection */}
-              <div className="flex flex-col gap-2">
-                <label className="flex font-poppins text-h3">Role:</label>
-                <select 
-                  className="px-2 w-72 py-2 h-12 border border-iborder rounded-md" 
-                  name="role" 
-                  value={user.role} 
-                  onChange={handleChange}>
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
               </div>
 
               {error && <p className="text-error">{error}</p>}
