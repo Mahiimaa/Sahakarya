@@ -135,7 +135,7 @@ function Login() {
                     onChange={handleChange}
                     required
                   />
-                  <Link to="/forgot" className="self-end text-p">Forgot password?</Link>
+                  <Link to="/forgot" className="self-end text-p">Forgot password</Link>
                 </div>
               </div>
               {error && <p className="text-error text-red-500">{error}</p>}

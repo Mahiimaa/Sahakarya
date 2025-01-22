@@ -11,6 +11,11 @@ import Reset from './pages/Reset';
 import Verify from './pages/Verify';
 import Email from './pages/Email';
 import Navbar from './components//Navbar';
+import AdminService from "./pages/AdminService";
+import Users from './pages/Users';
+import Transactions from './pages/Transactions';
+import Category from "./pages/Category";
+import AdminSettings from "./pages/AdminSettings";
 import "./index.css";
 
  function App() {
@@ -29,6 +34,11 @@ return (
         <Route path="/changePassword" element={<ChangePassword />} />
         <Route path="/reset" element={<Reset />} />
         <Route path="/navbar" element={<Navbar />} />
+        <Route path="/services" element={<AdminService />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/transactions" element={<Transactions />} />
+        <Route path="/category" element={<Category />} />
+        <Route path="/adminsettings" element={<AdminSettings />} />
         </Routes>
         </BrowserRouter>
         </div>

@@ -28,7 +28,7 @@ function Home() {
         <div className="flex flex-col gap-8">
         <p className= " font-poppins text-[40px] font-bold py-8" >Welcome Back, <br/> Mahima! </p>
         <div className="bg-[#CFF0E7] w-96 h-24 text-dark-grey border-none rounded-md ml-40 font-poppins font-bold flex justify-center items-center">
-          Services 1
+          Service 1
         </div>
         <div className="bg-[#FFECDF] w-96 h-24 text-dark-grey border-none rounded-md font-poppins font-bold flex justify-center items-center">
           Service 2
@@ -38,13 +38,13 @@ function Home() {
         </div>
         </div>
         <div className="">
-        <img className="w-[500px] h-[500px] self-center" src={userhome} alt="explore"></img>
-        <div className="bg-p w-[500px] h-20 rounded-lg text-white font-poppins font-semi-bold flex justify-center items-center"> Explore
+        <img className="w-[500px] h-[500px] self-center" src={userhome} alt="userhome"></img>
+        <div className="bg-p w-[500px] h-20 rounded-lg text-white font-poppins font-semi-bold flex justify-between px-4 items-center"> Explore
+        <img className="w-12 h-12 self-center" src={explore} alt="userhome"></img>
         </div>
-      
+        <button onClick={handleLogout} className="bg-p text-white p-2 border rounded-md"> Log Out </button>
         </div>
       </div>
-      {/* <button onClick={handleLogout} className="bg-p text-white p-2 border rounded-md"> Log Out </button> */}
     </div>
     </div>
     
