@@ -27,7 +27,14 @@ const UserSchema = new mongoose.Schema({
     default: 'user' 
   },
   resetToken: String,
-  resetTokenExpiry: Date
+  resetTokenExpiry: Date,
+
+  servicesOffered: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Service', 
+    },
+  ],
 }, 
 {
   timestamps: true
