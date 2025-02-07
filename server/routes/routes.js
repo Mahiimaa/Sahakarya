@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { login, signup,  logout } = require('../controllers/authController');
 const{requestOTP, submitOTP, resetPassword} = require('../controllers/forgotPassword');
-const {addService,editService,deleteService,getServices,selectService,} = require('../controllers/serviceController');
+const { addCategory, getCategories, deleteCategory } = require('../controllers/category');
+const {addService,editService,deleteService,getServices,selectService,} = require('../controllers/service');
 const authMiddleware = require("../middleware/authmiddleware");
 
 router.post("/signup", signup);
@@ -13,6 +14,10 @@ router.post('/submitOTP', submitOTP);
 router.post('/resetPassword', resetPassword);
 router.post('/logout', logout);
 
+router.post('/admin/category', addCategory);
+router.get('/category', getCategories);
+router.delete('/admin/category/:id', deleteCategory);
+
 router.post('/admin/service', addService); 
 router.put('/admin/service/:id', editService); 
 router.delete('/admin/service/:id', deleteService);
@@ -20,4 +25,5 @@ router.delete('/admin/service/:id', deleteService);
 // User Routes
 router.get('/services', getServices); 
 router.post('/services/select', selectService);
+
 module.exports = router;
