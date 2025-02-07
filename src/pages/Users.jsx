@@ -8,7 +8,7 @@ function Users() {
        <Navbar/>
        <div className="flex flex-col gap-4">
        <Topbar/>
-       <div className="bg-t p-4 border-none rounded-2xl">
+       <div className="bg-screen p-4 border-none rounded-2xl">
        <div className="flex justify-between items-center ">
                    <h1 className="font-bold text-h1"> User Management</h1> 
                    </div>
