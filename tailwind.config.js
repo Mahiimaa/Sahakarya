@@ -13,6 +13,7 @@ module.exports = {
       'grey': '#808080',
       'light-grey': '#F5F5F5',
       't': '#F5F5F5',
+      'screen': '#FAFAFA',
       'error': '#FF0000',
     },
     fontFamily: {

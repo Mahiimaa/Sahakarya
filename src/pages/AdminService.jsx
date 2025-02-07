@@ -11,15 +11,16 @@ function AdminService() {
     setAddServiceForm(!addServiceForm);
   };
   return (
-    <div className ="flex ">
+    <div className ="flex gap-4 ">
        <Navbar/>
-       <div className="flex flex-col">
+       <div className="flex flex-col gap-4">
        <Topbar/>
+       <div className="bg-screen p-4  border-none rounded-2xl">
        <div className="flex justify-between items-center ">
-        <h1 className="font-bold text-h1 text-grey"> Service Management</h1> 
+        <h1 className="font-bold text-h1"> Service Management</h1> 
         <button className='bg-p text-white font-poppins border rounded-md p-2 mr-4' onClick={toggleModal}> Add Service </button>
         </div>
-        <div className="p-4 bg-white rounded-lg shadow">
+        <div className="p-4 bg-white rounded-lg shadow mt-4">
           <table className="w-full text-gray-700 border-collapse">
             <thead>
               <tr className="bg-gray-200">
@@ -39,7 +40,7 @@ function AdminService() {
                 <td className="px-4 py-2 border">Category A</td>
                 <td className="px-4 py-2 border">Active</td>
                 <td className="px-4 py-2 border text-center">
-                  <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Delete</button>
+                  <button className="bg-white text-error px-2 py-1 rounded border border-error hover:bg-error hover:text-white">Delete</button>
                 </td>
               </tr>
             </tbody>
@@ -90,6 +91,7 @@ function AdminService() {
           </div>
         )}
         </div>
+       </div>
        </div>
   )
 }

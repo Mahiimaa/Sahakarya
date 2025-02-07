@@ -11,20 +11,21 @@ function Category() {
         setAddServiceForm(!addServiceForm);
       };
     return (
-        <div className ="flex ">
+        <div className ="flex gap-4">
            <Navbar/>
-           <div className="flex flex-col">
+           <div className="flex flex-col gap-4">
            <Topbar/>
+           <div className="bg-screen p-4  border-none rounded-2xl">
            <div className="flex justify-between items-center ">
-                   <h1 className="font-bold text-h1 text-grey"> Category Management</h1> 
+                   <h1 className="font-bold text-h1"> Category Management</h1> 
                    <button className='bg-p text-white font-poppins border rounded-md p-2 mr-4' onClick={toggleModal}> Add Category </button>
                    </div>
-                   <div className="p-4 bg-white rounded-lg shadow">
+                   <div className="p-4 bg-white rounded-lg shadow mt-4">
                      <table className="w-full text-gray-700 border-collapse">
                        <thead>
                          <tr className="bg-gray-200">
                            <th className="px-4 py-2 border">Category ID</th>
-                           <th className="px-4 py-2 border">Ctaegory Name</th>
+                           <th className="px-4 py-2 border">Category Name</th>
                            <th className="px-4 py-2 border">Action</th>
                          </tr>
                        </thead>
@@ -33,7 +34,7 @@ function Category() {
                            <td className="px-4 py-2 border">1</td>
                            <td className="px-4 py-2 border">Example Service</td>
                            <td className="px-4 py-2 border text-center">
-                             <button className="text-error px-2 py-1 border-error border rounded hover:bg-red-600">Delete</button>
+                             <button className="text-error  px-2 py-1 border-error border rounded hover:bg-error hover:text-white">Delete</button>
                            </td>
                          </tr>
                        </tbody>
@@ -68,6 +69,7 @@ function Category() {
                        </div>
                      </div>
                    )}
+           </div>
            </div>
            </div>
     )

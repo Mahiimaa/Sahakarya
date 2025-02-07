@@ -21,13 +21,14 @@ function AdminHome() {
     }
   };
   return (
-    <div className ="flex ">
+    <div className ="flex gap-4">
        <Navbar/>
-       <div className="flex flex-col">
+       <div className="flex flex-col gap-4">
        <Topbar/>
+       <div className="bg-screen p-4  border-none rounded-2xl">
+        <h1 className="font-bold text-h1"> Overview</h1>
       <div className=" flex flex-col gap-4 mt-4">
-       <div className="border-light-grey border-2 rounded-lg">
-        <div className="flex justify-around py-10">
+        <div className="flex justify-around py-10 bg-white border-none rounded-2xl ">
           <div className="flex flex-col justify-center items-center">
           <img src={user} className='h-10 w-10'/>
           <p>44</p>
@@ -43,22 +44,20 @@ function AdminHome() {
         <p>44</p>
         <p> Total no. of Transactions</p>
         </div>
-        </div>
        </div>
-       <div className="flex ">
-       <div className="border-dark-grey border-2 rounded-md">second
+       <div className="flex gap-4">
+       <div className="h-[61vh] w-1/2 border-none rounded-2xl bg-white">
 
        </div>
-       <div className=" flex flex-col">
-       <div className="border-dark-grey border-2 rounded-md">third
-
+       <div className=" flex flex-col gap-4">
+       <div className=" h-1/2 w-[45vw] border-none rounded-2xl bg-white">
        </div>
-       <div className="border-dark-grey border-2 rounded-md">fourth
-
+       <div className="h-1/2 w-[45vw] border-none  rounded-2xl bg-white">
        </div>
        </div>
        </div>
       </div>
+    </div>
     </div>
     </div>
   )
