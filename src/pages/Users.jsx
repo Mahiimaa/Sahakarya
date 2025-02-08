@@ -1,8 +1,26 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import Navbar from "../components/AdminNav";
 import Topbar from "../components/AdminTop";
+import axios from "axios";
 
 function Users() {
+  const [users, setUsers]= useState([]);
+  const [error, setError]= useState(null);
+
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
+  useEffect(() =>{
+    const fetchUsers = async() =>{
+      try {
+        const response = await axios(`${apiUrl}/api/users`);
+        setUsers(response.data);
+      } catch (error) {
+        setError("Error fetching users");
+      }
+      fetchUsers();
+    }
+  });
+  
   return (
     <div className ="flex gap-4">
        <Navbar/>
@@ -13,22 +31,25 @@ function Users() {
                    <h1 className="font-bold text-h1"> User Management</h1> 
                    </div>
                    <div className="p-4 bg-white rounded-lg shadow mt-4">
+                    {error && <div className=" text-error p-2 rounded">{error}</div>}
                      <table className="w-full text-gray-700 border-collapse">
                        <thead>
                          <tr className="bg-gray-200">
-                           <th className="px-4 py-2 border">User ID</th>
+                           <th className="px-4 py-2 border">User Email</th>
                            <th className="px-4 py-2 border">User Name</th>
                            <th className="px-4 py-2 border">Action</th>
                          </tr>
                        </thead>
                        <tbody>
-                         <tr>
-                           <td className="px-4 py-2 border">1</td>
-                           <td className="px-4 py-2 border">Example User</td>
+                        {users.map((user) => (
+                         <tr key={user._id}>
+                           <td className="px-4 py-2 border">{user.email}</td>
+                           <td className="px-4 py-2 border">{user.username}</td>
                            <td className="px-4 py-2 border text-center">
                              <button className="text-error px-2 py-1 border-error border rounded hover:bg-error hover:text-white">Delete</button>
                            </td>
                          </tr>
+                        ))}
                        </tbody>
                      </table>
                    </div>

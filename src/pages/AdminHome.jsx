@@ -1,5 +1,4 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import Navbar from "../components/AdminNav";
 import Topbar from "../components/AdminTop";
@@ -7,19 +6,28 @@ import user from "../assets/user.png"
 import service from "../assets/services.png"
 import transaction from "../assets/transaction.png"
 function AdminHome() {
-  const apiUrl = process.env.REACT_APP_API_BASE_URL
-  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [services, setServices] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [error, setError] = useState(null);
 
-  const handleLogout = async () => {
+  const apiUrl = process.env.REACT_APP_API_BASE_URL
+
+  useEffect(() =>{
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
     try {
-      await axios.post(`${apiUrl}/api/logout`);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate('/', { state: { message: 'You have successfully logged out!' } });
+      const response = await axios.get(`${apiUrl}/api/stats`);
+      setUsers(response.data.totalUsers);
+      setServices(response.data.totalServices);
+      setTransactions(response.data.totalTransactions);
     } catch (error) {
-      alert(error.response?.data?.message || 'Something went wrong!');
+      setError("Error fetching stats");
     }
-  };
+  }
+
   return (
     <div className ="flex gap-4">
        <Navbar/>
@@ -31,17 +39,17 @@ function AdminHome() {
         <div className="flex justify-around py-10 bg-white border-none rounded-2xl ">
           <div className="flex flex-col justify-center items-center">
           <img src={user} className='h-10 w-10'/>
-          <p>44</p>
+          <p>{users}</p>
         <p> Total no. of Users</p>
         </div>
         <div className="flex flex-col justify-center items-center">
         <img src={service} className='h-10 w-10'/>
-        <p>44</p>
+        <p>{services}</p>
         <p> Total no. of Services</p>
         </div>
         <div className="flex flex-col justify-center items-center">
         <img src={transaction} className='h-10 w-10'/>
-        <p>44</p>
+        <p>{transactions}</p>
         <p> Total no. of Transactions</p>
         </div>
        </div>
