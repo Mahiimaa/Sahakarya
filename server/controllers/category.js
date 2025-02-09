@@ -30,11 +30,14 @@ const getCategories = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid category ID format' });
+    }
     const category = await Category.findById(id);
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
     }
-    const services = await Service.find({ category: category.categoryName });
+    const services = await Service.find({ category: id });
     console.log('Associated services:', services);
     if (services.length > 0) {
       return res.status(400).json({ message: 'Cannot delete category. Services are associated with it.' });
@@ -42,6 +45,7 @@ const deleteCategory = async (req, res) => {
     await Category.findByIdAndDelete(id);
     res.status(200).json({ message: 'Category deleted successfully' });
   } catch (error) {
+    console.error('Error deleting category:', error.message);
     res.status(500).json({ message: 'Error deleting category', error: error.message });
   }
 };

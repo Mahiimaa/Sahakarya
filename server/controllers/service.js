@@ -49,7 +49,9 @@ const deleteService = async (req, res) => {
 // User: Fetch all active services
 const getServices = async (req, res) => {
   try {
-    const services = await Service.find({ isActive: true });
+    const services = await Service.find({ isActive: true })
+    .populate('category', 'categoryName') 
+    .sort({ createdAt: -1 });
     res.status(200).json({ services });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching services', error: error.message });
