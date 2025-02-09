@@ -5,6 +5,7 @@ const{requestOTP, submitOTP, resetPassword} = require('../controllers/forgotPass
 const { addCategory, getCategories, deleteCategory } = require('../controllers/category');
 const {addService,editService,deleteService,getServices,selectService,} = require('../controllers/service');
 const { getStats } = require('../controllers/stats');
+const {getAllUsers} = require('../controllers/user');
 const authMiddleware = require("../middleware/authmiddleware");
 
 router.post("/signup", signup);
@@ -28,5 +29,6 @@ router.get('/services', getServices);
 router.post('/services/select', selectService);
 
 router.get('/stats', getStats);
+router.get('/users', getAllUsers);
 
 module.exports = router;
