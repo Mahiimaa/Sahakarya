@@ -84,8 +84,8 @@ const ChangePassword = () => {
   return (
     <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col">
       <div className="flex justify-start mb-8">
-        <button className="bg-blue-600 text-white rounded py-2 px-4">
-          <NavLink to="/forgot" className="flex items-center">
+        <button className="bg-p text-white rounded py-2 px-4">
+          <NavLink to="/home" className="flex items-center">
             <svg
               className="w-5 h-5 mr-2"
               xmlns="http://www.w3.org/2000/svg"
@@ -107,7 +107,7 @@ const ChangePassword = () => {
 
       <div className="flex-grow flex items-center justify-center">
         <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
-          <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
+          <h1 className="text-h2 font-bold mb-6 text-center text-p">
             Change Password
           </h1>
 
@@ -116,7 +116,7 @@ const ChangePassword = () => {
               <div className="flex flex-col relative">
                 <label
                   htmlFor="current-password"
-                  className="text-gray-600 font-semibold mb-2"
+                  className="text-h3 font-semibold mb-2"
                 >
                   Current Password
                 </label>
@@ -124,7 +124,7 @@ const ChangePassword = () => {
                   id="current-password"
                   type={showPassword.current_password ? "text" : "password"}
                   name="current_password"
-                  className="border-2 rounded border-neutral-200 p-3 focus:outline-slate-400 "
+                  className="border rounded  p-3 focus:outline-dark-grey "
                   placeholder="Enter current password"
                   onChange={handleChange}
                   value={password.current_password}
@@ -145,7 +145,7 @@ const ChangePassword = () => {
               <div className="flex flex-col relative">
                 <label
                   htmlFor="new-password"
-                  className="text-gray-600 font-semibold mb-2"
+                  className="text-h3 font-semibold mb-2"
                 >
                   New Password
                 </label>
@@ -153,7 +153,7 @@ const ChangePassword = () => {
                   id="new-password"
                   type={showPassword.password ? "text" : "password"}
                   name="password"
-                  className="border-2 rounded border-neutral-200 p-3 focus:outline-slate-400"
+                  className="border rounded  p-3 focus:outline-dark-grey"
                   placeholder="Enter new password"
                   onChange={handleChange}
                   value={password.password}
@@ -173,7 +173,7 @@ const ChangePassword = () => {
               <div className="flex flex-col relative ">
                 <label
                   htmlFor="confirm-password"
-                  className="text-gray-600 font-semibold mb-2"
+                  className="text-h3 font-semibold mb-2"
                 >
                   Confirm Password
                 </label>
@@ -181,7 +181,7 @@ const ChangePassword = () => {
                   id="confirm-password"
                   type={showPassword.confirm_password ? "text" : "password"}
                   name="confirm_password"
-                  className="border-2 rounded border-neutral-200 p-3 focus:outline-slate-400"
+                  className="border rounded  p-3 focus:outline-dark-grey"
                   placeholder="Confirm new password"
                   onChange={handleChange}
                   value={password.confirm_password}
@@ -198,13 +198,13 @@ const ChangePassword = () => {
                 </span>
               </div>
               {error ? (
-                <span className="text-red-500 mt-2">{error}</span>
+                <span className="text-error mt-2">{error}</span>
               ) : (
                 <></>
               )}
               <button
                 type="submit"
-                className="w-full mt-4 bg-blue-600 text-white rounded py-3 px-6 hover:bg-blue-700 transition-colors"
+                className="w-full mt-4 bg-p text-white rounded py-3 px-6 transition-colors"
               >
                 Submit
               </button>
