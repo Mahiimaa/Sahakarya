@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 const verifyToken = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1] || req.cookies?.token || req.body?.token;
-
+    console.log('Token:', token);
     if (!token) {
       return res.status(401).json({ message: 'Access denied. No token provided.' });
     }
