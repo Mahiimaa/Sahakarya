@@ -57,6 +57,10 @@ function Navbar() {
         alert(error.response?.data?.message || 'Something went wrong!');
       }
     };
+    
+    const UserProfile = () => {
+      navigate("/userProfile");
+    }
  
   return (
         <div className=" flex justify-between p-2 px-28 ">
@@ -98,6 +102,10 @@ function Navbar() {
               <div className="flex items-center gap-2">
                 <img className="w-6 h-6" src={phone} alt="" />
                 <li className="py-2 ">{userDetails.phone || 'N/A'} </li>
+              </div>
+              <div className="flex items-center gap-2">
+                <img className="w-6 h-6" src={profile}  alt="" /> 
+                <li className="py-2" onClick={UserProfile} >Edit Profile</li>
               </div>
               <div className="flex items-center gap-2">
                 <img className="w-6 h-6" src={logout} onClick={handleLogout} alt="" /> 

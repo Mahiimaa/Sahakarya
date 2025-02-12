@@ -17,6 +17,8 @@ import Transactions from './pages/Transactions';
 import Category from "./pages/Category";
 import AdminSettings from "./pages/AdminSettings";
 import Explore from "./pages/Explore";
+import UserProfile from "./pages/UserProfile";
+import EditProfile from './pages/EditProfile';
 import "./index.css";
 
  function App() {
@@ -36,6 +38,8 @@ return (
         <Route path="/changePassword" element={<ChangePassword />} />
         <Route path="/reset" element={<Reset />} />
         <Route path="/navbar" element={<Navbar />} />
+        <Route path="/userProfile" element={<UserProfile />} />
+        <Route path ="/editProfile" element={<EditProfile />} />
         <Route path="/services" element={<AdminService />} />
         <Route path="/users" element={<Users />} />
         <Route path="/transactions" element={<Transactions />} />

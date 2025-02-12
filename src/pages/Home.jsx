@@ -16,10 +16,10 @@ function Home() {
       try {
         const token = localStorage.getItem('token');
         console.log('Token:', token);
-        if (!token) {
-          navigate('/login'); 
-          return;
-        }
+        // if (!token) {
+        //   navigate('/login'); 
+        //   return;
+        // }
         const response = await axios.get(`${apiUrl}/api/user/me`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
