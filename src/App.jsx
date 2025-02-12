@@ -16,6 +16,7 @@ import Users from './pages/Users';
 import Transactions from './pages/Transactions';
 import Category from "./pages/Category";
 import AdminSettings from "./pages/AdminSettings";
+import Explore from "./pages/Explore";
 import "./index.css";
 
  function App() {
@@ -28,6 +29,7 @@ return (
         <Route path ="/email" element={<Email />} />
         <Route path="/verify/:token" element={<Verify />} />
         <Route path="/home" element={<Home />} />
+        <Route path ="/explore" element={<Explore />} />
         <Route path="/forgot" element={<Forgot />} />
         {/* <Route path="/reset" element={<Reset />} /> */}
         <Route path ="/adminhome" element={<AdminHome/>} />

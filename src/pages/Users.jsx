@@ -12,14 +12,23 @@ function Users() {
   useEffect(() =>{
     const fetchUsers = async() =>{
       try {
-        const response = await axios(`${apiUrl}/api/users`);
-        setUsers(response.data);
+        const response = await axios.get(`${apiUrl}/api/users`);
+        setUsers(response.data.users);
       } catch (error) {
         setError("Error fetching users");
       }
-      fetchUsers();
     }
-  });
+    fetchUsers();
+  }, [apiUrl]);
+
+  const deleteUser = async (id) => {
+    try {
+      await axios.delete(`${apiUrl}/api/deleteUser/${id}`);
+      setUsers(users.filter((user) => user._id !== id)); 
+    } catch (err) {
+      setError('Error deleting user');
+    }
+  };
   
   return (
     <div className ="flex gap-4">
@@ -46,7 +55,9 @@ function Users() {
                            <td className="px-4 py-2 border">{user.email}</td>
                            <td className="px-4 py-2 border">{user.username}</td>
                            <td className="px-4 py-2 border text-center">
-                             <button className="text-error px-2 py-1 border-error border rounded hover:bg-error hover:text-white">Delete</button>
+                             <button className="text-error px-2 py-1 border-error border rounded hover:bg-error hover:text-white"
+                             onClick={() => deleteUser(user._id)}
+                             >Delete</button>
                            </td>
                          </tr>
                         ))}

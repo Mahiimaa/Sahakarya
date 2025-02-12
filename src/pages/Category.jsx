@@ -43,7 +43,8 @@ function Category() {
   const handleDelete = async (id) => {
       if (window.confirm('Are you sure you want to delete this category?')) {
           try {
-              await axios.delete(`${apiUrl}/api/admin/category/${id}`);
+              const response = await axios.delete(`${apiUrl}/api/admin/category/${id}`);
+              console.log('delete response : ', response.data)
               setSuccess('Category deleted successfully');
               fetchCategories(); // Refresh the list
           } catch (error) {

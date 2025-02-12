@@ -52,9 +52,11 @@ function AdminService() {
   };
 
   const handleSubmit = async (e) => {
+    console.log(newService);
     e.preventDefault();
     try {
-      await axios.post(`${apiUrl}/api/admin/service`, newService);
+      const response = await axios.post(`${apiUrl}/api/admin/service`, newService);
+      console.log(response);
       setSuccess('Service added successfully');
       setNewService({ serviceName: '', category: '' });
       setAddServiceForm(false);
@@ -107,7 +109,7 @@ function AdminService() {
               {services.map((service)=>(
               <tr key={service._id}>
                 <td className="px-4 py-2 border">{service.serviceName}</td>
-                <td className="px-4 py-2 border">{service.category}</td>
+                <td className="px-4 py-2 border">{service.category?.categoryName}</td>
                 <td className="px-4 py-2 border text-center">
                   <button className="bg-white text-error px-2 py-1 rounded border border-error hover:bg-error hover:text-white"
                   onClick={() => handleDeleteService(service._id)}>Delete</button>
@@ -151,7 +153,7 @@ function AdminService() {
                       {categories.map((category) => (
                         <option 
                           key={category._id} 
-                          value={category.categoryName}
+                          value={category._id}
                         >
                           {category.categoryName}
                         </option>

@@ -6,12 +6,8 @@ import service from "../assets/services.png"
 import transaction from "../assets/transaction.png"
 import category from "../assets/category.png"
 import settings from "../assets/settings.png"
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
-
-
+import { NavLink } from "react-router-dom";
 function AdminNav() {
-    const navigate = useNavigate();
-  
     const setActiveClass = ({ isActive }) =>
     {
       return `flex items-center gap-6 pr-6 transition-all duration-200 ease-in-out ${isActive ? "bg-white text-p rounded-lg border border-p" : "hover:bg-p hover:rounded-lg"}`;
@@ -49,8 +45,6 @@ function AdminNav() {
                   <p className='font-poppins font-regular'>Transactions</p>
                   </div>
                 </NavLink>
-             
-        
                 <NavLink to="/category" className={setActiveClass}>
                 <div className='flex items-center gap-6 p-2'>
                   <img className="w-8 h-8"  src={category} alt="" />
