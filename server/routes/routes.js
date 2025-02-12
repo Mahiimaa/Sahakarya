@@ -5,8 +5,10 @@ const{requestOTP, submitOTP, resetPassword} = require('../controllers/forgotPass
 const { addCategory, getCategories, deleteCategory } = require('../controllers/category');
 const {addService,editService,deleteService,getServices,selectService,} = require('../controllers/service');
 const { getStats } = require('../controllers/stats');
-const {getAllUsers} = require('../controllers/user');
-const authMiddleware = require("../middleware/authmiddleware");
+const {getAllUsers, deleteUser, assignRole, getUserDetails} = require('../controllers/user');
+const {changePassword} = require('../controllers/changePassword');
+const {editProfile} = require('../controllers/profile');
+const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
 
 router.post("/signup", signup);
 router.post("/login", login);
@@ -30,5 +32,11 @@ router.post('/services/select', selectService);
 
 router.get('/stats', getStats);
 router.get('/users', getAllUsers);
+router.delete('/deleteUser/:id', deleteUser);
+router.post('/assignRole', assignRole);
+
+router.get('/user/me', verifyToken,  getUserDetails);
+router.put('/changePassword', verifyToken, changePassword);
+router.put('/editProfile', verifyToken, editProfile);
 
 module.exports = router;
