@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import { useSelector } from "react-redux";
 import axios from "axios";
 import { NavLink } from "react-router-dom";
-import {useNavigate} from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 
 const EditProfile = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
-  const token = useSelector((state) => state.auth.token);
-
+  const token = localStorage.getItem('token');
   const [profileData, setProfileData] = useState({
     name: "",
     email: "",
@@ -23,10 +19,60 @@ const EditProfile = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    return () => {
+      if (previewImage && previewImage.startsWith('blob:')) {
+        URL.revokeObjectURL(previewImage);
+      }
+    };
+  }, [previewImage]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchUserProfile = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/api/user/me`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          signal: controller.signal,
+        });
+        const userData = response.data.user;
+  
+        setProfileData({
+          name: userData.name || "",
+          email: userData.email || "",
+          phone: userData.phone || "",
+          profilePicture: userData.profilePicture || null,
+          selectedServices: userData.services || [],
+        });
+  
+        if (userData.profilePicture) {
+          setPreviewImage(
+            userData.profilePicture.startsWith("http") 
+              ? userData.profilePicture 
+              : `${apiUrl}${userData.profilePicture}`
+          );
+        }
+      } catch (err) {
+        if (!axios.isCancel(err)) {
+          toast.error("Error loading user profile.");
+          setError("Failed to load profile data");
+        }
+      }
+      return () => controller.abort();
+    };
+  
+    fetchUserProfile();
+  }, [apiUrl, token]);
+  
+
+  useEffect(() => {
     const fetchServices = async () => {
       try {
         const response = await axios.get(`${apiUrl}/api/services`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         });
         setServices(response.data.services); 
       } catch (err) {
@@ -38,22 +84,46 @@ const EditProfile = () => {
     fetchServices();
   }, [apiUrl, token]);
 
+  const validateForm = () => {
+    if (!profileData.name.trim()) {
+      setError("Name is required");
+      return false;
+    }
+    if (!profileData.phone.trim()) {
+      setError("Phone number is required");
+      return false;
+    }
+    return true;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfileData((prev) => ({
       ...prev,
       [name]: value,
     }));
+    setError("");
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        setError("Please upload a valid image file (JPEG, PNG, or GIF)");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image size should be less than 5MB");
+        return;
+      }
+
       setProfileData((prev) => ({
         ...prev,
         profilePicture: file,
       }));
       setPreviewImage(URL.createObjectURL(file));
+      setError("");
     }
   };
 
@@ -69,16 +139,21 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     setError("");
 
     const formData = new FormData();
-    formData.append("name", profileData.name);
+    formData.append("name", profileData.name.trim());
     formData.append("email", profileData.email);
-    formData.append("phone", profileData.phone);
-    if (profileData.profilePicture) {
+    formData.append("phone", profileData.phone.trim());
+    if (typeof profileData.profilePicture !== "string") {
       formData.append("profilePicture", profileData.profilePicture);
     }
-    formData.append("services", JSON.stringify(profileData.selectedServices));
+    profileData.selectedServices.forEach((service) => {
+      formData.append("services[]", service);
+    });
 
     try {
       await axios.put(`${apiUrl}/api/editProfile`, formData, {
@@ -137,12 +212,20 @@ const EditProfile = () => {
               className="hidden"
               accept="image/*"
               onChange={handleFileChange}
+              aria-label="Upload profile picture"
             />
             <div
               className="w-24 h-24 rounded-full border-2 border-neutral-300 flex items-center justify-center overflow-hidden cursor-pointer"
               onClick={() =>
                 document.getElementById("profilePicture").click()
-              }
+              }role="button"
+              tabIndex={0}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  document.getElementById("profilePicture").click();
+                }
+              }}
+              aria-label="Click to upload profile picture"
             >
               {previewImage ? (
                 <img
@@ -158,7 +241,7 @@ const EditProfile = () => {
 
           <div>
             <label htmlFor="name" className="text-body font-regular mb-2">
-              Name
+              Username
             </label>
             <input
               type="text"
@@ -184,9 +267,8 @@ const EditProfile = () => {
               name="email"
               value={profileData.email}
               onChange={handleChange}
-              placeholder="Enter your email"
               className="w-full border rounded border-grey p-3"
-              required
+              disabled
             />
           </div>
 
