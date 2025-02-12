@@ -72,11 +72,16 @@ const getUserDetails = async (req, res) => {
     if (!req.user) {
       return res.status(404).json({ message: "User not found" });
     }
+    const user = await User.findById(req.user.id || req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
     res.json({
-      id: req.user._id,
-      name: req.user.username,
-      email: req.user.email,
-      // phone: req.user.phone,
+      id: user._id,
+      name: user.username,
+      email: user.email,
+      phone: user.phone,
     });
   } catch (error) {
     console.error(error);

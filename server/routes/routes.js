@@ -7,6 +7,7 @@ const {addService,editService,deleteService,getServices,selectService,} = requir
 const { getStats } = require('../controllers/stats');
 const {getAllUsers, deleteUser, assignRole, getUserDetails} = require('../controllers/user');
 const {changePassword} = require('../controllers/changePassword');
+const {editProfile} = require('../controllers/profile');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
 
 router.post("/signup", signup);
@@ -36,5 +37,6 @@ router.post('/assignRole', assignRole);
 
 router.get('/user/me', verifyToken,  getUserDetails);
 router.put('/changePassword', verifyToken, changePassword);
+router.put('/editProfile', verifyToken, editProfile);
 
 module.exports = router;
