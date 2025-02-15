@@ -36,7 +36,9 @@ const EditProfile = () => {
           },
           signal: controller.signal,
         });
-        const userData = response.data.user;
+        console.log("Fetched response:", response.data);
+        const userData = response.data;
+        console.log("User Data:", userData);
   
         setProfileData({
           name: userData.name || "",
@@ -55,6 +57,7 @@ const EditProfile = () => {
         }
       } catch (err) {
         if (!axios.isCancel(err)) {
+          console.error("Error fetching profile:", err);
           toast.error("Error loading user profile.");
           setError("Failed to load profile data");
         }
@@ -307,8 +310,7 @@ const EditProfile = () => {
               className="w-full border rounded border-grey p-3"
             >
               {services.map((service) => (
-                <option key={service.id} value={service.name}>
-                  {service.name}
+                <option key={service.id}>{service.name}
                 </option>
               ))}
             </select>
