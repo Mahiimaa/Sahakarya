@@ -16,10 +16,10 @@ function Home() {
       try {
         const token = localStorage.getItem('token');
         console.log('Token:', token);
-        if (!token) {
-          navigate('/login'); 
-          return;
-        }
+        // if (!token) {
+        //   navigate('/login'); 
+        //   return;
+        // }
         const response = await axios.get(`${apiUrl}/api/user/me`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -57,7 +57,7 @@ function Home() {
         <div className="flex flex-col gap-8">
           <div className="flex flex-col">
         <p className= " font-poppins text-[40px] font-bold " >Welcome Back,</p> 
-          <p className='font-poppins text-[40px] font-bold text-s'>{userDetails ? userDetails.name : 'Loading...'}</p>
+          <p className='font-poppins text-[40px] font-bold text-s'>{userDetails ? userDetails.username : 'Loading...'}</p>
           </div>
           <div className="bg-[#CFF0E7] w-96 h-24 text-dark-grey border-none rounded-md ml-40 font-poppins font-bold flex justify-center items-center">
           Service 1
@@ -71,8 +71,8 @@ function Home() {
         </div>
         <div className="flex flex-col pt-8">
         <img className="w-[500px] h-[500px] self-center" src={userhome} alt="userhome"></img>
-        <div className="bg-p w-[500px] h-20 rounded-lg text-white font-poppins font-semi-bold text-h2 flex justify-between px-4 items-center" onClick={toExplore}> Explore
-        <img className="w-12 h-12 self-center" src={explore} alt="userhome"></img>
+        <div className="bg-p w-[500px] h-20 rounded-lg text-white font-poppins font-semi-bold text-h2 flex justify-between px-4 items-center flex-col" onClick={toExplore}> Explore
+        <img className="w-12 h-12 self-center" src={explore} alt="userhome"></img> 
         <button className="bg-p text-white " onClick ={handleLogout}>  Logout </button>
         </div>
         </div>
