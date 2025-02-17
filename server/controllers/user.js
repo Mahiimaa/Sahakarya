@@ -79,9 +79,11 @@ const getUserDetails = async (req, res) => {
     }
     res.json({
       id: user._id,
-      name: user.username,
+      username: user.username,
       email: user.email,
-      phone: user.phone,
+      phone: user.phone || "",
+      profilePicture: user.profilePicture || "", 
+      services: user.services || [],
     });
   } catch (error) {
     console.error(error);
