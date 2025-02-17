@@ -90,7 +90,7 @@ function Navbar() {
               <div>
             <div className="flex gap-3 items-center ">
               <div className="flex flex-col px-4">
-                <h1 className="font-poppins font-semi-bold text-s text-h3 ">{userDetails.name || 'N/A'}</h1>
+                <h1 className="font-poppins font-semi-bold text-s text-h3 ">{userDetails.username || 'N/A'}</h1>
               </div>
             </div>
             <hr className="border-[1px] border-grey m-2"></hr>

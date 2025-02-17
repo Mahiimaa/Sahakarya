@@ -79,7 +79,7 @@ const UserProfileInfoPage = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          <h1 className="text-poppins text-s font-semi-bold mt-4">{user.name}</h1>
+          <h1 className="text-poppins text-s font-semi-bold mt-4">{user.username}</h1>
         </div>
 
         {/* Personal Information */}
