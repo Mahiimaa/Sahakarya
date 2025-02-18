@@ -1,23 +1,26 @@
 import React, {useEffect, useState} from 'react'
 import Navbar from "../components/Navbar"
-import Chat from '../components/Chat';
+import { useNavigate } from "react-router-dom";
 import axios from "axios"
 
 function Explore() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-  
+  const token = localStorage.getItem('token');
+  const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]); 
   const [categories, setCategories] = useState(['All']);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [chatOpen, setChatOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState(null);
-
+  
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const { data } = await axios.get(`${apiUrl}/api/services`);
+        const { data } = await axios.get(`${apiUrl}/api/services`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setServices(data.services);
         setFilteredServices(data.services);
         const uniqueCategories = ['All', ...new Set(data.services.map(service => service.category.categoryName))];
@@ -71,15 +74,9 @@ function Explore() {
           <div className="grid grid-cols-3 gap-4">
             {filteredServices.length > 0 ? (
               filteredServices.map(service => (
-                <div key={service._id} className="p-4 border rounded-lg shadow-lg bg-white">
+                <div key={service._id} className="p-4 border rounded-lg shadow-lg bg-white" onClick={() => navigate(`/services/${service._id}`)}>
                   <h3 className="font-bold text-lg">{service.serviceName}</h3>
                   <p className="text-dark-grey">{service.category.categoryName}</p>
-                  <button 
-                    className="mt-2 bg-p text-white p-2 rounded-lg w-full"
-                    onClick={() => { setChatOpen(true); setSelectedService(service); }}
-                  >
-                    Chat with Provider
-                  </button>
                 </div>
               ))
             ) : (
@@ -88,7 +85,6 @@ function Explore() {
           </div>
         </div>
       </div>
-      {chatOpen && <Chat service={selectedService} onClose={() => setChatOpen(false)} />}
     </div>
 
   )
