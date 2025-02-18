@@ -29,12 +29,16 @@ const EditProfile = () => {
       const userData = response.data;
       console.log("User Data:", userData);
 
+      const userServices = userData.services || [];
+      const serviceIds = userServices.map(service => 
+        typeof service === 'object' ? service._id : service
+      );
       setProfileData({
         username: userData.username || "",
         email: userData.email || "",
         phone: userData.phone || "",
         profilePicture: userData.profilePicture || null,
-        selectedServices: Array.isArray(userData.services) ? userData.services : [],
+        selectedServices: serviceIds,
       });
 
       if (userData.profilePicture && userData.profilePicture !== '') {
@@ -165,11 +169,11 @@ const EditProfile = () => {
     if (profileData.profilePicture instanceof File) {
       formData.append("profilePicture", profileData.profilePicture);
     }
-    profileData.selectedServices.forEach((service) => {
-      formData.append("services", service);
+    formData.delete("services");
+    profileData.selectedServices.forEach((serviceId) => {
+      formData.append("services[]", serviceId);
     });
-
-    // Log form data for debugging
+    
     for (let pair of formData.entries()) {
       console.log(pair[0], pair[1]);
     }
@@ -178,18 +182,22 @@ const EditProfile = () => {
       const updateResponse = await axios.put(`${apiUrl}/api/editProfile`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          // Do NOT set Content-Type for FormData - axios will set it automatically with boundary
         },
       });
       
       if (updateResponse.data?.user) {
         const updatedUser = updateResponse.data.user;
+        const updatedServices = Array.isArray(updatedUser.services) 
+        ? updatedUser.services.map(service => 
+            typeof service === 'object' ? service._id : service
+          )
+        : [];
         setProfileData({
           username: updatedUser.username || "",
           email: updatedUser.email || "",
           phone: updatedUser.phone || "",
           profilePicture: updatedUser.profilePicture || null,
-          selectedServices: Array.isArray(updatedUser.services) ? updatedUser.services : []
+          selectedServices: updatedServices
         });
         
         if (updatedUser.profilePicture && updatedUser.profilePicture !== '') {
