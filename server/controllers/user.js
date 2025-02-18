@@ -72,7 +72,7 @@ const getUserDetails = async (req, res) => {
     if (!req.user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const user = await User.findById(req.user.id || req.user._id).select("-password");
+    const user = await User.findById(req.user.id || req.user._id).populate("servicesOffered");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -83,7 +83,7 @@ const getUserDetails = async (req, res) => {
       email: user.email,
       phone: user.phone || "",
       profilePicture: user.profilePicture || "", 
-      services: user.services || [],
+      services: user.servicesOffered || [],
     });
   } catch (error) {
     console.error(error);

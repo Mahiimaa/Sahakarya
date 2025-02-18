@@ -86,7 +86,6 @@ const selectService = async (req, res) => {
     res.status(500).json({ message: 'Error selecting service', error: error.message });
   }
 };
-
 module.exports = {
   addService,
   editService,

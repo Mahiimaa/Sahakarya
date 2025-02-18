@@ -8,6 +8,8 @@ const { getStats } = require('../controllers/stats');
 const {getAllUsers, deleteUser, assignRole, getUserDetails} = require('../controllers/user');
 const {changePassword} = require('../controllers/changePassword');
 const {editProfile} = require('../controllers/profile');
+const { getServiceDetails } = require('../controllers/serviceDetails');
+const { getMessages, sendMessage } = require('../controllers/messageController');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -66,6 +68,9 @@ router.post('/assignRole', assignRole);
 
 router.get('/user/me', verifyToken,  getUserDetails);
 router.put('/changePassword', verifyToken, changePassword);
-router.put('/editProfile/', verifyToken, upload.single('profilePicture'), editProfile);
+router.put('/editProfile', verifyToken, upload.single('profilePicture'), editProfile);
+router.get('/services/:id', getServiceDetails);
+router.get('/messages/:providerId', verifyToken, getMessages);
+router.post('/sendmessages', verifyToken , sendMessage);
 
 module.exports = router;

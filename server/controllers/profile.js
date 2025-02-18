@@ -1,19 +1,18 @@
 const fs = require('fs').promises;
 const path = require('path');
 const User = require('../models/User');
+const Service = require('../models/Service');
 
 const editProfile = async (req, res) => {
   try {
     console.log("Updating profile for user ID:", req.user.id);
     console.log("Request body:", req.body);
     console.log("File:", req.file);
-    
-    // Extract data from request
+
     const { username, email, phone } = req.body;
     const services = req.body.services || [];
     const userId = req.user.id;
     
-    // Convert services to array if needed
     const selectedServices = Array.isArray(services)
       ? services
       : typeof services === 'string'
@@ -51,6 +50,19 @@ const editProfile = async (req, res) => {
     await user.save();
     console.log('User saved successfully!');
     
+    for (const serviceId of selectedServices) {
+      const service = await Service.findById(serviceId);
+      if (!service) {
+        console.log(`Service with ID ${serviceId} not found.`);
+        continue;
+      }
+      
+      if (!service.selectedBy.includes(userId)) {
+        service.selectedBy.push(userId);
+        await service.save();
+        console.log(`User added to selectedBy for service: ${service.serviceName}`);
+      }
+    }
     // Return updated user data
     res.status(200).json({
       success: true,
