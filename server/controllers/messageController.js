@@ -18,7 +18,7 @@ const getMessages = async (req, res) => {
   }
 };
 
-const sendMessage = async (req, res) => {
+const sendMessage = async (req, res, io) => {
   const { providerId, content } = req.body;
   const senderId = req.user.id;
 
@@ -32,6 +32,8 @@ const sendMessage = async (req, res) => {
 
     await message.save();
 
+    io.to(providerId).emit("chat message", message);
+    
     res.status(200).json({ message: 'Message sent successfully', message });
   } catch (error) {
     res.status(500).json({ message: 'Error sending message', error: error.message });

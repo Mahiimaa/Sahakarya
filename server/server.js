@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require('path');
+const http = require('http');
+const socketIo = require('socket.io');
 const authRoutes = require("./routes/routes"); 
 
 const app = express();
@@ -15,6 +17,26 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+const server = http.createServer(app);
+const io = socketIo(server);
+
+app.get('/', (req, res) => {
+  res.send('WebSocket server running');
+});
+
+io.on('connection', (socket) => {
+  console.log('a user connected', socket.id);
+
+  socket.on("chat message", (msg) => {
+    io.emit("chat message", msg);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});
+
 
 mongoose.connect("mongodb://127.0.0.1:27017/Sahakarya", {
   useNewUrlParser: true,

@@ -70,7 +70,6 @@ router.get('/user/me', verifyToken,  getUserDetails);
 router.put('/changePassword', verifyToken, changePassword);
 router.put('/editProfile', verifyToken, upload.single('profilePicture'), editProfile);
 router.get('/services/:id', getServiceDetails);
-router.get('/messages/:providerId', verifyToken, getMessages);
-router.post('/sendmessages', verifyToken , sendMessage);
+router.post("/sendMessage", (req, res) => sendMessage(req, res, io));
 
 module.exports = router;
