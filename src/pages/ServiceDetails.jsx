@@ -32,27 +32,27 @@ function ServiceDetails() {
   }, [_id, apiUrl]);
 
   return (
-    <div>
+    <div className= "flex flex-col">
       <Navbar />
-      <div className="p-6 mx-auto max-w-4xl">
+      <div className="w-full mx-28 ">
         {service && (
-          <h1 className="text-2xl font-bold">{service.serviceName}</h1>
+          <h1 className="text-h1 font-bold">{service.serviceName}</h1>
         )}
-        <h2 className="text-xl font-semibold mt-4">Available Providers</h2>
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        <h2 className="text-h2 font-semi-bold mt-4">Available Providers</h2>
+        <div className="grid grid-cols-6 gap-4 mt-4">
           {providers.length > 0 ? (
             providers.map((provider) => (
               <div key={provider._id} className="p-4 border rounded-lg bg-white shadow">
-                <h3 className="font-bold">{provider.name}</h3>
+                <h3 className="font-bold">{provider.username}</h3>
                 <p>{provider.email}</p>
                 <button
-                  className="mt-2 bg-p text-white p-2 rounded-lg w-full"
+                  className="mt-2  text-p p-2 border border-p rounded-lg w-full hover:bg-p hover:text-white"
                   onClick={() => {
                     setChatOpen(true);
                     setSelectedProvider(provider);
                   }}
                 >
-                  Chat with {provider.name}
+                  Chat
                 </button>
               </div>
             ))
