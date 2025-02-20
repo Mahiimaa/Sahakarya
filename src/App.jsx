@@ -17,6 +17,7 @@ import Transactions from './pages/Transactions';
 import Category from "./pages/Category";
 import AdminSettings from "./pages/AdminSettings";
 import Explore from "./pages/Explore";
+import ServiceDetails from "./pages/ServiceDetails";
 import UserProfile from "./pages/UserProfile";
 import EditProfile from './pages/EditProfile';
 import "./index.css";
@@ -32,6 +33,7 @@ return (
         <Route path="/verify/:token" element={<Verify />} />
         <Route path="/home" element={<Home />} />
         <Route path ="/explore" element={<Explore />} />
+        <Route path="/services/:_id" element={<ServiceDetails />} />
         <Route path="/forgot" element={<Forgot />} />
         {/* <Route path="/reset" element={<Reset />} /> */}
         <Route path ="/adminhome" element={<AdminHome/>} />

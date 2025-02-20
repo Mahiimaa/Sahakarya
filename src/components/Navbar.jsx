@@ -74,11 +74,6 @@ function Navbar() {
           </NavLink>
           </div>
           <div className="flex gap-8 justify-center items-center">
-          <input
-            className="bg-white text-dark-grey border rounded-md h-10 w-64 p-2"
-            type="text"
-            placeholder="Search..."
-          />
           <details className="relative">
           <summary className="list-none cursor-pointer ">
           <img className="w-10 h-16 py-4" src={profile} alt="profile"></img>
