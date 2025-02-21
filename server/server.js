@@ -5,6 +5,7 @@ const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
 const authRoutes = require("./routes/routes"); 
+const Message = require("./models/Message");
 
 const app = express();
 
@@ -19,17 +20,43 @@ app.use(cors({
 }));
 
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server,{
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  }
+});
 
 app.get('/', (req, res) => {
   res.send('WebSocket server running');
 });
 
 io.on('connection', (socket) => {
-  console.log('a user connected', socket.id);
+  console.log('user connected', socket.id);
 
-  socket.on("chat message", (msg) => {
-    io.emit("chat message", msg);
+  socket.on("joinRoom", ({ userId }) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined room`);
+  });
+
+  socket.on("chat message", async (msg) => {
+    const { sender, receiver, text } = msg;
+
+    try {
+      const message = new Message({
+        sender,
+        receiver,
+        content: text,
+        createdAt: new Date(),
+      });
+
+      await message.save();
+
+      io.to(receiver).emit("chat message", message);
+      io.to(sender).emit("chat message", message);
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
   });
 
   socket.on("disconnect", () => {

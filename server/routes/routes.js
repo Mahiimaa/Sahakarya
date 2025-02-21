@@ -9,7 +9,7 @@ const {getAllUsers, deleteUser, assignRole, getUserDetails} = require('../contro
 const {changePassword} = require('../controllers/changePassword');
 const {editProfile} = require('../controllers/profile');
 const { getServiceDetails } = require('../controllers/serviceDetails');
-const { getMessages, sendMessage } = require('../controllers/messageController');
+const { getMessages, sendMessage, getUserChats} = require('../controllers/messageController');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -70,6 +70,8 @@ router.get('/user/me', verifyToken,  getUserDetails);
 router.put('/changePassword', verifyToken, changePassword);
 router.put('/editProfile', verifyToken, upload.single('profilePicture'), editProfile);
 router.get('/services/:id', getServiceDetails);
-router.post("/sendMessage", (req, res) => sendMessage(req, res, io));
+router.post("/sendMessage", (req, res) => sendMessage(req, res, req.io));
+router.get("/messages/:providerId", verifyToken, getMessages);
+router.get("/chats", verifyToken, getUserChats);
 
 module.exports = router;
