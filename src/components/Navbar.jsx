@@ -72,6 +72,9 @@ function Navbar() {
           <NavLink to ="/explore" className ={setActiveClass}>
           <p className="font-poppins font-semi-bold text-h3 p-2">Explore</p>
           </NavLink>
+          <NavLink to ="/chat" className ={setActiveClass}>
+          <p className="font-poppins font-semi-bold text-h3 p-2">Chat</p>
+          </NavLink>
           </div>
           <div className="flex gap-8 justify-center items-center">
           <details className="relative">

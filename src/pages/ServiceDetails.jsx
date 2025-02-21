@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import axios from "axios";
 import Chat from "../components/Chat";
 import Navbar from "../components/Navbar";
@@ -34,7 +35,27 @@ function ServiceDetails() {
   return (
     <div className= "flex flex-col">
       <Navbar />
-      <div className="w-full mx-28 ">
+      <div className="flex mx-28 ">
+        <button className="flex hover:text-p items-start rounded p-2 h-fit">
+          <NavLink to="/explore" className="flex items-center">
+            <svg
+              className="w-7 h-7 mr-2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </NavLink>
+        </button>
+     
+      <div className="">
         {service && (
           <h1 className="text-h1 font-bold">{service.serviceName}</h1>
         )}
@@ -64,6 +85,7 @@ function ServiceDetails() {
       {chatOpen && selectedProvider && (
         <Chat provider={selectedProvider} onClose={() => setChatOpen(false)} />
       )}
+    </div>
     </div>
   );
 }

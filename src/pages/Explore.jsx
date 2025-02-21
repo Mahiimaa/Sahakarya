@@ -44,7 +44,7 @@ function Explore() {
     <div className = "flex flex-col">
         <Navbar />
         <div className="flex p-4 mx-28">
-        <div className="w-1/6 p-4 bg-dark-grey rounded-lg">
+        <div className="w-1/6 p-4 bg-light-grey rounded-lg">
           <h2 className="text-lg font-semi-bold mb-4">Categories</h2>
           {categories.map(category => (
             <button
