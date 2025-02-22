@@ -43,7 +43,8 @@ const UserSchema = new mongoose.Schema({
       ref: 'Service', 
     },
   ],
-}, 
+  timeCredits: { type: Number, default: 0 },
+},
 {
   timestamps: true
 });

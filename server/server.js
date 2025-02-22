@@ -3,11 +3,22 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require('path');
 const http = require('http');
-const socketIo = require('socket.io');
+const {Server} = require('socket.io');
 const authRoutes = require("./routes/routes"); 
+const Message = require("./models/Message");
+require("dotenv").config();
 
 const app = express();
-
+// app.set('io', io);
+const server = http.createServer(app);
+const io = new Server(server,{
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
+    transports: ["websocket", "polling"],
+  }
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -17,25 +28,51 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-const server = http.createServer(app);
-const io = socketIo(server);
-
-app.get('/', (req, res) => {
-  res.send('WebSocket server running');
-});
-
 io.on('connection', (socket) => {
-  console.log('a user connected', socket.id);
+  console.log('user connected', socket.id);
 
-  socket.on("chat message", (msg) => {
-    io.emit("chat message", msg);
+  socket.on("joinRoom", ({ userId }) => {
+    if (!userId) {
+      console.error("Missing userId in joinRoom event");
+      return;
+    }
+    socket.join(userId.toString());
+    console.log(`User ${userId} joined room`);
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected");
+    console.log("User disconnected:", socket.id);
   });
 });
+
+//   socket.on("chat message", async (msg) => {
+//     if (msg._id) {
+//       io.to(msg.receiver).emit("chat message", msg);
+//       return;
+//     }
+//     const { sender, receiver, text } = msg;
+
+//     try {
+//       const message = new Message({
+//         sender,
+//         receiver,
+//         content: text,
+//         createdAt: new Date(),
+//       });
+
+//       await message.save();
+
+//       io.to(receiver).emit("chat message", message);
+//       socket.emit("chat message", message);
+//     } catch (error) {
+//       console.error("Error saving message:", error);
+//     }
+//   });
+
+//   socket.on("disconnect", () => {
+//     console.log("User disconnected");
+//   });
+// });
 
 
 mongoose.connect("mongodb://127.0.0.1:27017/Sahakarya", {
@@ -48,4 +85,5 @@ mongoose.connect("mongodb://127.0.0.1:27017/Sahakarya", {
 app.use("/api", authRoutes); 
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+module.exports = { io };
