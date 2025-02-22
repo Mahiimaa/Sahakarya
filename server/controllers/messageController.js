@@ -36,7 +36,7 @@ const getMessages = async (req, res) => {
 const sendMessage = async (req, res, io) => {
   const { providerId, content } = req.body;
   const senderId = req.user._id;
-
+  console.log("Received Message Request:", { providerId, content, senderId });
   if (!content || content.trim().length === 0) {
     return res.status(400).json({ message: 'Message content cannot be empty' });
   }

@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
+const axios = require("axios");
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+require("dotenv").config();
 
 const verifyTransaction =async (req, res) => {
     const { token, amount } = req.body;
@@ -12,16 +13,15 @@ const verifyTransaction =async (req, res) => {
       const verificationResponse = await axios.post(
         'https://khalti.com/api/v2/payment/verify/',
         {
-          token: token,
-          amount: amount
+          token, amount
         },
         {
           headers: {
-            'Authorization': `Key ${KHALTI_SECRET_KEY}`
+            'Authorization': `Key ${process.env.KHALTI_SECRET_KEY}`
           }
         }
       );
-  
+      console.log("key: " ,process.env.KHALTI_SECRET_KEY);
       const responseData = verificationResponse.data;
       if (responseData.idx) { 
         const creditsToAdd = Math.floor(amount / 1000);

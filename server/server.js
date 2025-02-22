@@ -6,6 +6,7 @@ const http = require('http');
 const {Server} = require('socket.io');
 const authRoutes = require("./routes/routes"); 
 const Message = require("./models/Message");
+require("dotenv").config();
 
 const app = express();
 // app.set('io', io);

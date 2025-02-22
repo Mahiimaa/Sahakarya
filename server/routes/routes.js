@@ -72,7 +72,7 @@ router.get('/user/me', verifyToken,  getUserDetails);
 router.put('/changePassword', verifyToken, changePassword);
 router.put('/editProfile', verifyToken, upload.single('profilePicture'), editProfile);
 router.get('/services/:id', getServiceDetails);
-router.post('/verify', verifyTransaction);
+router.post('/verify',verifyToken, verifyTransaction);
 router.post("/sendMessage", verifyToken, (req, res) => {
   const io = req.app.get('io');
   sendMessage(req, res, io);
