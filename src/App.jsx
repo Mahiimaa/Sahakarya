@@ -21,6 +21,7 @@ import ServiceDetails from "./pages/ServiceDetails";
 import ChatHistory from "./pages/ChatHistory";
 import UserProfile from "./pages/UserProfile";
 import EditProfile from './pages/EditProfile';
+import TimeCredit from "./pages/TimeCredit";
 import "./index.css";
 
  function App() {
@@ -43,6 +44,7 @@ return (
         <Route path="/navbar" element={<Navbar />} />
         <Route path="/userProfile" element={<UserProfile />} />
         <Route path ="/editProfile" element={<EditProfile />} />
+        <Route path="/timeCredit" element={<TimeCredit/>} />
         <Route path="/services" element={<AdminService />} />
         <Route path="/users" element={<Users />} />
         <Route path="/transactions" element={<Transactions />} />

@@ -12,26 +12,6 @@ const UserProfileInfoPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchServiceDetails = async (apiUrl, serviceIds) => {
-    try {
-      const { data } = await axios.get(`${apiUrl}/api/services`, {
-        params: { ids: serviceIds.join(",") },
-      });
-      console.log("Service Data:", data);
-      if (Array.isArray(data.services)) {
-      return data.services.map((service) => service.serviceName || "unknown service");
-      }
-      else {
-        console.error("Expected an array, but received:", data);
-        return [];
-      }
-    } catch (err) {
-      console.error("Error fetching service details:", err);
-      setError("Failed to load services.");
-      return [];
-    }
-  };
-
   useEffect(() => {
     const fetchUserData = async () => {
         const token = localStorage.getItem('token');
@@ -66,6 +46,10 @@ const UserProfileInfoPage = () => {
 
   const openEditProfile = () => {
     navigate('/editProfile');
+  };
+
+  const openTimeCredit = () => {
+    navigate('/timeCredit');
   };
 
   if (loading) return <div className="text-center mt-8">Loading...</div>;
@@ -111,6 +95,12 @@ const UserProfileInfoPage = () => {
 
         {/* Personal Information */}
         <div className="flex justify-between border-t px-8 ">
+        <div className="text-center my-4">
+        <p
+        onClick={openTimeCredit}
+        className="text-h3 font-bold hover:text-p">Time Credits: {user?.timeCredits || 0}
+        </p>
+        </div>
         <div className=" pt-4">
           <h2 className="text-h2 font-bold mb-3">Personal Information</h2>
           <div className="flex flex-col gap-3">
