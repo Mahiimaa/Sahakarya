@@ -8,7 +8,7 @@ const authRoutes = require("./routes/routes");
 const Message = require("./models/Message");
 
 const app = express();
-app.set('io', io);
+// app.set('io', io);
 const server = http.createServer(app);
 const io = new Server(server,{
   cors: {

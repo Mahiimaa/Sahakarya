@@ -8,8 +8,10 @@ const { getStats } = require('../controllers/stats');
 const {getAllUsers, deleteUser, assignRole, getUserDetails} = require('../controllers/user');
 const {changePassword} = require('../controllers/changePassword');
 const {editProfile} = require('../controllers/profile');
+const {verifyTransaction} = require('../controllers/transactionController');
 const { getServiceDetails } = require('../controllers/serviceDetails');
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
+const {transferTimeCredit} = require('../controllers/timeCreditController');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -70,6 +72,7 @@ router.get('/user/me', verifyToken,  getUserDetails);
 router.put('/changePassword', verifyToken, changePassword);
 router.put('/editProfile', verifyToken, upload.single('profilePicture'), editProfile);
 router.get('/services/:id', getServiceDetails);
+router.post('/verify', verifyTransaction);
 router.post("/sendMessage", verifyToken, (req, res) => {
   const io = req.app.get('io');
   sendMessage(req, res, io);
@@ -80,5 +83,7 @@ router.put("/messages/:providerId/read", verifyToken, (req, res) => {
   markMessagesAsRead(req, res, io);
 });
 router.get("/chats", verifyToken, getUserChats);
+
+router.post('/transferCredit', verifyToken, transferTimeCredit);
 
 module.exports = router;
