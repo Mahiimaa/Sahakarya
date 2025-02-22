@@ -73,10 +73,12 @@ const Chat = ({ onClose, provider }) => {
   if (userId && provider._id) {
     fetchMessages();
     socket.on("chat message", handleIncomingMessage);
+    let typingTimeout;
     socket.on("typing", ({ userId: typingUserId }) => {
       if (typingUserId === provider._id) {
         setIsTyping(true);
-        setTimeout(() => setIsTyping(false), 3000);
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => setIsTyping(false), 3000);
       }
     });
   }
@@ -89,14 +91,13 @@ const Chat = ({ onClose, provider }) => {
     console.log('Marking messages as read for provider:', provider?._id);
     console.log('Current userId:', userId);
     if (!provider?._id || !userId) return;
-    try {
-      await axios.put(
-        `${apiUrl}/api/messages/${provider._id}/read`,
+    try{
+        const response= await axios.put(`${apiUrl}/api/messages/${provider._id}/read`,
         {},
         {
           headers: { 
             Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+            'Content-Type': 'application/json'
         }
         }
       );

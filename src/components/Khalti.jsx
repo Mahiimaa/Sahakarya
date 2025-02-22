@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useImperativeHandle, forwardRef } from "react";
 import axios from "axios";
 
-const KhaltiCheckoutComponent = () => {
-  const config = {
-    // Replace with your Khalti public key
-    publicKey: "your_public_key_here",
+const Khalti = forwardRef((props, ref) => {
+    const khaltiPublicKey = process.env.REACT_APP_KHALTI_PUBLIC_KEY || "test-key";
+    const config = {
+    publicKey: khaltiPublicKey,
     productIdentity: "time-credit-001",
     productName: "Time Credits Purchase",
     productUrl: window.location.href,
@@ -12,15 +12,18 @@ const KhaltiCheckoutComponent = () => {
     eventHandler: {
       onSuccess(payload) {
         console.log("Payment Successful", payload);
-        // Call the backend to verify payment.
         axios
-          .post(`${process.env.REACT_APP_API_BASE_URL}/api/credits/verify`, {
+          .post(`${process.env.REACT_APP_API_BASE_URL}/api/verify`, {
             token: payload.token,
-            amount: 1000 // Amount in paisa (adjust as needed)
+            amount: 1000 
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
           })
           .then(response => {
             console.log("Backend Verification Successful", response.data);
-            // Optionally update UI/state with new time credits.
           })
           .catch(error => {
             console.error("Backend Verification Error", error.response ? error.response.data : error.message);
@@ -37,13 +40,14 @@ const KhaltiCheckoutComponent = () => {
 
   const handlePayment = () => {
     let checkout = new window.KhaltiCheckout(config);
-    checkout.show({ amount: 1000 }); // amount in paisa
+    checkout.show({ amount: 1000 }); 
   };
 
-  return (
-    <div className="text-center">
-    </div>
-  );
-};
+  useImperativeHandle(ref, () => ({
+    handlePayment,
+  }));
 
-export default KhaltiCheckoutComponent;
+  return null;
+});
+
+export default Khalti;

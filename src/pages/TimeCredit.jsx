@@ -1,12 +1,16 @@
-import React, {useState} from 'react'
+import React, {useState, useRef} from 'react'
+import Khalti from "../components/Khalti"
 
 function TimeCredit() {
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const [transferForm, setTransferForm] = useState(false);
     const [recipient, setrecipient] = useState('');
+    // const [showKhalti, setShowKhalti] = useState(false);
     const [amount, setAmount] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const token = localStorage.getItem('token');
+    const khaltiRef = useRef(null);
 
     const handleTransfer = async () => {
         if (!recipient || !amount || !password) {
@@ -15,7 +19,7 @@ function TimeCredit() {
         }
     
         try {
-          const response = await fetch("http://localhost:5000/api/transferCredit", {
+          const response = await fetch(`${apiUrl}/transferCredit`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -38,21 +42,35 @@ function TimeCredit() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-dark-grey">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96 text-center">
-        <h1 className="text-s text-xl font-bold mb-4">My Time Credits</h1>
+        <h1 className="text-s text-xl font-bold ">My Time Credits</h1>
         <div className="p-4 bg-gray-200 rounded-lg">
           <h2 className="text-lg font-semi-bold text-grey">Time Credit Balance: <span className="text-blue-600">50</span></h2>
           <p className="text-grey mt-2">Time Credit Status: <span className="font-medium text-green-600">Active</span></p>
         </div>
-        <div className="flex justify-between">
-        <button className="mt-4 bg-p text-white py-2 px-4 rounded-lg shadow-md transition">
-          Buy Time Credit
+        <div className="flex flex-col justify-between">
+        <details className="relative">
+        <summary className=" list-none cursor-pointer flex justify-self-center "> 
+          <p className="flex text-h3 text-p border border-p bg-white rounded-md p-1 px-24 hover:bg-p hover:text-white">Buy Time Credits</p>
+        </summary>
+        <ul className="absolute bg-white border rounded p-4 left-[50%] w-fit top-10 ">
+        <p className="text-h2 font-semi-bold whitespace-nowrap pb-4"> Available Payment Options</p>
+        <button className=" bg-p text-white px-4 py-2 rounded-lg" onClick={() => {
+                  if (khaltiRef.current) {
+                    khaltiRef.current.handlePayment();
+                  }
+                }}>
+        Pay with Khalti
         </button>
+        </ul>
+        </details>
+       
         <button onClick={() => setTransferForm(true)}
         className="mt-4 bg-p text-white py-2 px-4 rounded-lg shadow-md transition">
-          Transfer Time Credit
+          Transfer Time Credits
         </button>
         </div>
       </div>
+      <Khalti ref={khaltiRef} />
       {transferForm && (
         <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 ">
           <div className="bg-white p-6 rounded-lg shadow-lg w-1/4 text-center h-3/8 justify-between items-center">
@@ -81,7 +99,7 @@ function TimeCredit() {
             />
             </div>
             {message && <p className="text-error text-regular">{message}</p>}
-            <div className="flex justify-between">
+            <div className="flex justify-between">  
               <button 
                 className="bg-s text-white py-2 px-4 rounded-lg"
                 onClick={() => setTransferForm(false)}
