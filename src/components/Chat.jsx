@@ -69,7 +69,7 @@ const Chat = ({ onClose, provider }) => {
     }
     scrollToBottom();
   };
-
+  socket.on("chat message", handleIncomingMessage);
   if (userId && provider._id) {
     fetchMessages();
     socket.on("chat message", handleIncomingMessage);
@@ -123,9 +123,6 @@ const Chat = ({ onClose, provider }) => {
         if (data?.data) {
           setMessages((prevMessages) => [...prevMessages, data.data]); 
           scrollToBottom();
-        }else{
-          setError("Failed to send message");
-          console.error("Error: data.message is undefined!", data);
         }
         setNewMessage("");
     }
@@ -146,26 +143,24 @@ const Chat = ({ onClose, provider }) => {
         </button>
         <h2 className="text-lg font-bold mb-4">Chat with {provider.username}</h2>
         <div className="h-64 overflow-y-auto border p-2 mb-2">
-          {messages.map((msg, index) => (
+          {messages.map((msg, index) => {
+            const isSentByUser = String(msg.sender) === String(userId);
+        return (
             <div
               key={msg._id || index}
               className={`p-2 my-1 rounded-lg max-w-[75%] ${
-                msg.sender === userId ? "ml-auto bg-p text-white" : "bg-dark-grey"
-              }`}
+                isSentByUser ? "ml-auto bg-p text-white" : "mr-auto bg-dark-grey "
+      }`}
             >
                <div className="break-words">{msg.content}</div>
-              <div className={`text-xs mt-1 ${
-                msg.sender === userId ? "text-blue-100" : "text-gray-500"
-              }`}>
-             {new Date(msg.createdAt).toLocaleTimeString([], { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })}
+               <div className="text-body mt-1 text-grey">
+        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      </div>
             </div>
-            </div>
-          ))}
+          );
+})}
           {isTyping && (
-            <div className="text-gray-500 text-sm italic">
+            <div className="text-grey text-body italic">
               {provider.username} is typing...
             </div>
           )}

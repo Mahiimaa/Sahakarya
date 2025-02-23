@@ -71,7 +71,7 @@ function Home() {
         </div>
         <div className="flex flex-col pt-8">
         <img className="w-[500px] h-[500px] self-center" src={userhome} alt="userhome"></img>
-        <div className="bg-p w-[500px] h-20 rounded-lg text-white font-poppins font-semi-bold text-h2 flex justify-between px-4 items-center flex-col" onClick={toExplore}> Explore
+        <div className="bg-p w-[500px] h-20 rounded-lg text-white font-poppins font-semi-bold text-h2 flex justify-between px-4 items-center " onClick={toExplore}> Explore
         <img className="w-12 h-12 self-center" src={explore} alt="userhome"></img> 
         <button className="bg-p text-white " onClick ={handleLogout}>  Logout </button>
         </div>

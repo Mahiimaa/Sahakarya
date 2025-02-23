@@ -90,11 +90,11 @@ function Login() {
   };
 
   return (
-    <div className='flex flex-col justify-center items-center mt-20'>
+    <div className='flex flex-col justify-center items-center mt-20 '>
       {message && <div className="text-p font-poppins mb-4">{message}</div>}
-      <div className="flex justify-between items-center gap-96">
+      <div className="flex justify-between items-center gap-96 border-none shadow-lg shadow-s rounded-lg p-20 ">
         <img className="hidden desk:block w-80 h-80 py-4" src={logo} alt="logo" />
-        <div className="flex flex-col justify-center items-center">
+        <div className="flex flex-col justify-center items-center ">
           <img className="w-32 h-26 py-4" src={logo} alt="logo" />
           <div className="flex flex-col justify-center items-center">
             <p className='text-p font-bold font-poppins text-main'>Log in</p>
