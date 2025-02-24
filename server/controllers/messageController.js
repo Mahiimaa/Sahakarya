@@ -55,9 +55,8 @@ const sendMessage = async (req, res, io) => {
 
     await message.save();
 
-    io.to(providerId.toString()).emit("chat message", message);
     io.to(senderId.toString()).emit("chat message", message);
-
+    io.to(providerId.toString()).emit("chat message", message);
     res.status(201).json({ message: 'Message sent successfully', data: message });
   } catch (error) {
     console.error('Error in sendMessage:', error);
