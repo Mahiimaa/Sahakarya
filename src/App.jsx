@@ -18,6 +18,7 @@ import Category from "./pages/Category";
 import AdminSettings from "./pages/AdminSettings";
 import Explore from "./pages/Explore";
 import ServiceDetails from "./pages/ServiceDetails";
+import Booking from "./pages/Booking";
 import ChatHistory from "./pages/ChatHistory";
 import UserProfile from "./pages/UserProfile";
 import EditProfile from './pages/EditProfile';
@@ -46,6 +47,7 @@ return (
         <Route path ="/editProfile" element={<EditProfile />} />
         <Route path="/timeCredit" element={<TimeCredit/>} />
         <Route path="/services" element={<AdminService />} />
+        <Route path="/booking/:id" element={<Booking />} />
         <Route path="/users" element={<Users />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/category" element={<Category />} />

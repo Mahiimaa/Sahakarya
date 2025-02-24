@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
-import Chat from "../components/Chat";
 import Navbar from "../components/Navbar";
 
 function ServiceDetails() {
   const { _id } = useParams();
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const token = localStorage.getItem('token');
+  const navigate = useNavigate();
   const [service, setService] = useState(null);
   const [providers, setProviders] = useState([]);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState(null);
 
   useEffect(() => {
     console.log("Service ID:", _id);
@@ -68,12 +66,9 @@ function ServiceDetails() {
                 <p>{provider.email}</p>
                 <button
                   className="mt-2  text-p p-2 border border-p rounded-lg w-full hover:bg-p hover:text-white"
-                  onClick={() => {
-                    setChatOpen(true);
-                    setSelectedProvider(provider);
-                  }}
+                  onClick={() => navigate(`/booking/${_id}/${provider._id}`)}
                 >
-                  Chat
+                  Book Service
                 </button>
               </div>
             ))
@@ -82,9 +77,6 @@ function ServiceDetails() {
           )}
         </div>
       </div>
-      {chatOpen && selectedProvider && (
-        <Chat provider={selectedProvider} onClose={() => setChatOpen(false)} />
-      )}
     </div>
     </div>
   );
