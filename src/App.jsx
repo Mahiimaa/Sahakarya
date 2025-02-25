@@ -47,7 +47,7 @@ return (
         <Route path ="/editProfile" element={<EditProfile />} />
         <Route path="/timeCredit" element={<TimeCredit/>} />
         <Route path="/services" element={<AdminService />} />
-        <Route path="/booking/:id" element={<Booking />} />
+        <Route path="/booking/:serviceId/:providerId" element={<Booking />} />
         <Route path="/users" element={<Users />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/category" element={<Category />} />
