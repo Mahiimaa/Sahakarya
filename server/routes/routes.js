@@ -9,8 +9,8 @@ const {getAllUsers, deleteUser, assignRole, getUserDetails} = require('../contro
 const {changePassword} = require('../controllers/changePassword');
 const {editProfile} = require('../controllers/profile');
 const {verifyTransaction} = require('../controllers/transactionController');
-const { getServiceDetails } = require('../controllers/serviceDetails');
-const { bookService, getUserBookings, confirmBooking } = require("../controllers/bookingController");
+const { getServiceDetails, getServiceById } = require('../controllers/serviceDetails');
+const { requestService, acceptServiceRequest, completeService } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
 const {transferTimeCredit} = require('../controllers/timeCreditController');
 const multer = require('multer');
@@ -73,9 +73,10 @@ router.get('/user/me', verifyToken,  getUserDetails);
 router.put('/changePassword', verifyToken, changePassword);
 router.put('/editProfile', verifyToken, upload.single('profilePicture'), editProfile);
 router.get('/services/:id', getServiceDetails);
-router.post("/bookService",verifyToken, bookService); 
-router.get("/userBookings", verifyToken, getUserBookings); 
-router.put("/:id/confirm", verifyToken, confirmBooking);
+router.get ('serviceId', getServiceById)
+router.post("/", verifyToken, requestService);
+router.put("/:bookingId/accept", verifyToken, acceptServiceRequest);
+router.put("/:bookingId/complete",verifyToken, completeService);
 router.post('/verify',verifyToken, verifyTransaction);
 router.post("/sendMessage", verifyToken, (req, res) => {
   const io = req.app.get('io');

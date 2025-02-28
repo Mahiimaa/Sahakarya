@@ -1,65 +1,72 @@
 const Booking = require("../models/Booking");
+const User = require("../models/User");
+const Service = require("../models/Service");
 
-const bookService = async (req, res) => {
+const requestService = async (req, res) => {
   try {
-    const { serviceId, providerId, date, duration } = req.body;
+    const { serviceId, providerId } = req.body;
+    const user = await User.findById(req.user.id);
+    const service = await Service.findById(serviceId);
 
-    if (!serviceId || !providerId || !date || !duration) {
-      return res.status(400).json({ error: "All fields are required" });
+    if (!service) return res.status(404).json({ error: "Service not found" });
+
+    if (user.timeCredits < service.timeCreditsRequired) {
+      return res.status(400).json({ error: "Not enough time credits" });
     }
 
     const booking = new Booking({
-      user: req.user.id,
-      provider: providerId,
       service: serviceId,
-      date,
-      duration,
+      provider: providerId,
+      requester: req.user.id,
       status: "pending",
     });
 
     await booking.save();
-    res.status(201).json({ message: "Service booked successfully", booking });
-
+    res.status(201).json({ message: "Service requested successfully", booking });
   } catch (error) {
-    console.error("Booking error:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
-
-const getUserBookings = async (req, res) => {
+const acceptServiceRequest = async (req, res) => {
   try {
-    const bookings = await Booking.find({ user: req.user.id })
-      .populate("service")
-      .populate("provider", "username email");
-    
-    res.json({ bookings });
-
-  } catch (error) {
-    console.error("Error fetching bookings:", error);
-    res.status(500).json({ error: "Server error" });
-  }
-};
-
-const confirmBooking = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const booking = await Booking.findById(id);
+    const booking = await Booking.findById(req.params.bookingId);
 
     if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (booking.provider.toString() !== req.user.id) return res.status(403).json({ error: "Unauthorized" });
 
-    if (booking.user.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Not authorized" });
-    }
-
-    booking.status = "confirmed";
+    booking.status = "accepted";
     await booking.save();
-
-    res.json({ message: "Service exchange confirmed", booking });
-
+    res.json({ message: "Service request accepted", booking });
   } catch (error) {
-    console.error("Error confirming booking:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
 
-module.exports = { bookService, getUserBookings, confirmBooking };
+const completeService = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId).populate("service");
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+
+    if (booking.requester.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Only the requester can confirm completion" });
+    }
+
+    const requester = await User.findById(booking.requester);
+    requester.timeCredits -= booking.service.timeCreditsRequired;
+    await requester.save();
+
+    const provider = await User.findById(booking.provider);
+    provider.timeCredits += booking.service.timeCreditsRequired;
+    await provider.save();
+
+    booking.status = "completed";
+    booking.completedAt = new Date();
+    await booking.save();
+
+    res.json({ message: "Service exchange completed", booking });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+module.exports = { requestService, acceptServiceRequest, completeService };

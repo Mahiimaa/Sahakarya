@@ -23,4 +23,14 @@ const getServiceDetails = async (req, res) => {
   }
 };
 
-module.exports = { getServiceDetails };
+const getServiceById = async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.serviceId).populate("provider", "username email");
+    if (!service) return res.status(404).json({ error: "Service not found" });
+    res.json(service);
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+module.exports = { getServiceDetails, getServiceById };
