@@ -6,16 +6,17 @@ const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 const getMessages = async (req, res) => {
   const userId = req.user._id;
   const providerId = req.params.providerId;
+  const requesterId = req.params.requesterId;
 
-  if (!isValidObjectId(providerId)) {
+  if (!isValidObjectId(providerId)|| !isValidObjectId(requesterId)) {
     return res.status(400).json({ message: 'Invalid provider ID format' });
   }
 
   try {
     const messages = await Message.find({
       $or: [
-        { sender: userId, receiver: providerId },
-        { sender: providerId, receiver: userId },
+        { sender: providerId, receiver: requesterId },
+        { sender: requesterId, receiver: providerId },
       ],
     })
     .sort({ createdAt: 1 })

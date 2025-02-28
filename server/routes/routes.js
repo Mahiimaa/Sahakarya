@@ -10,7 +10,7 @@ const {changePassword} = require('../controllers/changePassword');
 const {editProfile} = require('../controllers/profile');
 const {verifyTransaction} = require('../controllers/transactionController');
 const { getServiceDetails, getServiceById } = require('../controllers/serviceDetails');
-const { requestService, acceptServiceRequest, completeService } = require("../controllers/bookingController");
+const { requestService, acceptServiceRequest, getServiceRequestsForProvider, rejectServiceRequest, completeService } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
 const {transferTimeCredit} = require('../controllers/timeCreditController');
 const multer = require('multer');
@@ -74,15 +74,17 @@ router.put('/changePassword', verifyToken, changePassword);
 router.put('/editProfile', verifyToken, upload.single('profilePicture'), editProfile);
 router.get('/services/:id', getServiceDetails);
 router.get ('serviceId', getServiceById)
-router.post("/", verifyToken, requestService);
+router.post("/bookings", verifyToken, requestService);
+router.get("/bookings/provider", verifyToken, getServiceRequestsForProvider);
 router.put("/:bookingId/accept", verifyToken, acceptServiceRequest);
+router.put("/:bookingId/reject", verifyToken, rejectServiceRequest);
 router.put("/:bookingId/complete",verifyToken, completeService);
 router.post('/verify',verifyToken, verifyTransaction);
 router.post("/sendMessage", verifyToken, (req, res) => {
   const io = req.app.get('io');
   sendMessage(req, res, io);
 });
-router.get("/messages/:providerId", verifyToken, getMessages);
+router.get("/messages/:providerId/:requesterId", verifyToken, getMessages);
 router.put("/messages/:providerId/read", verifyToken, (req, res) => {
   const io = req.app.get('io');
   markMessagesAsRead(req, res, io);

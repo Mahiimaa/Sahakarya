@@ -42,6 +42,35 @@ const acceptServiceRequest = async (req, res) => {
   }
 };
 
+const rejectServiceRequest = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId);
+
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (booking.provider.toString() !== req.user.id) return res.status(403).json({ error: "Unauthorized" });
+
+    booking.status = "rejected";
+    await booking.save();
+    res.json({ message: "Service request rejected", booking });
+  } catch (error) {
+    console.error("Error rejecting booking:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const getServiceRequestsForProvider = async (req, res) => {
+  try {
+    const bookings = await Booking.find({ provider: req.user.id })
+      .populate("requester", "username email")
+      .populate("service", "serviceName timeCreditsRequired");
+
+    res.json(bookings);
+  } catch (error) {
+    console.error("Error fetching provider requests:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 const completeService = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.bookingId).populate("service");
@@ -69,4 +98,4 @@ const completeService = async (req, res) => {
   }
 };
 
-module.exports = { requestService, acceptServiceRequest, completeService };
+module.exports = { requestService, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, completeService };
