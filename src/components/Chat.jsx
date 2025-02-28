@@ -3,7 +3,7 @@ import {io} from 'socket.io-client';
 import axios from "axios";
 import { IoClose } from "react-icons/io5";
 const socket = io("ws://localhost:5000", { transports: ["websocket", "polling"] , autoConnect: false,  withCredentials: true,});
-const Chat = ({ onClose, provider }) => {
+const Chat = ({ onClose, provider, requester}) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [userId, setUserId] = useState(null);
@@ -48,12 +48,13 @@ const Chat = ({ onClose, provider }) => {
 
   useEffect (() => {
     const fetchMessages = async () => {
+      if (!provider?._id || !requester?._id) return;
       try {
-        const { data } = await axios.get(`${apiUrl}/api/messages/${provider._id}`, {
+        const { data } = await axios.get(`${apiUrl}/api/messages/${provider._id}/${requester._id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         setMessages(data.messages);
-        await markMessagesAsRead();
+        scrollToBottom();
       } catch (error) {
         setError("Failed to fetch messages");
         console.error("Error fetching messages:", error);
@@ -61,6 +62,7 @@ const Chat = ({ onClose, provider }) => {
     };
 
     fetchMessages();
+    
 
     const handleIncomingMessage = (msg) => {
       setMessages((prevMessages) => [...prevMessages, msg]);
@@ -112,7 +114,9 @@ const Chat = ({ onClose, provider }) => {
     if (newMessage.trim()) {
       const msg = {
         providerId: provider._id,
+        requesterId:requester._id,
         content: newMessage.trim(),
+        sender:userId,
       };
       try {
         const { data } = await axios.post(`${apiUrl}/api/sendMessage`, msg, {
@@ -122,6 +126,7 @@ const Chat = ({ onClose, provider }) => {
         });    
         if (data?.data) {
           setMessages((prevMessages) => [...prevMessages, data.data]); 
+          socket.emit("chatMessage", data.data);
           scrollToBottom();
         }
         setNewMessage("");
@@ -142,20 +147,23 @@ const Chat = ({ onClose, provider }) => {
           <IoClose size={24} />
         </button>
         <h2 className="text-lg font-bold mb-4">Chat with {provider.username}</h2>
-        <div className="h-64 overflow-y-auto border p-2 mb-2">
+        <div className="h-64 overflow-y-auto border p-2 mb-2 flex flex-col">
           {messages.map((msg, index) => {
             const isSentByUser = String(msg.sender) === String(userId);
         return (
             <div
-              key={msg._id || index}
-              className={`p-2 my-1 rounded-lg max-w-[75%] ${
-                isSentByUser ? "ml-auto bg-p text-white" : "mr-auto bg-dark-grey "
-      }`}
+              key={msg._id || index} className={`flex ${isSentByUser ? "justify-end" : "justify-start"}`}>
+                <div
+              className={`p-3 my-1 rounded-lg max-w-[75%] ${
+                isSentByUser    ? "bg-p text-white rounded-br-none self-end"
+                : "bg-dark-grey rounded-bl-none self-start"
+            }`}
             >
                <div className="break-words">{msg.content}</div>
-               <div className="text-body mt-1 text-grey">
-        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-      </div>
+               <div className="text-body mt-1 text-grey opacity-70 text-right">
+            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
+            </div>
             </div>
           );
 })}
@@ -166,11 +174,10 @@ const Chat = ({ onClose, provider }) => {
           )}
           <div ref={messagesEndRef} />
         </div>
-        <form onSubmit={handleSendMessage} className="flex gap-2">
-        <div className="flex gap-2">
+        <form onSubmit={handleSendMessage} className="flex gap-2 p-2 border-t bg-white">
           <input
             type="text"
-            className="flex-1 p-2 border rounded"
+            className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-p"
             placeholder="Type a message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
@@ -181,10 +188,9 @@ const Chat = ({ onClose, provider }) => {
           }}
           onInput={handleTyping}
           />
-          <button type="submit" className="bg-p text-white px-4 py-2 rounded" disabled={!newMessage.trim()}>
+          <button type="submit" className="bg-p text-white px-4 py-2 rounded disabled:opacity-50 " disabled={!newMessage.trim()}>
             Send
           </button>
-        </div>
         </form>
       </div>
     </div>

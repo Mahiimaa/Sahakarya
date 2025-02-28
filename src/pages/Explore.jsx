@@ -74,7 +74,7 @@ function Explore() {
           <div className="grid grid-cols-3 gap-4">
             {filteredServices.length > 0 ? (
               filteredServices.map(service => (
-                <div key={service._id} className="p-4 border rounded-lg shadow-lg bg-white" onClick={() => navigate(`/services/${service._id}`)}>
+                <div key={service._id} className="p-4 border border-dark-grey rounded-lg shadow-lg bg-white hover:-translate-y-1.5" onClick={() => navigate(`/services/${service._id}`)}>
                   <h3 className="font-bold text-lg">{service.serviceName}</h3>
                   <p className="text-dark-grey">{service.category.categoryName}</p>
                 </div>

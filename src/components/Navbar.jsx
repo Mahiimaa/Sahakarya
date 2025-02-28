@@ -72,6 +72,9 @@ function Navbar() {
           <NavLink to ="/explore" className ={setActiveClass}>
           <p className="font-poppins font-semi-bold text-h3 p-2">Explore</p>
           </NavLink>
+          <NavLink to ="/request" className ={setActiveClass}>
+          <p className="font-poppins font-semi-bold text-h3 p-2">Request</p>
+          </NavLink>
           <NavLink to ="/chat" className ={setActiveClass}>
           <p className="font-poppins font-semi-bold text-h3 p-2">Chat</p>
           </NavLink>

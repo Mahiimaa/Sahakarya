@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
+import {toast} from "react-toastify";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 
@@ -61,19 +62,20 @@ function ServiceDetails() {
         <div className="grid grid-cols-6 gap-4 mt-4">
           {providers.length > 0 ? (
             providers.map((provider) => (
-              <div key={provider._id} className="p-4 border rounded-lg bg-white shadow">
+              <div key={provider._id} className="p-4 border border-dark-grey rounded-lg bg-white shadow hover:-translate-y-1.5">
                 <h3 className="font-bold">{provider.username}</h3>
                 <p>{provider.email}</p>
                 <button
                   className="mt-2  text-p p-2 border border-p rounded-lg w-full hover:bg-p hover:text-white"
                   onClick={async () => {
                     try {
-                      await axios.post(`${apiUrl}/api/bookings`, { serviceId: service._id, providerId: service.provider._id }, {
+                      await axios.post(`${apiUrl}/api/bookings`, { serviceId: service._id, providerId: provider._id }, {
                         headers: { Authorization: `Bearer ${token}` },
                       });
                       toast.success("Service requested successfully!");
                     } catch (error) {
-                      toast.error(error.response?.data?.error || "Error requesting service");
+                      console.error(error.response?.data?.error || "Error requesting service");
+                        toast.error(error.response?.data?.error || "Error requesting service");
                     }
                   }}
                 >
