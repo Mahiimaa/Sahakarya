@@ -92,8 +92,6 @@ function Login() {
   return (
     <div className='flex flex-col justify-center items-center mt-20 '>
       {message && <div className="text-p font-poppins mb-4">{message}</div>}
-      <div className="flex justify-between items-center gap-96 border-none  ">
-        <img className="hidden desk:block w-80 h-80 py-4" src={logo} alt="logo" />
         <div className="flex flex-col justify-center items-center ">
           <img className="w-32 h-26 py-4" src={logo} alt="logo" />
           <div className="flex flex-col justify-center items-center">
@@ -150,7 +148,6 @@ function Login() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
 

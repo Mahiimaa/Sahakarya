@@ -66,9 +66,18 @@ function ServiceDetails() {
                 <p>{provider.email}</p>
                 <button
                   className="mt-2  text-p p-2 border border-p rounded-lg w-full hover:bg-p hover:text-white"
-                  onClick={() => navigate(`/booking/${_id}/${provider._id}`)}
+                  onClick={async () => {
+                    try {
+                      await axios.post(`${apiUrl}/api/bookings`, { serviceId: service._id, providerId: service.provider._id }, {
+                        headers: { Authorization: `Bearer ${token}` },
+                      });
+                      toast.success("Service requested successfully!");
+                    } catch (error) {
+                      toast.error(error.response?.data?.error || "Error requesting service");
+                    }
+                  }}
                 >
-                  Book Service
+                  Request Service
                 </button>
               </div>
             ))
