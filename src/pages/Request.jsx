@@ -14,6 +14,15 @@ const Request = () => {
   const [selectedProvider, setSelectedProvider] = useState(null);
 
     const openChat = (requester, provider) => {
+      if (!requester || !provider) {
+        console.error("Error: Missing requester or provider.");
+        return;
+      }
+      if (typeof requester === "string") {
+        requester = { _id: requester };
+      }
+    
+    console.log("Opening chat with:", { requester, provider });
     setSelectedRequester(requester);
     setSelectedProvider(provider);
     setIsChatOpen(true);
@@ -69,14 +78,26 @@ const Request = () => {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <div className="mx-28">
-        <h1 className="text-h2 font-bold mb-4">Incoming Service Requests</h1>
+        <h1 className="text-h2 font-semi-bold mb-4">Incoming Service Requests</h1>
         <div className="text-center text-error">{error}</div>
         {bookings.length > 0 ? (
           bookings.map(booking => (
             <div key={booking._id} className="p-4 border border-dark-grey rounded-lg shadow-md bg-white mb-4">
-              <h2 className="text-lg font-bold">{booking?.service?.serviceName}</h2>
+              <h2 className="text-h2 font-semi-bold pb-2">Request For {booking?.service?.serviceName}</h2>
               <p><strong>Requester:</strong> {booking?.requester?.username}</p>
-              <p><strong>Status:</strong> {booking.status}</p>
+              <p><strong>Status:</strong> <span
+            className={`px-2 py-1 rounded-md font-semibold ${
+        booking.status === "pending"
+        ? "text-s " 
+        : booking.status === "accepted"
+        ? "text-p" 
+        : booking.status === "rejected"
+        ? "text-error"  
+        : "text-grey" 
+    }`}
+  >
+    {booking.status}
+  </span></p>
               <p><strong>Requested on:</strong> {new Date(booking.dateRequested).toLocaleString()}</p>
 
               {booking.status === "pending" && (
