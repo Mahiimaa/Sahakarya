@@ -71,6 +71,21 @@ const getServiceRequestsForProvider = async (req, res) => {
   }
 };
 
+const getOutgoingBookings = async (req, res) => {
+  try {
+    const userId = req.user._id; 
+    
+    const bookings = await Booking.find({ requester: userId })
+      .populate("provider", "username email") 
+      .populate("service", "serviceName"); 
+    
+    res.status(200).json(bookings);
+  } catch (error) {
+    console.error("Error fetching outgoing service requests:", error);
+    res.status(500).json({ message: "Error fetching outgoing requests" });
+  }
+};
+
 const completeService = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.bookingId).populate("service");
@@ -98,4 +113,4 @@ const completeService = async (req, res) => {
   }
 };
 
-module.exports = { requestService, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, completeService };
+module.exports = { requestService, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, completeService };

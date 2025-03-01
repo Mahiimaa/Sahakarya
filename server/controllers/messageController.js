@@ -1,4 +1,5 @@
 const Message = require('../models/Message');
+const User = require('../models/User');
 const mongoose = require('mongoose');
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -35,29 +36,33 @@ const getMessages = async (req, res) => {
 };
 
 const sendMessage = async (req, res, io) => {
-  const { providerId, content } = req.body;
+  const { providerId, requesterId, content } = req.body;
   const senderId = req.user._id;
-  console.log("Received Message Request:", { providerId, content, senderId });
+  console.log("Received Message Request:", { providerId, requesterId, content, senderId });
   if (!content || content.trim().length === 0) {
     return res.status(400).json({ message: 'Message content cannot be empty' });
   }
 
-  if (!isValidObjectId(providerId)) {
+  if (!isValidObjectId(providerId)|| !isValidObjectId(requesterId)){
     return res.status(400).json({ message: 'Invalid provider ID format' });
   }
-
+  const receiverId = senderId.toString() === providerId.toString() ? requesterId : providerId;
   try {
     const message = new Message({
       sender: senderId,
-      receiver: providerId,
+      receiver: receiverId,
       content: content.trim(),
       createdAt: new Date(),
     });
 
-    await message.save();
+    console.log(`Sending message from ${senderId} to ${receiverId}`);
 
-    io.to(senderId.toString()).emit("chat message", message);
-    io.to(providerId.toString()).emit("chat message", message);
+    if (global.io) {
+      global.io.to(senderId.toString()).emit("chat message", message);
+      global.io.to(receiverId.toString()).emit("chat message", message);
+    } else {
+      console.warn("Socket.io is not initialized yet.");
+    }
     res.status(201).json({ message: 'Message sent successfully', data: message });
   } catch (error) {
     console.error('Error in sendMessage:', error);
@@ -69,13 +74,19 @@ const sendMessage = async (req, res, io) => {
 };
 
 const getUserChats = async (req, res) => {
-  const userId = req.user._id;
-
   try {
+    const userId = req.user._id;
+    console.log("Fetching chats for user:", userId);
+    const currentUser = await User.findById(userId, 'username email profilePicture');
+    if (!currentUser) {
+      console.error("User not found for ID:", userId);
+      return res.status(404).json({ message: "User not found" });
+    }
     const latestMessages = await Message.aggregate([
       {
         $match: {
-          $or: [{ sender: mongoose.Types.ObjectId(userId) }, { receiver: mongoose.Types.ObjectId(userId) }]
+          $or: [{ sender: new mongoose.Types.ObjectId(userId) }, 
+            { receiver: new mongoose.Types.ObjectId(userId) }]
         }
       },
       {
@@ -85,7 +96,7 @@ const getUserChats = async (req, res) => {
         $group: {
           _id: {
             $cond: [
-              { $eq: ['$sender', mongoose.Types.ObjectId(userId)] },
+              { $eq: ['$sender', new mongoose.Types.ObjectId(userId)] },
               '$receiver',
               '$sender'
             ]
@@ -96,7 +107,7 @@ const getUserChats = async (req, res) => {
               $cond: [
                 { 
                   $and: [
-                    { $eq: ['$receiver', mongoose.Types.ObjectId(userId)] },
+                    { $eq: ['$receiver', new mongoose.Types.ObjectId(userId)] },
                     { $eq: ['$read', false] }
                   ]
                 },
@@ -116,8 +127,13 @@ const getUserChats = async (req, res) => {
         }
       },
       {
+        $unwind: "$user", 
+      },
+      {
         $project: {
-          user: { $arrayElemAt: ['$user', 0] },
+          "user._id": 1,
+          "user.username": 1,
+          "user.profilePicture": 1, 
           lastMessage: 1,
           unreadCount: 1
         }
@@ -127,7 +143,13 @@ const getUserChats = async (req, res) => {
       }
     ]);
 
-    res.status(200).json({ chats: latestMessages });
+    res.status(200).json({ 
+      chats: latestMessages,
+      currentUser: {
+      _id: userId,
+      username: currentUser.username,
+      profilePicture: currentUser.profilePicture,
+    } });
   } catch (error) {
     console.error('Error in getUserChats:', error);
     res.status(500).json({ 

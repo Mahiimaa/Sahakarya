@@ -29,8 +29,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.set("io", io);
+const users = new Map();
+
+global.io = io;
 io.on('connection', (socket) => {
-  console.log('user connected', socket.id);
+  console.log('user connected :', socket.id);
 
   socket.on("joinRoom", ({ userId }) => {
     if (!userId) {
@@ -38,43 +43,43 @@ io.on('connection', (socket) => {
       return;
     }
     socket.join(userId.toString());
+    users.set(userId.toString(), socket.id);
     console.log(`User ${userId} joined room`);
   });
 
+  socket.on("chatMessage", async ({ sender, receiver, content }) => {
+    if (!sender || !receiver || !content.trim()) {
+      console.error("Invalid message data received:", { sender, receiver, content });
+      return;
+    }
+    try {
+      const message = new Message({
+        sender,
+        receiver,
+        content: content.trim(),
+        createdAt: new Date(),
+      });
+
+      await message.save();
+
+      io.to(sender.toString()).emit("chatMessage", message);
+      io.to(receiver.toString()).emit("chatMessage", message);
+
+      console.log(`Message sent from ${sender} to ${receiver}: ${content}`);
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
+  });
+
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    console.log(`User disconnected: ${socket.id}`);
+    users.forEach((socketId, userId) => {
+      if (socketId === socket.id) {
+        users.delete(userId);
+      }
+    });
   });
 });
-
-//   socket.on("chat message", async (msg) => {
-//     if (msg._id) {
-//       io.to(msg.receiver).emit("chat message", msg);
-//       return;
-//     }
-//     const { sender, receiver, text } = msg;
-
-//     try {
-//       const message = new Message({
-//         sender,
-//         receiver,
-//         content: text,
-//         createdAt: new Date(),
-//       });
-
-//       await message.save();
-
-//       io.to(receiver).emit("chat message", message);
-//       socket.emit("chat message", message);
-//     } catch (error) {
-//       console.error("Error saving message:", error);
-//     }
-//   });
-
-//   socket.on("disconnect", () => {
-//     console.log("User disconnected");
-//   });
-// });
-
 
 mongoose.connect("mongodb://127.0.0.1:27017/Sahakarya", {
   useNewUrlParser: true,
