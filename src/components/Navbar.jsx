@@ -64,7 +64,7 @@ function Navbar() {
  
   return (
         <div className=" flex justify-between p-2 px-28 ">
-        <div className="flex gap-36 items-center">
+        <div className="flex gap-28 items-center">
         <img className="w-24 h-24 py-4"  src={logo} alt="logo"></img>
         <NavLink to ="/home" className ={setActiveClass}>
           <p className="font-poppins font-semi-bold text-h3 p-2" >Home</p>
@@ -77,6 +77,9 @@ function Navbar() {
           </NavLink>
           <NavLink to ="/chat" className ={setActiveClass}>
           <p className="font-poppins font-semi-bold text-h3 p-2">Chat</p>
+          </NavLink>
+          <NavLink to ="/transactions" className ={setActiveClass}>
+          <p className="font-poppins font-semi-bold text-h3 p-2">Transactions</p>
           </NavLink>
           </div>
           <div className="flex gap-8 justify-center items-center">
