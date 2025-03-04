@@ -29,12 +29,18 @@ const requestService = async (req, res) => {
 };
 const acceptServiceRequest = async (req, res) => {
   try {
+    const { scheduleDate, serviceDuration } = req.body;
     const booking = await Booking.findById(req.params.bookingId);
 
     if (!booking) return res.status(404).json({ error: "Booking not found" });
     if (booking.provider.toString() !== req.user.id) return res.status(403).json({ error: "Unauthorized" });
 
-    booking.status = "accepted";
+    if (!scheduleDate || !serviceDuration) {
+      return res.status(400).json({ error: "Schedule date and duration are required" });
+    }
+    booking.status = "scheduled";
+    booking.scheduleDate = scheduleDate;
+    booking.serviceDuration = serviceDuration;
     await booking.save();
     res.json({ message: "Service request accepted", booking });
   } catch (error) {

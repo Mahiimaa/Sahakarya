@@ -69,13 +69,11 @@ const selectService = async (req, res) => {
     const service = await Service.findById(serviceId);
     if (!service) return res.status(404).json({ message: 'Service not found' });
 
-    // Add service to user's offered services
     if (!user.servicesOffered.includes(serviceId)) {
       user.servicesOffered.push(serviceId);
       await user.save();
     }
 
-    // Add user to service's selectedBy list
     if (!service.selectedBy.includes(userId)) {
       service.selectedBy.push(userId);
       await service.save();
@@ -86,10 +84,53 @@ const selectService = async (req, res) => {
     res.status(500).json({ message: 'Error selecting service', error: error.message });
   }
 };
+
+const addServiceOfferDetails = async (req, res) => {
+  const { serviceId } = req.params;
+  const { title, description } = req.body;
+  const userId = req.user._id;
+
+  try {
+    console.log("Updating service for user:", userId);
+    console.log("Service ID:", serviceId);
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!user.serviceDetails) {
+      user.serviceDetails = [];
+    }
+
+    const serviceIndex = user.serviceDetails.findIndex(s => s.serviceId.toString() === serviceId);
+
+    if (serviceIndex !== -1) {
+      user.serviceDetails[serviceIndex].title = title;
+      user.serviceDetails[serviceIndex].description = description;
+      if (req.file) {
+        user.serviceDetails[serviceIndex].image = req.file.path;
+      }
+    } else {
+      user.serviceDetails.push({
+        serviceId,
+        title,
+        description,
+        image: req.file ? req.file.path : null
+      });
+    }
+
+    await user.save();
+    res.status(200).json({ message: "Service updated successfully", service: user.serviceDetails });
+  } catch (error) {
+    console.error("Error updating service:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   addService,
   editService,
   deleteService,
   getServices,
   selectService,
+  addServiceOfferDetails,
 };

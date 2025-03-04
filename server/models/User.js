@@ -43,6 +43,14 @@ const UserSchema = new mongoose.Schema({
       ref: 'Service', 
     },
   ],
+  serviceDetails: [
+    {
+      serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
+      title: { type: String },
+      description: { type: String },
+      image: { type: String },
+    },
+  ],
   timeCredits: { type: Number, default: 0 },
 },
 {

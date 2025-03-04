@@ -46,10 +46,7 @@ const editProfile = async (req, res) => {
     if (phone) user.phone = phone;
     user.servicesOffered = selectedServices;
     
-    // Save updated user
-    await user.save();
-    console.log('User saved successfully!');
-    
+    const validServices = [];
     for (const serviceId of selectedServices) {
       const service = await Service.findById(serviceId);
       if (!service) {
@@ -58,11 +55,19 @@ const editProfile = async (req, res) => {
       }
       
       if (!service.selectedBy.includes(userId)) {
-        service.selectedBy.push(userId);
-        await service.save();
+        await Service.findByIdAndUpdate(
+          serviceId,
+          { $addToSet: { selectedBy: userId } }, 
+          { new: true, runValidators: false } 
+        );
         console.log(`User added to selectedBy for service: ${service.serviceName}`);
       }
+      validServices.push(serviceId);
     }
+    user.servicesOffered = validServices;
+
+    await user.save();
+    console.log('User saved successfully!');
     // Return updated user data
     res.status(200).json({
       success: true,
