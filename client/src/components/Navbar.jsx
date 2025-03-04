@@ -109,7 +109,7 @@ function Navbar() {
               </div>
               <div className="flex items-center gap-2">
                 <img className="w-6 h-6" src={profile}  alt="" /> 
-                <li className="py-2" onClick={UserProfile} >Edit Profile</li>
+                <li className="py-2" onClick={UserProfile} >User Profile</li>
               </div>
               <div className="flex items-center gap-2">
                 <img className="w-6 h-6" src={logout} onClick={handleLogout} alt="" /> 

@@ -107,14 +107,14 @@ const addServiceOfferDetails = async (req, res) => {
       user.serviceDetails[serviceIndex].title = title;
       user.serviceDetails[serviceIndex].description = description;
       if (req.file) {
-        user.serviceDetails[serviceIndex].image = req.file.path;
+        user.serviceDetails[serviceIndex].image = `/uploads/${req.file.filename}`;
       }
     } else {
       user.serviceDetails.push({
         serviceId,
         title,
         description,
-        image: req.file ? req.file.path : null
+        image:  req.file ? `/uploads/${req.file.filename}` : null,
       });
     }
 

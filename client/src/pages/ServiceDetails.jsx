@@ -12,6 +12,22 @@ function ServiceDetails() {
   const navigate = useNavigate();
   const [service, setService] = useState(null);
   const [providers, setProviders] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const { data } = await axios.get(`${apiUrl}/api/user/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCurrentUser(data);
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    };
+    fetchCurrentUser();
+  }, [apiUrl]);
 
   useEffect(() => {
     console.log("Service ID:", _id);
@@ -61,23 +77,27 @@ function ServiceDetails() {
         <h2 className="text-h2 font-semi-bold mt-4">Available Providers</h2>
         <div className="grid grid-cols-6 gap-4 mt-4">
           {providers.length > 0 ? (
-            providers.map((provider) => (
+            providers.filter(provider => currentUser?._id !== provider._id) .map((provider) => (
               <div key={provider._id} className="p-4 border border-dark-grey rounded-lg bg-white shadow hover:-translate-y-1.5">
-                <div className="flex items-center gap-3">
-                  {provider.profilePicture && (
-                    <img src={`${apiUrl}${provider.profilePicture}`} alt="Profile" className="w-10 h-10 rounded-full" />
-                  )}
-                <h3 className="font-bold">{provider.username}</h3>
-                </div>
-                <p>{provider.email}</p>
                 {provider.serviceDetail ? (
-                <div className="mt-2">
-                    <h4 className="font-semibold">{provider.serviceDetail.title}</h4>
-                    <p className="text-sm">{provider.serviceDetail.description}</p>
-                    {provider.serviceDetail.image && (
-                      <img src={`${apiUrl}${provider.serviceDetail.image}`} alt="Service" className="mt-2 w-full rounded-md" />
+                <div className="p-2">
+                   {provider.serviceDetail.image && (
+                      <img src={provider.serviceDetail.image.startsWith("http") ? provider.serviceDetail.image : `${apiUrl}${provider.serviceDetail.image}`}  alt="Service" className="mt-2 w-full rounded-md" />
                     )}
+                    <div className="flex items-center gap-3">
+                  {provider.profilePicture && (
+                    <img src={`${apiUrl}${provider.profilePicture}`} alt="Profile" className="w-8 h-8 rounded-full" />
+                  )}
+                  <div className="flex flex-col">
+                <h3 className="font-bold">{provider.username}</h3>
+                <p>{provider.email}</p>
+                </div>
+                </div>
+                {/* <h4 className="font-semi-bold text-h2">{provider.serviceDetail.title}</h4> */}
+                    <p className="text-h3">{provider.serviceDetail.description}</p>
+                
                   </div>
+                  
                 ) : (
                   <p className="text-sm text-gray-500">No additional details provided.</p>
                 )}

@@ -182,7 +182,7 @@ const UserProfileInfoPage = () => {
 
         {/* Services Offered */}
         <div className=" pt-4">
-          <h2 className="text-h2 font-bold mb-3">Services Offered</h2>
+        <NavLink to="/my-services" className="hover:text-p hover:underline text-h2 font-bold mb-3">Services Offered</NavLink>
           {selectedServices.length > 0 ? (
               <ul className="list-disc list-inside">
                 {selectedServices.map((service, index) => (
