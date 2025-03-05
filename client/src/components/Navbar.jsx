@@ -67,19 +67,19 @@ function Navbar() {
         <div className="flex gap-28 items-center">
         <img className="w-24 h-24 py-4"  src={logo} alt="logo"></img>
         <NavLink to ="/home" className ={setActiveClass}>
-          <p className="font-poppins font-semi-bold text-h3 p-2" >Home</p>
+          <p className=" font-semi-bold text-h3 p-2" >Home</p>
           </NavLink>
           <NavLink to ="/explore" className ={setActiveClass}>
-          <p className="font-poppins font-semi-bold text-h3 p-2">Explore</p>
+          <p className="font-semi-bold text-h3 p-2">Explore</p>
           </NavLink>
           <NavLink to ="/request" className ={setActiveClass}>
-          <p className="font-poppins font-semi-bold text-h3 p-2">Request</p>
+          <p className=" font-semi-bold text-h3 p-2">Request</p>
           </NavLink>
           <NavLink to ="/chat" className ={setActiveClass}>
-          <p className="font-poppins font-semi-bold text-h3 p-2">Chat</p>
+          <p className=" font-semi-bold text-h3 p-2">Chat</p>
           </NavLink>
           <NavLink to ="/transactions" className ={setActiveClass}>
-          <p className="font-poppins font-semi-bold text-h3 p-2">Transactions</p>
+          <p className="font-semi-bold text-h3 p-2">Transactions</p>
           </NavLink>
           </div>
           <div className="flex gap-8 justify-center items-center">
@@ -87,7 +87,7 @@ function Navbar() {
           <summary className="list-none cursor-pointer ">
           <img className="w-10 h-16 py-4" src={profile} alt="profile"></img>
           </summary>
-          <ul className="absolute right-[50%] bg-white w-[16vw] border rounded p-4 top-10 ">
+          <ul className="absolute right-[50%] bg-white w-[16vw] border border-grey rounded p-4 top-10 ">
           {error ? (
               <div className="text-error">{error}</div>
             ) : userDetails ? (

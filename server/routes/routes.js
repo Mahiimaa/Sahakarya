@@ -10,6 +10,7 @@ const {changePassword} = require('../controllers/changePassword');
 const {editProfile} = require('../controllers/profile');
 const {verifyTransaction} = require('../controllers/transactionController');
 const { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService} = require('../controllers/serviceDetails');
+const {getProviderDetails, addReviews, editReview, deleteReview} = require('../controllers/ProviderController');
 const { requestService, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, completeService } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
 const {transferTimeCredit} = require('../controllers/timeCreditController');
@@ -76,6 +77,10 @@ router.post("/user/services/:serviceId", verifyToken, upload.single("image"), ad
 router.get('/services/:id',verifyToken, getServiceDetails);
 router.put("/user/services/:serviceId", verifyToken, upload.single("image"), updateServiceDetails);
 router.delete("/user/services/:serviceId", verifyToken, deleteUserService);
+router.get("/providers/:id", verifyToken, getProviderDetails);
+router.post("/reviews", verifyToken, addReviews);
+router.put("/reviews/:reviewId", verifyToken, editReview);
+router.delete("/reviews/:reviewId", verifyToken, deleteReview);
 router.get ('/serviceId', getServiceById);
 router.get("/my-services", verifyToken, getUserServices);
 router.post("/bookings", verifyToken, requestService);

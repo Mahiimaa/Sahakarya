@@ -103,16 +103,16 @@ function UserServices() {
     <div className="flex flex-col">
       <Navbar />
       <div className="mx-28">
-        <h1 className="text-h1 font-bold mt-6">My Service Details</h1>
+        <h1 className="text-h2 font-semi-bold mt-6">My Service Details</h1>
 
         {loading ? (
           <p>Loading...</p>
         ) : error ? (
-          <p className="text-red-500">{error}</p>
+          <p className="text-error">{error}</p>
         ) : userServices.length === 0 ? (
           <p className="text-dark-grey mt-4">You have not added any service details.</p>
         ) : (
-          <div className="grid grid-cols-3 gap-6 mt-4">
+          <div className="grid grid-cols-4 gap-6 mt-4">
             {userServices.map((service) => (
               <div key={service.serviceId} className="p-4 border border-dark-grey rounded-lg bg-white shadow">
                 {service.image ? (
@@ -122,22 +122,22 @@ function UserServices() {
                     className="w-full h-40 rounded-md object-cover mb-3"
                   />
                 ) : (
-                  <div className="w-full h-40 bg-gray-200 flex items-center justify-center rounded-md mb-3">
-                    <p className="text-gray-500">No Image</p>
+                  <div className="w-full h-40 bg-grey flex items-center justify-center rounded-md mb-3">
+                    <p className="text-dark-grey">No Image</p>
                   </div>
                 )}
 
-                <h3 className="font-bold text-lg">{service.title}</h3>
-                <p className="text-dark-grey mt-2">{service.description}</p>
+                <h3 className="font-semi-bold text-h3">{service.title}</h3>
+                <p className="mt-2">{service.description}</p>
                 <div className="flex gap-2 mt-3">
                   <button
-                    className="flex items-center gap-1 text-white bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-700"
+                    className="flex items-center gap-1 text-p bg-white border border-p px-3 py-1 rounded-md hover:bg-p hover:text-white"
                     onClick={() => handleEditClick(service)}
                   >
                     <IoPencil /> Edit
                   </button>
                   <button
-                    className="flex items-center gap-1 text-white bg-red-500 px-3 py-1 rounded-md hover:bg-red-700"
+                    className="flex items-center gap-1 text-error bg-white border border-error px-3 py-1 rounded-md hover:bg-error hover:text-white"
                     onClick={() => handleDeleteService(service.serviceId)}
                   >
                     <IoTrash /> Delete

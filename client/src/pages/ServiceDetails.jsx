@@ -75,10 +75,11 @@ function ServiceDetails() {
           <h1 className="text-h1 font-bold">{service.serviceName}</h1>
         )}
         <h2 className="text-h2 font-semi-bold mt-4">Available Providers</h2>
-        <div className="grid grid-cols-6 gap-4 mt-4">
+        <div className="grid grid-cols-5 gap-4 mt-4">
           {providers.length > 0 ? (
             providers.filter(provider => currentUser?._id !== provider._id) .map((provider) => (
-              <div key={provider._id} className="p-4 border border-dark-grey rounded-lg bg-white shadow hover:-translate-y-1.5">
+              <div key={provider._id} className="p-4 border border-dark-grey rounded-lg bg-white shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-sm"
+              onClick={() => navigate(`/provider-details/${provider._id}`)}>
                 {provider.serviceDetail ? (
                 <div className="p-2">
                    {provider.serviceDetail.image && (
@@ -90,11 +91,11 @@ function ServiceDetails() {
                   )}
                   <div className="flex flex-col">
                 <h3 className="font-bold">{provider.username}</h3>
-                <p>{provider.email}</p>
+                <p className="text-small text-grey">{provider.email}</p>
                 </div>
                 </div>
                 {/* <h4 className="font-semi-bold text-h2">{provider.serviceDetail.title}</h4> */}
-                    <p className="text-h3">{provider.serviceDetail.description}</p>
+                    <p className="text-body line-clamp-3">{provider.serviceDetail.description}</p>
                 
                   </div>
                   

@@ -18,6 +18,7 @@ import Category from "./pages/Category";
 import AdminSettings from "./pages/AdminSettings";
 import Explore from "./pages/Explore";
 import ServiceDetails from "./pages/ServiceDetails";
+import ProviderDetails from "./pages/ProviderDetails";
 import Request from "./pages/Request";
 import Booking from "./pages/Booking";
 import ChatHistory from "./pages/ChatHistory";
@@ -42,6 +43,7 @@ return (
         <Route path="/home" element={<Home />} />
         <Route path ="/explore" element={<Explore />} />
         <Route path="/services/:_id" element={<ServiceDetails />} />
+        <Route path="/provider-details/:providerId" element={<ProviderDetails />} />
         <Route path ="/chat" element={<ChatHistory />} />
         <Route path="/forgot" element={<Forgot />} />
         <Route path ="/adminhome" element={<AdminHome/>} />
