@@ -119,7 +119,7 @@ function UserServices() {
                   <img
                     src={`${apiUrl}${service.image}`}
                     alt={service.title}
-                    className="w-full h-40 rounded-md object-cover mb-3"
+                    className="w-full h-48 object-cover rounded-md"
                   />
                 ) : (
                   <div className="w-full h-40 bg-grey flex items-center justify-center rounded-md mb-3">
@@ -128,7 +128,7 @@ function UserServices() {
                 )}
 
                 <h3 className="font-semi-bold text-h3">{service.title}</h3>
-                <p className="mt-2">{service.description}</p>
+                <p className="">{service.description}</p>
                 <div className="flex gap-2 mt-3">
                   <button
                     className="flex items-center gap-1 text-p bg-white border border-p px-3 py-1 rounded-md hover:bg-p hover:text-white"

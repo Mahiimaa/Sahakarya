@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import Navbar from "../components/Navbar";
+import ReactStars from "react-rating-stars-component";
 
 function ProviderDetails() {
   const { providerId } = useParams();
@@ -18,11 +19,13 @@ function ProviderDetails() {
   useEffect(() => {
     const fetchProviderDetails = async () => {
       try {
+        console.log("Fetching provider details for ID:", providerId); 
         const { data } = await axios.get(`${apiUrl}/api/providers/${providerId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setProvider(data);
-        // setReviews(data.reviews || []);
+        console.log("Fetched Provider Data:", data);
+        setProvider(data.provider);
+        setReviews(data.reviews);
       } catch (error) {
         console.error("Error fetching provider details:", error);
       }
@@ -88,36 +91,72 @@ function ProviderDetails() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="px-10 mt-6">
-        <button className="text-blue-600 hover:text-blue-800 mb-4" onClick={() => navigate(-1)}>
-          ← Back
-        </button>
-
+      <div className="px-10 ">
         {provider && (
           <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold">{provider.username}</h1>
-            <p className="text-gray-600">{provider.email}</p>
-
+            <div className="flex gap-4">
+              <img 
+                src={provider.profilePicture ? `${apiUrl}${provider.profilePicture}` : "https://via.placeholder.com/150"} 
+                alt="Provider" 
+                className="w-16 h-16 rounded-full object-cover"
+              />
+              <div className="">
+            <h1 className="text-h2 font-bold">{provider.username}</h1>
+            <p className="text-dark-grey">{provider.email}</p>
+            </div>
+            </div>
+            {provider.serviceDetails?.length > 0 && (
+              <div className="mt-4">
+                {provider.serviceDetails.map((detail, index) => (
+                  <div key={index} className="mt-4 border-b pb-4">
+                    <h2 className="text-h3 font-semi-bold">{detail.title || "Service Title"}</h2>
+                    <p className="text-grey">{detail.description || "No description provided."}</p>
+                    {detail.image && (
+                      <img 
+                        src={detail.image.startsWith("http") ? detail.image : `${apiUrl}${detail.image}`} 
+                        alt="Service" 
+                        className="w-full max-h-64 object-cover rounded-md mt-2"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
             {/* Reviews */}
-            <h3 className="text-lg font-semibold mt-6">User Reviews:</h3>
-            {reviews.map((review) => (
+            <h3 className="text-h2 font-semi-bold mt-6">Reviews</h3>
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
               <div key={review._id} className="border-b pb-3 flex justify-between">
                 <div>
-                  <p className="font-semibold">{review.user.username}</p>
-                  <p className="text-yellow-500">⭐ {review.rating}/5</p>
-                  <p className="text-gray-700">{review.comment}</p>
+                  <p className="font-semi-bold">{review.user.username}</p>
+                  <ReactStars value={review.rating} edit={false} size={24} isHalf={true} />
+                  <p className="text-grey">{review.comment}</p>
                 </div>
                 <div>
-                  <button className="text-blue-600 mr-2" onClick={() => setEditingReview(review)}>Edit</button>
-                  <button className="text-red-600" onClick={() => handleDeleteReview(review._id)}>Delete</button>
+                  <button className="text-p mr-2" onClick={() => setEditingReview(review)}>Edit</button>
+                  <button className="text-error" onClick={() => handleDeleteReview(review._id)}>Delete</button>
                 </div>
               </div>
-            ))}
-
+            ))
+          ) : (
+            <p className="text-grey">No reviews yet.</p>
+          )}
             {/* Review Form */}
-            <textarea value={comment} onChange={(e) => setComment(e.target.value)}></textarea>
-            <button onClick={editingReview ? handleEditReview : handleReviewSubmit}>
-              {editingReview ? "Update Review" : "Submit Review"}
+            <h3 className="text-h3 font-semi-bold mt-6">Leave a Review</h3>
+            <ReactStars
+              count={5}
+              size={36}
+              value={rating}
+              isHalf={true}
+              onChange={(newRating) => setRating(newRating)}
+            />
+            <textarea value={comment} onChange={(e) => setComment(e.target.value)}
+            className="w-full border border-dark-grey rounded-md p-2 mt-4"
+            placeholder="Write a review..."/>
+            <button 
+            className="bg-p text-white px-4 py-2 rounded-md mt-2" 
+            onClick={handleReviewSubmit}>
+              Submit Review
             </button>
           </div>
         )}

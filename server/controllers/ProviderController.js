@@ -1,11 +1,19 @@
 const Service = require('../models/Service');
 const User = require('../models/User');
+const Review = require("../models/Review");
 
  const getProviderDetails = async (req, res) => {
     try {
-      const provider = await User.findById(req.params.id).populate("reviews.user", "username");
-      if (!provider) return res.status(404).json({ error: "Provider not found" });
-      res.json(provider);
+      if (!req.params.providerId.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({ error: "Invalid provider ID format." });
+    }
+      console.log("Fetching provider with ID:", req.params.providerId);
+      const provider = await User.findById(req.params.providerId).populate("serviceDetails.serviceId", "serviceName");
+      if (!provider) {
+        return res.status(404).json({ error: "Provider not found" });
+      }
+      const reviews = await Review.find({ provider: req.params.providerId }).populate("user", "username");
+      res.json({provider, reviews});
     } catch (error) {
       res.status(500).json({ error: "Server error" });
     }
@@ -13,7 +21,7 @@ const User = require('../models/User');
 
 const addReviews = async (req, res) => {
     const { providerId, rating, comment } = req.body;
-    const userId = req.user.id; // Assuming user is authenticated
+    const userId = req.user.id;
   
     if (!rating || !comment) return res.status(400).json({ error: "Rating and comment required" });
   
@@ -21,15 +29,14 @@ const addReviews = async (req, res) => {
       const provider = await User.findById(providerId);
       if (!provider) return res.status(404).json({ error: "Provider not found" });
   
-      const newReview = {
+      const newReview = new Review({
+        provider: providerId,
         user: userId,
         rating,
         comment,
         createdAt: new Date(),
-      };
-  
-      provider.reviews.push(newReview);
-      await provider.save();
+      });
+      await newReview.save();
   
       res.json({ message: "Review added successfully", review: newReview });
     } catch (error) {
@@ -43,15 +50,14 @@ const editReview = async (req, res) => {
     const userId = req.user.id;
   
     try {
-      const provider = await User.findOne({ "reviews._id": reviewId, "reviews.user": userId });
-      if (!provider) return res.status(404).json({ error: "Review not found or unauthorized" });
+      const review = await User.findOne({  _id: reviewId, user: userId});
+      if (!review) return res.status(404).json({ error: "Review not found or unauthorized" });
   
-      const review = provider.reviews.id(reviewId);
       review.rating = rating;
       review.comment = comment;
       review.updatedAt = new Date();
   
-      await provider.save();
+      await review.save();
       res.json({ message: "Review updated successfully", review });
     } catch (error) {
       res.status(500).json({ error: "Server error" });
@@ -63,11 +69,8 @@ const deleteReview = async (req, res) => {
     const userId = req.user.id;
   
     try {
-      const provider = await User.findOne({ "reviews._id": reviewId, "reviews.user": userId });
-      if (!provider) return res.status(404).json({ error: "Review not found or unauthorized" });
-  
-      provider.reviews = provider.reviews.filter((rev) => rev._id.toString() !== reviewId);
-      await provider.save();
+      const review = await User.findOneAndDelete({ _id: reviewId, user: userId });
+      if (!review) return res.status(404).json({ error: "Review not found or unauthorized" });
   
       res.json({ message: "Review deleted successfully" });
     } catch (error) {

@@ -40,7 +40,7 @@ const storage = multer.diskStorage({
   const upload = multer({
     storage: storage,
     limits: {
-      fileSize: 5 * 1024 * 1024 
+      fileSize: 10 * 1024 * 1024 
     },
     fileFilter: fileFilter
   });
@@ -77,7 +77,7 @@ router.post("/user/services/:serviceId", verifyToken, upload.single("image"), ad
 router.get('/services/:id',verifyToken, getServiceDetails);
 router.put("/user/services/:serviceId", verifyToken, upload.single("image"), updateServiceDetails);
 router.delete("/user/services/:serviceId", verifyToken, deleteUserService);
-router.get("/providers/:id", verifyToken, getProviderDetails);
+router.get("/providers/:providerId", verifyToken, getProviderDetails);
 router.post("/reviews", verifyToken, addReviews);
 router.put("/reviews/:reviewId", verifyToken, editReview);
 router.delete("/reviews/:reviewId", verifyToken, deleteReview);

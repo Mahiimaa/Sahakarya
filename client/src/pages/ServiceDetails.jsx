@@ -74,16 +74,17 @@ function ServiceDetails() {
         {service && (
           <h1 className="text-h1 font-bold">{service.serviceName}</h1>
         )}
-        <h2 className="text-h2 font-semi-bold mt-4">Available Providers</h2>
+        <h2 className="text-h3 font-body mt-4">Available Providers</h2>
         <div className="grid grid-cols-5 gap-4 mt-4">
           {providers.length > 0 ? (
-            providers.filter(provider => currentUser?._id !== provider._id) .map((provider) => (
-              <div key={provider._id} className="p-4 border border-dark-grey rounded-lg bg-white shadow-md hover:shadow-lg transition-all duration-200 w-full max-w-sm"
-              onClick={() => navigate(`/provider-details/${provider._id}`)}>
+            providers.filter(provider => currentUser?._id !== provider._id && provider.serviceDetail && provider.serviceDetail.description) .map((provider) => (
+              <div key={provider._id} className="p-4 border border-dark-grey rounded-lg bg-white shadow-md hover:shadow-xl transition-all duration-200 w-full max-w-sm hover:-translate-y-1.5"
+              >
                 {provider.serviceDetail ? (
-                <div className="p-2">
+                <div className="p-2 " onClick={() => navigate(`/provider-details/${provider._id}`)}>
                    {provider.serviceDetail.image && (
-                      <img src={provider.serviceDetail.image.startsWith("http") ? provider.serviceDetail.image : `${apiUrl}${provider.serviceDetail.image}`}  alt="Service" className="mt-2 w-full rounded-md" />
+                      <img src={provider.serviceDetail.image.startsWith("http") ? provider.serviceDetail.image : `${apiUrl}${provider.serviceDetail.image}`}  alt="Service" className="w-full h-48 object-cover rounded-md" />
+                      
                     )}
                     <div className="flex items-center gap-3">
                   {provider.profilePicture && (
@@ -95,7 +96,7 @@ function ServiceDetails() {
                 </div>
                 </div>
                 {/* <h4 className="font-semi-bold text-h2">{provider.serviceDetail.title}</h4> */}
-                    <p className="text-body line-clamp-3">{provider.serviceDetail.description}</p>
+                    <p className="text-body line-clamp-3 hover:underline" >{provider.serviceDetail.description}</p>
                 
                   </div>
                   
@@ -121,7 +122,7 @@ function ServiceDetails() {
               </div>
             ))
           ) : (
-            <p>No providers available for this service.</p>
+            <p className="text-light-grey">No providers available for this service.</p>
           )}
         </div>
       </div>
