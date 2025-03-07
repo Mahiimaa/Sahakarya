@@ -108,14 +108,14 @@ function ProviderDetails() {
             {provider.serviceDetails?.length > 0 && (
               <div className="mt-4">
                 {provider.serviceDetails.map((detail, index) => (
-                  <div key={index} className="mt-4 border-b pb-4">
+                  <div key={index} className="mt-4 border-b border-dark-grey pb-4">
                     <h2 className="text-h3 font-semi-bold">{detail.title || "Service Title"}</h2>
                     <p className="text-grey">{detail.description || "No description provided."}</p>
                     {detail.image && (
                       <img 
                         src={detail.image.startsWith("http") ? detail.image : `${apiUrl}${detail.image}`} 
                         alt="Service" 
-                        className="w-full max-h-64 object-cover rounded-md mt-2"
+                        className="w-full object-cover rounded-md h-full"
                       />
                     )}
                   </div>
@@ -123,10 +123,10 @@ function ProviderDetails() {
               </div>
             )}
             {/* Reviews */}
-            <h3 className="text-h2 font-semi-bold mt-6">Reviews</h3>
+            <h3 className="text-h2 font-semi-bold mt-6 pb-4">Reviews</h3>
             {reviews.length > 0 ? (
               reviews.map((review) => (
-              <div key={review._id} className="border-b pb-3 flex justify-between">
+              <div key={review._id} className=" border border-light-grey rounded-md p-4 pb-3 flex justify-between">
                 <div>
                   <p className="font-semi-bold">{review.user.username}</p>
                   <ReactStars value={review.rating} edit={false} size={24} isHalf={true} />
@@ -154,7 +154,7 @@ function ProviderDetails() {
             className="w-full border border-dark-grey rounded-md p-2 mt-4"
             placeholder="Write a review..."/>
             <button 
-            className="bg-p text-white px-4 py-2 rounded-md mt-2" 
+            className="bg-p text-white px-4 py-2 rounded-md mt-2 flex " 
             onClick={handleReviewSubmit}>
               Submit Review
             </button>

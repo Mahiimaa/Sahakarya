@@ -28,25 +28,36 @@ const requestService = async (req, res) => {
   }
 };
 const acceptServiceRequest = async (req, res) => {
-  try {
+    const { bookingId } = req.params;
     const { scheduleDate, serviceDuration } = req.body;
-    const booking = await Booking.findById(req.params.bookingId);
+    const userId = req.user.id;
 
-    if (!booking) return res.status(404).json({ error: "Booking not found" });
-    if (booking.provider.toString() !== req.user.id) return res.status(403).json({ error: "Unauthorized" });
-
-    if (!scheduleDate || !serviceDuration) {
-      return res.status(400).json({ error: "Schedule date and duration are required" });
+    try {
+      const booking = await Booking.findById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ error: "Booking not found" });
+      }
+  
+      if (booking.provider.toString() !== userId) {
+        return res.status(403).json({ error: "Unauthorized to accept this request" });
+      }
+  
+      if (!scheduleDate || !serviceDuration) {
+        return res.status(400).json({ error: "Schedule date and duration required" });
+      }
+  
+      booking.status = "scheduled";
+      booking.scheduleDate = scheduleDate;
+      booking.serviceDuration = serviceDuration;
+  
+      await booking.save();
+      res.json({ message: "Service request accepted and scheduled", booking });
+  
+    } catch (error) {
+      console.error("Error accepting request:", error);
+      res.status(500).json({ error: "Server error while accepting request" });
     }
-    booking.status = "scheduled";
-    booking.scheduleDate = scheduleDate;
-    booking.serviceDuration = serviceDuration;
-    await booking.save();
-    res.json({ message: "Service request accepted", booking });
-  } catch (error) {
-    res.status(500).json({ error: "Server error" });
-  }
-};
+  };
 
 const rejectServiceRequest = async (req, res) => {
   try {
@@ -92,31 +103,31 @@ const getOutgoingBookings = async (req, res) => {
   }
 };
 
-const completeService = async (req, res) => {
+const confirmServiceCompletion = async (req, res) => {
+  const { bookingId } = req.params;
+  const userId = req.user.id;
+
   try {
-    const booking = await Booking.findById(req.params.bookingId).populate("service");
-    if (!booking) return res.status(404).json({ error: "Booking not found" });
-
-    if (booking.requester.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Only the requester can confirm completion" });
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
     }
-
-    const requester = await User.findById(booking.requester);
-    requester.timeCredits -= booking.service.timeCreditsRequired;
-    await requester.save();
-
-    const provider = await User.findById(booking.provider);
-    provider.timeCredits += booking.service.timeCreditsRequired;
-    await provider.save();
-
-    booking.status = "completed";
-    booking.completedAt = new Date();
+    if (booking.requester.toString() !== userId && booking.provider.toString() !== userId) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+    if (booking.requester.toString() === userId) {
+      booking.confirmedByRequester = true;
+    } else if (booking.provider.toString() === userId) {
+      booking.confirmedByProvider = true;
+    }
+    if (booking.confirmedByRequester && booking.confirmedByProvider) {
+        booking.status = "completed";
+    }
     await booking.save();
-
-    res.json({ message: "Service exchange completed", booking });
+    res.json({ message: "Service marked as completed." });
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }
-};
+  };
 
-module.exports = { requestService, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, completeService };
+module.exports = { requestService, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, confirmServiceCompletion };

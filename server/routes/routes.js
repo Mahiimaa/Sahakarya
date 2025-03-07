@@ -11,7 +11,7 @@ const {editProfile} = require('../controllers/profile');
 const {verifyTransaction} = require('../controllers/transactionController');
 const { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService} = require('../controllers/serviceDetails');
 const {getProviderDetails, addReviews, editReview, deleteReview} = require('../controllers/ProviderController');
-const { requestService, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, completeService } = require("../controllers/bookingController");
+const { requestService, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, confirmServiceCompletion } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
 const {transferTimeCredit} = require('../controllers/timeCreditController');
 const multer = require('multer');
@@ -88,7 +88,7 @@ router.get("/bookings/provider", verifyToken, getServiceRequestsForProvider);
 router.get("/bookings/requester", verifyToken, getOutgoingBookings);
 router.put("/:bookingId/accept", verifyToken, acceptServiceRequest);
 router.put("/:bookingId/reject", verifyToken, rejectServiceRequest);
-router.put("/:bookingId/complete",verifyToken, completeService);
+router.put("/:bookingId/confirm",verifyToken, confirmServiceCompletion);
 router.post('/verify',verifyToken, verifyTransaction);
 router.post("/sendMessage", verifyToken, (req, res) => {
   const io = req.app.get('io');

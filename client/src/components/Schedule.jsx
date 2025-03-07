@@ -19,12 +19,14 @@ const Schedule = ({ isOpen, onClose, onSchedule }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <div className="fixed inset-0 flex bg-dark-grey  bg-opacity-50 items-center justify-center">
       <div className="bg-white p-6 border border-dark-grey rounded-lg shadow-lg w-96 relative">
-        <button className="absolute top-3 right-3 text-grey" onClick={onClose}>
+        <div className="flex justify-between items-center mb-4 ">
+        <h2 className="text-h2 font-semi-bold ">Schedule Service</h2>
+        <button className="absolute text-grey right-4" onClick={onClose}>
         <IoClose size={24} />
         </button>
-        <h2 className="text-h2 font-semi-bold mb-4">Schedule Service</h2>
+        </div>
         <label className="block mb-2">Select Schedule Date:</label>
         <DatePicker
           selected={scheduleDate}
@@ -45,12 +47,6 @@ const Schedule = ({ isOpen, onClose, onSchedule }) => {
         />
 
         <div className="flex justify-end mt-4">
-          <button
-            className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
           <button
             className="bg-p text-white px-4 py-2 rounded"
             onClick={handleSchedule}
