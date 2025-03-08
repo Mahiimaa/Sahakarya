@@ -16,6 +16,7 @@ const Request = () => {
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [currentBookingId, setCurrentBookingId] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState("incoming");
 
     const openChat = (requester, provider) => {
@@ -39,6 +40,20 @@ const Request = () => {
     setSelectedRequester(null);
     };
 
+    useEffect(() => {
+      const fetchCurrentUser = async () => {
+        try {
+          const { data } = await axios.get(`${apiUrl}/api/user/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setCurrentUser(data);
+        } catch (error) {
+          console.error("Error fetching current user:", error);
+        }
+      };
+      fetchCurrentUser();
+    }, [apiUrl, token]);
+    
   useEffect(() => {
     const fetchRequests = async () => {
       try {
@@ -101,13 +116,16 @@ const Request = () => {
 
   const confirmCompletion = async (bookingId) => {
     try {
-      await axios.put(`${apiUrl}/api/${bookingId}/confirm`, {}, {
+      const {data} =await axios.put(`${apiUrl}/api/${bookingId}/confirm`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Service confirmation successful!");
-      setBookings(bookings.map(b => 
-        b._id === bookingId ? { ...b, confirmed: true } : b 
-      ));
+      setBookings((prevBookings) =>
+        prevBookings.map((b) =>
+          b._id === bookingId
+            ? { ...b, status: data.status, confirmedByRequester: data.confirmedByRequester, confirmedByProvider: data.confirmedByProvider }
+            : b
+        ));
     } catch (error) {
       toast.error("Error confirming service completion.");
     }
@@ -150,6 +168,8 @@ const Request = () => {
         ? "text-s " 
         : booking.status === "scheduled"
         ? "text-p" 
+        : booking.status === "completed"
+        ? "text-p" 
         : booking.status === "rejected"
         ? "text-error"  
         : "text-grey" 
@@ -163,7 +183,7 @@ const Request = () => {
                 {booking.status === "pending" && (
                   <>
                   <button
-                    className="bg-p text-white px-4 py-2 rounded"
+                    className="bg-p text-white px-4 py-2 rounded whitespace-nowrap"
                     onClick={() => handleOpenScheduleModal(booking._id)}
                   >
                     Accept & Schedule
@@ -185,18 +205,15 @@ const Request = () => {
                         onClick={() => confirmCompletion(booking._id)}
                       >
                         {booking.confirmedByRequester && booking.confirmedByProvider
-                      ? "Service Completed"
-                      : "Confirm Completion"}
+                     ? "Service Completed"
+                     : booking.confirmedByRequester
+                     ? "Confirmed by Requester"
+                     : booking.confirmedByProvider
+                     ? "Confirmed by Provider"
+                     : "Confirm Completion"}
                       </button>
                     )}
-                    {booking.status === "completed" && booking.requester._id === currentUser._id && (
-                      <button
-                        className="bg-green-500 text-white px-4 py-2 rounded ml-4"
-                        onClick={() => transferTimeCredits(booking._id, booking.provider._id, booking.serviceDuration)}
-                      >
-                        Transfer Time Credits
-                      </button>
-                    )}
+                    
                   <button
                     className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4"
                     onClick={() => openChat(booking.provider, booking.requester)}
@@ -243,10 +260,22 @@ const Request = () => {
           onClick={() => confirmCompletion(booking._id)}
         >
           {booking.confirmedByRequester && booking.confirmedByProvider
-            ? "Service Completed"
-            : "Confirm Completion"}
+           ? "Service Completed"
+           : booking.confirmedByRequester
+           ? "Confirmed by Requester"
+           : booking.confirmedByProvider
+           ? "Confirmed by Provider"
+           : "Confirm Completion"}
         </button>
       )}
+      {booking.confirmedByRequester && booking.confirmedByProvider && currentUser && currentUser._id === booking.requester._id && (
+                      <button
+                        className="bg-p text-white px-4 py-2 rounded ml-4"
+                        onClick={() => transferTimeCredits(booking._id, booking.provider._id, booking.serviceDuration)}
+                      >
+                        Transfer Time Credits
+                      </button>
+                    )}
       <button className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 " onClick={() => openChat(booking.requester, booking.provider)}>Chat</button>
       </div>
             </div>

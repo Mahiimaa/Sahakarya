@@ -112,16 +112,13 @@ const confirmServiceCompletion = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ error: "Booking not found" });
     }
-    if (booking.requester.toString() !== userId && booking.provider.toString() !== userId) {
-      return res.status(403).json({ error: "Unauthorized" });
-    }
     if (booking.requester.toString() === userId) {
       booking.confirmedByRequester = true;
     } else if (booking.provider.toString() === userId) {
       booking.confirmedByProvider = true;
     }
     if (booking.confirmedByRequester && booking.confirmedByProvider) {
-        booking.status = "completed";
+      booking.status = "completed";
     }
     await booking.save();
     res.json({ message: "Service marked as completed." });
