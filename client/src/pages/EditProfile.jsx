@@ -122,8 +122,8 @@ const EditProfile = () => {
         setError("Please upload a valid image file (JPEG, PNG)");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Image size should be less than 5MB");
+      if (file.size > 20 * 1024 * 1024) {
+        setError("Image size should be less than 20MB");
         return;
       }
 

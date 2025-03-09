@@ -17,6 +17,8 @@ const UserProfileInfoPage = () => {
   const [serviceDescription, setServiceDescription] = useState("");
   const [serviceImage, setServiceImage] = useState(null);
   const [previewImage, setPreviewImage] = useState("");
+  const [duration, setDuration] = useState("");
+  const [timeCredits, setTimeCredits] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -63,6 +65,8 @@ const UserProfileInfoPage = () => {
     setServiceTitle(service.title || service.serviceName || ""); 
     setServiceDescription(service.description || "");
     setPreviewImage(service.image || "");
+    setDuration(service.duration || "");
+    setPreviewImage(service.image || "");
     setShowModal(true);
   };
 
@@ -83,6 +87,8 @@ const UserProfileInfoPage = () => {
     const formData = new FormData();
     formData.append("title", serviceTitle);
     formData.append("description", serviceDescription);
+    formData.append("duration", duration);
+    formData.append("timeCredits", timeCredits);
     if (serviceImage) {
       formData.append("image", serviceImage);
     }
@@ -112,6 +118,8 @@ const UserProfileInfoPage = () => {
     setShowModal(false);
     setServiceTitle("");
     setServiceDescription("");
+    setDuration("");
+    setTimeCredits("");
     setServiceImage(null);
     setPreviewImage("");
   };

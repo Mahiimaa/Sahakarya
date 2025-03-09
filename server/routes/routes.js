@@ -8,8 +8,8 @@ const { getStats } = require('../controllers/stats');
 const {getAllUsers, deleteUser, assignRole, getUserDetails} = require('../controllers/user');
 const {changePassword} = require('../controllers/changePassword');
 const {editProfile} = require('../controllers/profile');
-const {verifyTransaction} = require('../controllers/transactionController');
-const { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService} = require('../controllers/serviceDetails');
+const {verifyTransaction, getTransactions} = require('../controllers/transactionController');
+const { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService, getAllServiceDetails} = require('../controllers/serviceDetails');
 const {getProviderDetails, addReviews, editReview, deleteReview} = require('../controllers/ProviderController');
 const { requestService, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, confirmServiceCompletion } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
@@ -17,6 +17,7 @@ const {transferTimeCredit} = require('../controllers/timeCreditController');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
+const { verify } = require("crypto");
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -40,7 +41,7 @@ const storage = multer.diskStorage({
   const upload = multer({
     storage: storage,
     limits: {
-      fileSize: 10 * 1024 * 1024 
+      fileSize: 20 * 1024 * 1024 
     },
     fileFilter: fileFilter
   });
@@ -75,6 +76,7 @@ router.put('/changePassword', verifyToken, changePassword);
 router.put('/editProfile', verifyToken, upload.single('profilePicture'), editProfile);
 router.post("/user/services/:serviceId", verifyToken, upload.single("image"), addServiceOfferDetails);
 router.get('/services/:id',verifyToken, getServiceDetails);
+router.get('/allServices',verifyToken, getAllServiceDetails);
 router.put("/user/services/:serviceId", verifyToken, upload.single("image"), updateServiceDetails);
 router.delete("/user/services/:serviceId", verifyToken, deleteUserService);
 router.get("/providers/:providerId", verifyToken, getProviderDetails);
@@ -101,6 +103,7 @@ router.put("/messages/:providerId/read", verifyToken, (req, res) => {
 });
 router.get("/chats", verifyToken, getUserChats);
 
-router.post('/transferCredit', verifyToken, transferTimeCredit);
+router.put('/bookings/:bookingId/transfer-credits', verifyToken, transferTimeCredit);
+router.get('/transactions', verifyToken, getTransactions);
 
 module.exports = router;

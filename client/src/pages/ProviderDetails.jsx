@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, {  useEffect, useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import Navbar from "../components/Navbar";
@@ -7,6 +7,9 @@ import ReactStars from "react-rating-stars-component";
 
 function ProviderDetails() {
   const { providerId } = useParams();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const serviceId = queryParams.get("serviceId");
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -15,7 +18,8 @@ function ProviderDetails() {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [editingReview, setEditingReview] = useState(null);
-
+  const [fullImage, setFullImage] = useState(null);
+  console.log("Extracted serviceId:", serviceId);
   useEffect(() => {
     const fetchProviderDetails = async () => {
       try {
@@ -88,6 +92,14 @@ function ProviderDetails() {
     }
   };
 
+  const handleImageClick = (imageUrl) => {
+    setFullImage(imageUrl);
+  };
+
+  const closeModal = () => {
+    setFullImage(null);
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -107,19 +119,37 @@ function ProviderDetails() {
             </div>
             {provider.serviceDetails?.length > 0 && (
               <div className="mt-4">
-                {provider.serviceDetails.map((detail, index) => (
-                  <div key={index} className="mt-4 border-b border-dark-grey pb-4">
+                 {provider.serviceDetails
+                    .filter(detail => detail.serviceId._id === serviceId)
+                    .map((detail, index) => (
+                  <div key={index} className="mt-4 border-b border-dark-grey pb-4 flex flex-col gap-2">
                     <h2 className="text-h3 font-semi-bold">{detail.title || "Service Title"}</h2>
                     <p className="text-grey">{detail.description || "No description provided."}</p>
                     {detail.image && (
+                      <div className="w-full flex justify-center">
                       <img 
                         src={detail.image.startsWith("http") ? detail.image : `${apiUrl}${detail.image}`} 
                         alt="Service" 
-                        className="w-full object-cover rounded-md h-full"
+                        className="w-full h-48 object-cover rounded-md cursor-pointer hover:opacity-90"
+                        onClick={() => handleImageClick(detail.image)}
                       />
+                      </div>
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+            {fullImage && (
+              <div className="fixed inset-0 bg-grey bg-opacity-70 flex justify-center items-center z-50">
+                <div className="relative p-4 rounded-lg max-w-3xl">
+                  <button
+                    className="absolute top-2 right-2 text-white bg-p rounded-full px-2 py-1 text-sm"
+                    onClick={closeModal}
+                  >
+                    ✕
+                  </button>
+                  <img src={`${apiUrl}${fullImage}`} alt="Full Image" className="max-w-full max-h-[80vh] rounded-md" />
+                </div>
               </div>
             )}
             {/* Reviews */}

@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import Khalti from "../components/Khalti"
 
 function TimeCredit() {
@@ -12,6 +12,28 @@ function TimeCredit() {
     const token = localStorage.getItem('token');
     const khaltiRef = useRef(null);
 
+//     const [credits, setCredits] = useState(0);
+
+// useEffect(() => {
+//   const fetchCredits = async () => {
+//     try {
+//       const response = await fetch(`${apiUrl}/user/credits`, {
+//         headers: {
+//           Authorization: `Bearer ${token}`
+//         }
+//       });
+//       const data = await response.json();
+//       if (response.ok) {
+//         setCredits(data.timeCredits);
+//       }
+//     } catch (error) {
+//       console.error("Error fetching credits:", error);
+//     }
+//   };
+  
+//   fetchCredits();
+// }, [apiUrl, token]);
+
     const handleTransfer = async () => {
         if (!recipient || !amount || !password) {
           setMessage("All fields are required.");
@@ -22,7 +44,7 @@ function TimeCredit() {
           const response = await fetch(`${apiUrl}/transferCredit`, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ recipient, amount, password }),
@@ -38,6 +60,7 @@ function TimeCredit() {
           setMessage("Error connecting to server.");
         }
       };
+      
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-dark-grey">
@@ -74,7 +97,7 @@ function TimeCredit() {
       {transferForm && (
         <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 ">
           <div className="bg-white p-6 rounded-lg shadow-lg w-1/4 text-center h-3/8 justify-between items-center">
-            <h2 className="text-h2 font-bold mb-4 ">Transfer Time Credit</h2>
+            <h2 className="text-h2 font-semi-bold mb-4 ">Transfer Time Credit</h2>
             <div className=" flex flex-col gap-4">
             <input
               type="text"

@@ -149,5 +149,45 @@ const deleteUserService = async (req, res) => {
   }
 };
 
+const getAllServiceDetails = async (req, res) => {
+  try {
+    const loggedInUserId = req.user.id;
 
-module.exports = { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService};
+    const users = await User.find(
+      { _id: { $ne: loggedInUserId }, "serviceDetails.0": { $exists: true } },
+      "username email profilePicture serviceDetails"
+    ).populate({
+      path: "serviceDetails",
+      select: "serviceId title description image", 
+    });
+
+    const servicesMap = {};
+
+    users.forEach((user) => {
+      user.serviceDetails.forEach((detail) => {
+        if (!servicesMap[detail.serviceId]) {
+          servicesMap[detail.serviceId] = {
+            serviceId: detail.serviceId,
+            serviceName: detail.title,
+            description: detail.description,
+            image: detail.image,
+            providers: [],
+          };
+        }
+        servicesMap[detail.serviceId].providers.push({
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          profilePicture: user.profilePicture,
+        });
+      });
+    });
+    const servicesWithProviders = Object.values(servicesMap);
+
+    res.status(200).json({ services: servicesWithProviders });
+  } catch (error) {
+    console.error("Error fetching service details:", error);
+    res.status(500).json({ message: "Error fetching service details", error: error.message });
+  }
+};
+module.exports = { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService, getAllServiceDetails};

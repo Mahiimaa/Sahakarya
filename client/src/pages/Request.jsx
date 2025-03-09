@@ -19,6 +19,12 @@ const Request = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState("incoming");
 
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferBookingId, setTransferBookingId] = useState(null);
+  const [transferProviderId, setTransferProviderId] = useState(null);
+  const [transferAmount, setTransferAmount] = useState(""); 
+  const [transferPassword, setTransferPassword] = useState("");
+
     const openChat = (requester, provider) => {
       if (!requester || !provider) {
         console.error("Error: Missing requester or provider.");
@@ -131,6 +137,38 @@ const Request = () => {
     }
   };
 
+  const handleOpenTransferModal = (bookingId, providerId, serviceDuration) => {
+    setTransferBookingId(bookingId);
+    setTransferProviderId(providerId);
+    setTransferAmount(serviceDuration);
+    setShowTransferModal(true);
+  };
+
+  const transferTimeCredits = async () => {
+    if (!transferAmount || !transferPassword) {
+      toast.error("Please fill all fields.");
+      return;
+    }
+
+    try {
+      await axios.put(`${apiUrl}/api/bookings/${transferBookingId}/transfer-credits`, 
+        { providerId: transferProviderId, amount: transferAmount, password: transferPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Time credits transferred successfully!");
+      setBookings((prevBookings) =>
+        prevBookings.map((b) =>
+          b._id === transferBookingId ? { ...b, status: "credit transferred" } : b
+        )
+      );
+      setShowTransferModal(false);
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Error transferring time credits.");
+    }
+  };
+
+  
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -138,7 +176,7 @@ const Request = () => {
       <div className="flex gap-4 justify-center items-center mb-6">
           <button
             className={`px-4 py-2 rounded-md text-lg font-semibold ${
-              activeTab === "incoming" ? "bg-p text-white" : "bg-gray-200 text-gray-700"
+              activeTab === "incoming" ? "bg-p text-white" : "bg-light-grey text-grey"
             }`}
             onClick={() => setActiveTab("incoming")}
           >
@@ -146,7 +184,7 @@ const Request = () => {
           </button>
           <button
             className={`px-4 py-2 rounded-md text-lg font-semibold ${
-              activeTab === "outgoing" ? "bg-p text-white" : "bg-gray-200 text-gray-700"
+              activeTab === "outgoing" ? "bg-p text-white" : "bg-light-grey text-grey"
             }`}
             onClick={() => setActiveTab("outgoing")}
           >
@@ -209,7 +247,7 @@ const Request = () => {
                      : booking.confirmedByRequester
                      ? "Confirmed by Requester"
                      : booking.confirmedByProvider
-                     ? "Confirmed by Provider"
+                     ? "Confirmed by You"
                      : "Confirm Completion"}
                       </button>
                     )}
@@ -259,7 +297,9 @@ const Request = () => {
           }`}
           onClick={() => confirmCompletion(booking._id)}
         >
-          {booking.confirmedByRequester && booking.confirmedByProvider
+          {booking.status === "credit transferred"
+            ? "Credit Transferred"
+            :booking.confirmedByRequester && booking.confirmedByProvider
            ? "Service Completed"
            : booking.confirmedByRequester
            ? "Confirmed by Requester"
@@ -268,10 +308,10 @@ const Request = () => {
            : "Confirm Completion"}
         </button>
       )}
-      {booking.confirmedByRequester && booking.confirmedByProvider && currentUser && currentUser._id === booking.requester._id && (
+      {booking.confirmedByRequester && booking.confirmedByProvider && currentUser && currentUser._id === booking.requester._id && booking.status !== "credit transferred" && (
                       <button
                         className="bg-p text-white px-4 py-2 rounded ml-4"
-                        onClick={() => transferTimeCredits(booking._id, booking.provider._id, booking.serviceDuration)}
+                        onClick={() => handleOpenTransferModal(booking._id, booking.provider._id, booking.serviceDuration)}
                       >
                         Transfer Time Credits
                       </button>
@@ -294,6 +334,25 @@ const Request = () => {
         onSchedule={acceptBooking}
       />
     </div>
+    {showTransferModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-md w-96">
+            <h2 className="text-h2 font-bold mb-4">Transfer Time Credits</h2>
+            <label className="font-semi-bold text-h3"> Time credits</label>
+            <input type="number" placeholder="Enter Time Credits" className="w-full p-2 border rounded mb-2"
+              value={transferAmount} onChange={(e) => setTransferAmount(e.target.value)}
+            />
+            <label className="font-semi-bold text-h3">Password</label>
+            <input type="password" placeholder="Enter Password" className="w-full p-2 border rounded mb-2"
+              value={transferPassword} onChange={(e) => setTransferPassword(e.target.value)}
+            />
+            <div className="flex justify-between mt-4">
+              <button className="bg-white border text-error border-error hover:bg-error hover:text-white px-4 py-2 rounded" onClick={() => setShowTransferModal(false)}>Cancel</button>
+              <button className="bg-p text-white px-4 py-2 rounded" onClick={transferTimeCredits}>Transfer</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

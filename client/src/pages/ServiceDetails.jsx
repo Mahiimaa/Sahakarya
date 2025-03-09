@@ -81,7 +81,7 @@ function ServiceDetails() {
               <div key={provider._id} className="p-4 border border-dark-grey rounded-lg bg-white shadow-md hover:shadow-xl transition-all duration-200 w-full max-w-sm hover:-translate-y-1.5"
               >
                 {provider.serviceDetail ? (
-                <div className="p-2 " onClick={() => navigate(`/provider-details/${provider._id}`)}>
+                <div className="p-2 " onClick={() => navigate(`/provider-details/${provider._id}?serviceId=${service._id}`)}>
                    {provider.serviceDetail.image && (
                       <img src={provider.serviceDetail.image.startsWith("http") ? provider.serviceDetail.image : `${apiUrl}${provider.serviceDetail.image}`}  alt="Service" className="w-full h-48 object-cover rounded-md" />
                       

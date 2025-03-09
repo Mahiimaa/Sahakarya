@@ -1,6 +1,7 @@
 const axios = require("axios");
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const Booking = require('../models/Booking');
 require("dotenv").config();
 
 const verifyTransaction =async (req, res) => {
@@ -17,11 +18,12 @@ const verifyTransaction =async (req, res) => {
         },
         {
           headers: {
-            'Authorization': `Key ${process.env.KHALTI_SECRET_KEY}`
-          }
+            'Authorization': `Key ${process.env.KHALTI_SECRET_KEY}`,
+          },
         }
       );
-      console.log("key: " ,process.env.KHALTI_SECRET_KEY);
+      console.log("Khalti Secret Key:", process.env.KHALTI_SECRET_KEY);
+      console.log("Khalti Response:", verificationResponse.data);
       const responseData = verificationResponse.data;
       if (responseData.idx) { 
         const creditsToAdd = Math.floor(amount / 1000);
@@ -32,14 +34,13 @@ const verifyTransaction =async (req, res) => {
         }
         user.timeCredits += creditsToAdd;
         await user.save();
-  
-        const transaction = new Transaction({
+
+        await Transaction.create({
           userId: user._id,
           amount: creditsToAdd,
           type: 'purchase',
           details: `Purchased ${creditsToAdd} time credits via Khalti.`
         });
-        await transaction.save();
   
         return res.json({ message: 'Payment verified and credits updated', credits: user.timeCredits });
       } else {
@@ -50,5 +51,27 @@ const verifyTransaction =async (req, res) => {
       return res.status(500).json({ message: 'Error verifying payment', error: error.message });
     }
   };
+
+  const getTransactions = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const transactions = await Transaction.find({ 
+      $or: [{ sender: userId }, { recipient: userId }, { userId }]
+    })
+    .populate("sender", "username email") 
+    .populate("recipient", "username email") 
+    .populate({
+      path: "bookingId",
+      select: "service",
+      strictPopulate: false,
+    }) 
+    .sort({ createdAt: -1 });
+
+    res.json(transactions);
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+  };
   
-  module.exports = {verifyTransaction}
+  module.exports = {verifyTransaction, getTransactions}

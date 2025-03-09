@@ -82,6 +82,7 @@ const getUserDetails = async (req, res) => {
       username: user.username,
       email: user.email,
       phone: user.phone || "",
+      timeCredits: user.timeCredits || "",
       profilePicture: user.profilePicture || "", 
       services: user.servicesOffered || [],
     });
