@@ -66,7 +66,7 @@ const UserProfileInfoPage = () => {
     setServiceDescription(service.description || "");
     setPreviewImage(service.image || "");
     setDuration(service.duration || "");
-    setPreviewImage(service.image || "");
+    setTimeCredits(service.timeCredits || "");
     setShowModal(true);
   };
 
@@ -103,7 +103,7 @@ const UserProfileInfoPage = () => {
     setSelectedServices((prev) =>
       prev.map((service) =>
         service._id === selectedService._id
-          ? { ...service, title: serviceTitle, description: serviceDescription, image: previewImage }
+          ? { ...service, title: serviceTitle, description: serviceDescription, duration, timeCredits, image: previewImage }
           : service
       )
     );
@@ -214,12 +214,14 @@ const UserProfileInfoPage = () => {
             </button>
             <h2 className="text-h2 font-semi-bold ">Add Service Details</h2>
             </div>
+            <label className="text-h3 font-semi-bold">Title</label>
             <input 
               className="w-full border rounded-md p-2 mb-2"
               value={serviceTitle}
               onChange={(e) => setServiceTitle(e.target.value)}
               placeholder="Service Title"
             />
+            <label className="text-h3 font-semi-bold">Description</label>
             <textarea
               className="w-full border rounded-md p-2"
               rows="4"
@@ -227,8 +229,12 @@ const UserProfileInfoPage = () => {
               onChange={(e) => setServiceDescription(e.target.value)}
               placeholder="Describe your service..."
             ></textarea>
+            <label className="text-h3 font-semi-bold"> Duration</label>
+            <input className="w-full border rounded-md p-2 mb-2" type="number" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="Duration (in hours)" />
+            <label className="text-h3 font-semi-bold"> Time Credits</label>
+            <input className="w-full border rounded-md p-2 mb-2" type="number" value={timeCredits} onChange={(e) => setTimeCredits(e.target.value)} placeholder="Time Credits" />
             <input type="file" accept="image/*" onChange={handleImageChange} className="mt-2" />
-            {previewImage && <img src={previewImage} alt="Service Preview" className="mt-2 w-full rounded-md" />}
+            {previewImage && <img src={previewImage} alt="Service Preview" className="mt-2 w-24 h-24 object-contain rounded-md" />}
 
             <div className="flex justify-end mt-4">
               <button className="bg-p text-white px-4 py-2 rounded-md" onClick={handleSaveDescription}>Save</button>

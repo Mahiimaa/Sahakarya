@@ -49,6 +49,8 @@ const UserSchema = new mongoose.Schema({
       title: { type: String },
       description: { type: String },
       image: { type: String },
+      duration: {type: Number },
+      timeCredits: {type: Number}
     },
   ],
   timeCredits: { type: Number, default: 0 },

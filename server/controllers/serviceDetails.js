@@ -25,7 +25,13 @@ const getServiceDetails = async (req, res) => {
         username: user.username,
         email: user.email,
         profilePicture: user.profilePicture,
-        serviceDetail: serviceDetail || null,
+        serviceDetail: serviceDetail  ? {
+          title: serviceDetail.title || "N/A",
+          description: serviceDetail.description || "N/A",
+          image: serviceDetail.image || null,
+          duration: serviceDetail.duration || "N/A",
+          timeCredits: serviceDetail.timeCredits || "N/A",
+        } : null,
       };
     });
     
@@ -65,7 +71,7 @@ const getUserServices = async (req, res) => {
 
 const updateServiceDetails = async (req, res) => {
   const { serviceId } = req.params;
-  const { title, description } = req.body;
+  const { title, description, duration, timeCredits } = req.body;
   const userId = req.user._id;
 
   try {
@@ -85,6 +91,8 @@ const updateServiceDetails = async (req, res) => {
 
     user.serviceDetails[serviceIndex].title = title || user.serviceDetails[serviceIndex].title;
     user.serviceDetails[serviceIndex].description = description || user.serviceDetails[serviceIndex].description;
+    user.serviceDetails[serviceIndex].duration = duration || user.serviceDetails[serviceIndex].duration;
+    user.serviceDetails[serviceIndex].timeCredits = timeCredits || user.serviceDetails[serviceIndex].timeCredits;
 
     if (req.file) {
       if (user.serviceDetails[serviceIndex].image) {
@@ -170,6 +178,8 @@ const getAllServiceDetails = async (req, res) => {
             serviceId: detail.serviceId,
             serviceName: detail.title,
             description: detail.description,
+            duration: detail.duration,
+            timeCredits: detail.timeCredits,
             image: detail.image,
             providers: [],
           };

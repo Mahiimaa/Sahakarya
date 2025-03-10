@@ -78,7 +78,7 @@ function ServiceDetails() {
         <div className="grid grid-cols-5 gap-4 mt-4">
           {providers.length > 0 ? (
             providers.filter(provider => currentUser?._id !== provider._id && provider.serviceDetail && provider.serviceDetail.description) .map((provider) => (
-              <div key={provider._id} className="p-4 border border-dark-grey rounded-lg bg-white shadow-md hover:shadow-xl transition-all duration-200 w-full max-w-sm hover:-translate-y-1.5"
+              <div key={provider._id} className="p-4 border border-dark-grey rounded-lg bg-white shadow-md hover:shadow-xl transition-all duration-200 w-full max-w-sm hover:-translate-y-1.5 flex flex-col h-full"
               >
                 {provider.serviceDetail ? (
                 <div className="p-2 " onClick={() => navigate(`/provider-details/${provider._id}?serviceId=${service._id}`)}>
@@ -86,25 +86,30 @@ function ServiceDetails() {
                       <img src={provider.serviceDetail.image.startsWith("http") ? provider.serviceDetail.image : `${apiUrl}${provider.serviceDetail.image}`}  alt="Service" className="w-full h-48 object-cover rounded-md" />
                       
                     )}
-                    <div className="flex items-center gap-3">
+                   
+                    <div className="flex items-center gap-4 py-2">
                   {provider.profilePicture && (
                     <img src={`${apiUrl}${provider.profilePicture}`} alt="Profile" className="w-8 h-8 rounded-full" />
                   )}
-                  <div className="flex flex-col">
                 <h3 className="font-bold">{provider.username}</h3>
-                <p className="text-small text-grey">{provider.email}</p>
                 </div>
-                </div>
-                {/* <h4 className="font-semi-bold text-h2">{provider.serviceDetail.title}</h4> */}
-                    <p className="text-body line-clamp-3 hover:underline" >{provider.serviceDetail.description}</p>
-                
+                {/* <p className="text-small text-grey">{provider.email}</p> */}
+               
+                <h4 className="font-semi-bold text-h3">{provider.serviceDetail.title}</h4>
+                    <p className="text-h3 line-clamp-2 hover:underline" >{provider.serviceDetail.description}</p>
+                    <div className="flex-grow"></div>
+                    <div className=" flex justify-between mt-2">
+                            <span className="font-semi-bold text-h3">{provider.serviceDetail.duration || "N/A"} hours</span>
+                     
+                           <span className="font-semi-bold text-h3">{provider.serviceDetail.timeCredits || "N/A"} credits</span>
+                        </div>
                   </div>
                   
                 ) : (
                   <p className="text-sm text-gray-500">No additional details provided.</p>
                 )}
                 <button
-                  className="mt-2  text-p p-2 border border-p rounded-lg w-full hover:bg-p hover:text-white"
+                  className="mt-4  text-p p-2 border border-p rounded-lg w-full hover:bg-p hover:text-white"
                   onClick={async () => {
                     try {
                       await axios.post(`${apiUrl}/api/bookings`, { serviceId: service._id, providerId: provider._id }, {

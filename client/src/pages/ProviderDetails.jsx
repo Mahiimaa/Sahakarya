@@ -28,6 +28,9 @@ function ProviderDetails() {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log("Fetched Provider Data:", data);
+        if (!serviceId) {
+          console.error("Service ID is missing in the URL. Cannot filter service details.");
+        }
         setProvider(data.provider);
         setReviews(data.reviews);
       } catch (error) {
@@ -35,7 +38,7 @@ function ProviderDetails() {
       }
     };
     fetchProviderDetails();
-  }, [providerId, apiUrl]);
+  }, [providerId, apiUrl, serviceId]);
 
   const handleReviewSubmit = async () => {
     if (rating === 0 || comment.trim() === "") {

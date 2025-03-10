@@ -87,7 +87,7 @@ const selectService = async (req, res) => {
 
 const addServiceOfferDetails = async (req, res) => {
   const { serviceId } = req.params;
-  const { title, description } = req.body;
+  const { title, description, duration, timeCredits } = req.body;
   const userId = req.user._id;
 
   try {
@@ -106,6 +106,8 @@ const addServiceOfferDetails = async (req, res) => {
     if (serviceIndex !== -1) {
       user.serviceDetails[serviceIndex].title = title;
       user.serviceDetails[serviceIndex].description = description;
+      user.serviceDetails[serviceIndex].duration = duration;
+      user.serviceDetails[serviceIndex].timeCredits = timeCredits;
       if (req.file) {
         user.serviceDetails[serviceIndex].image = `/uploads/${req.file.filename}`;
       }
@@ -114,6 +116,8 @@ const addServiceOfferDetails = async (req, res) => {
         serviceId,
         title,
         description,
+        duration,
+        timeCredits,
         image:  req.file ? `/uploads/${req.file.filename}` : null,
       });
     }
