@@ -39,7 +39,7 @@ function AdminNav() {
                   </div>
                 </NavLink>
               
-                <NavLink to="/transactions" className={setActiveClass}>
+                <NavLink to="/adminTransactions" className={setActiveClass}>
                 <div className="flex items-center gap-6 p-2">
                   <img className="w-8 h-8"  src={transaction}  alt="" />
                   <p className='font-poppins font-regular'>Transactions</p>

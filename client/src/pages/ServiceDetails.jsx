@@ -13,7 +13,7 @@ function ServiceDetails() {
   const [service, setService] = useState(null);
   const [providers, setProviders] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-
+  const [userBookings, setUserBookings] = useState([]);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -26,8 +26,21 @@ function ServiceDetails() {
         console.error("Error fetching current user:", error);
       }
     };
-    fetchCurrentUser();
-  }, [apiUrl]);
+
+  const fetchUserBookings = async () => {
+    try {
+      const { data } = await axios.get(`${apiUrl}/api/bookings/user`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUserBookings(data.bookings);
+    } catch (error) {
+      console.error("Error fetching user bookings:", error);
+    }
+  };
+
+  fetchCurrentUser();
+  fetchUserBookings();
+}, [apiUrl]);
 
   useEffect(() => {
     console.log("Service ID:", _id);
@@ -46,6 +59,39 @@ function ServiceDetails() {
     };
     fetchServiceDetails();
   }, [_id, apiUrl]);
+
+  const handleRequestService = async (provider) => {
+    if (!currentUser) {
+      toast.error("User data not loaded. Try again.");
+      return;
+    }
+
+    const existingRequest = userBookings.find(
+      (booking) => booking.service === service._id && booking.status !== "completed"
+    );
+
+    if (existingRequest) {
+      toast.error("You have already requested this service.");
+      return;
+    }
+
+    if (currentUser.timeCredits < provider.serviceDetail.timeCredits) {
+      toast.error("Not enough time credits to request this service.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${apiUrl}/api/bookings`,
+        { serviceId: service._id, providerId: provider._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Service requested successfully!");
+    } catch (error) {
+      console.error(error.response?.data?.error || "Error requesting service");
+      toast.error(error.response?.data?.error || "Error requesting service");
+    }
+  };
 
   return (
     <div className= "flex flex-col">
@@ -83,7 +129,7 @@ function ServiceDetails() {
                 {provider.serviceDetail ? (
                 <div className="p-2 " onClick={() => navigate(`/provider-details/${provider._id}?serviceId=${service._id}`)}>
                    {provider.serviceDetail.image && (
-                      <img src={provider.serviceDetail.image.startsWith("http") ? provider.serviceDetail.image : `${apiUrl}${provider.serviceDetail.image}`}  alt="Service" className="w-full h-48 object-cover rounded-md" />
+                      <img src={provider.serviceDetail.image.startsWith("http") ? provider.serviceDetail.image : `${apiUrl}${provider.serviceDetail.image}`}  alt="Service" className="w-full h-40 object-cover rounded-md" />
                       
                     )}
                    
@@ -109,20 +155,21 @@ function ServiceDetails() {
                   <p className="text-sm text-gray-500">No additional details provided.</p>
                 )}
                 <button
-                  className="mt-4  text-p p-2 border border-p rounded-lg w-full hover:bg-p hover:text-white"
-                  onClick={async () => {
-                    try {
-                      await axios.post(`${apiUrl}/api/bookings`, { serviceId: service._id, providerId: provider._id }, {
-                        headers: { Authorization: `Bearer ${token}` },
-                      });
-                      toast.success("Service requested successfully!");
-                    } catch (error) {
-                      console.error(error.response?.data?.error || "Error requesting service");
-                        toast.error(error.response?.data?.error || "Error requesting service");
-                    }
-                  }}
+                  className="  text-p p-2 border border-p rounded-lg w-full hover:bg-p hover:text-white mt-auto"
+                  onClick={() => handleRequestService(provider)}
+                  disabled={
+                    userBookings.some(
+                      (booking) => booking.service === service._id && booking.status !== "completed"
+                    ) || currentUser?.timeCredits < provider.serviceDetail.timeCredits
+                  }
                 >
-                  Request Service
+                  {userBookings.some(
+                    (booking) => booking.service === service._id && booking.status !== "completed"
+                  )
+                    ? "Already Requested"
+                    : currentUser?.timeCredits < provider.serviceDetail.timeCredits
+                    ? "Insufficient Credits"
+                    : "Request Service"}
                 </button>
               </div>
             ))

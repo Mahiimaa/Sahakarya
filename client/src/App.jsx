@@ -14,6 +14,7 @@ import Navbar from './components//Navbar';
 import AdminService from "./pages/AdminService";
 import Users from './pages/Users';
 import Transactions from './pages/Transactions';
+import AdminTransaction from "./pages/AdminTransaction";
 import Category from "./pages/Category";
 import AdminSettings from "./pages/AdminSettings";
 import Explore from "./pages/Explore";
@@ -59,6 +60,7 @@ return (
         <Route path="/request" element={<Request />} />
         <Route path="/users" element={<Users />} />
         <Route path="/transactions" element={<Transactions />} />
+        <Route path="/adminTransactions" element={<AdminTransaction/>} />
         <Route path="/category" element={<Category />} />
         <Route path="/adminsettings" element={<AdminSettings />} />
         </Routes>

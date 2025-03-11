@@ -5,28 +5,77 @@ const Service = require("../models/Service");
 const requestService = async (req, res) => {
   try {
     const { serviceId, providerId } = req.body;
+    console.log("Service request initiated:", { serviceId, providerId, requester: req.user.id });
+
+    if (!serviceId || !providerId) {
+      console.error("Missing serviceId or providerId");
+      return res.status(400).json({ error: "Service ID and Provider ID are required" });
+    }
+
     const user = await User.findById(req.user.id);
     const service = await Service.findById(serviceId);
 
-    if (!service) return res.status(404).json({ error: "Service not found" });
+    if (!user) {
+      console.error("User not found:", req.user.id);
+      return res.status(404).json({ error: "User not found" });
+    }
 
+    if (!service) {
+      console.error("Service not found:", serviceId);
+      return res.status(404).json({ error: "Service not found" });
+    }
+
+    if (isNaN(user.timeCredits)) {
+      console.error("User's time credits are not a number:", user.timeCredits);
+      return res.status(400).json({ error: "User's time credits are invalid." });
+    }
+
+    if (isNaN(service.timeCreditsRequired)) {
+      console.error("Service's time credits required is not a number:", service.timeCreditsRequired);
+      return res.status(400).json({ error: "Invalid service time credits required." });
+    }
     if (user.timeCredits < service.timeCreditsRequired) {
+      console.error("Not enough time credits. Required:", service.timeCreditsRequired, "Available:", user.timeCredits);
       return res.status(400).json({ error: "Not enough time credits" });
     }
+
+    const updatedTimeCredits = Number(user.timeCredits) - Number(service.timeCreditsRequired);
+    user.timeCredits = updatedTimeCredits;
+    await user.save();
 
     const booking = new Booking({
       service: serviceId,
       provider: providerId,
       requester: req.user.id,
       status: "pending",
+      serviceDuration: service.duration
     });
 
     await booking.save();
+    console.log("Booking created successfully:", booking);
+
     res.status(201).json({ message: "Service requested successfully", booking });
+
+  } catch (error){
+    console.error("Error requesting service:", error);
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+}; 
+
+
+const getUserBookings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const bookings = await Booking.find({ requester: userId }).populate("service provider");
+
+    res.status(200).json({ bookings });
   } catch (error) {
+    console.error("Error fetching user bookings:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
+
 const acceptServiceRequest = async (req, res) => {
     const { bookingId } = req.params;
     const { scheduleDate, serviceDuration } = req.body;
@@ -127,4 +176,4 @@ const confirmServiceCompletion = async (req, res) => {
   }
   };
 
-module.exports = { requestService, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, confirmServiceCompletion };
+module.exports = { requestService,getUserBookings, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, confirmServiceCompletion };

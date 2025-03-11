@@ -63,7 +63,7 @@ function Navbar() {
     }
  
   return (
-        <div className=" flex justify-between p-2 px-28 ">
+        <div className=" flex justify-between p-2 px-28 bg-white">
         <div className="flex gap-28 items-center">
         <img className="w-24 h-24 py-4"  src={logo} alt="logo"></img>
         <NavLink to ="/home" className ={setActiveClass}>

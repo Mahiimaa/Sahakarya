@@ -279,6 +279,7 @@ const Request = () => {
                 ${booking.status === "pending" ? "text-s" : 
                 booking.status === "scheduled" ? "text-p" : 
                 booking.status === "completed" ? "text-p" :
+                booking.status === "credit transferred" ? "text-p" :
                 "text-error"}`}>
                 {booking.status}
               </span></p>

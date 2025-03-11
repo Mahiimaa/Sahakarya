@@ -149,7 +149,7 @@ function Explore() {
                    </div>
                     <button
                       className="mt-4 bg-p text-white p-2 rounded-lg w-full hover:bg-opacity-90"
-                      onClick={async () => {
+                      onClick={async (e) => {
                         e.stopPropagation();
                         try {
                           console.log("Sending request for:", {
