@@ -1,5 +1,6 @@
 const Service = require('../models/Service');
 const User = require('../models/User');
+const Booking = require("../models/Booking");
 
 // Admin: Add a new service
 const addService = async (req, res) => {
@@ -130,6 +131,42 @@ const addServiceOfferDetails = async (req, res) => {
   }
 };
 
+
+const getPopularServices = async (req, res) => {
+  try {
+    const popularServices = await Booking.aggregate([
+      { $group: { _id: "$service", count: { $sum: 1 } } }, 
+      { $sort: { count: -1 } }, 
+      { $limit: 5 }, 
+      {
+        $lookup: {
+          from: "services",
+          localField: "_id",
+          foreignField: "_id",
+          as: "serviceDetails",
+        },
+      },
+      { $unwind: "$serviceDetails" }, 
+      {
+        $project: {
+          _id: "$serviceDetails._id",
+          name: "$serviceDetails.serviceName",
+          category: "$serviceDetails.category",
+          timeCreditsRequired: "$serviceDetails.timeCreditsRequired",
+          description: "$serviceDetails.description",
+          bookings: "$count",
+        },
+      },
+    ]);
+
+    res.status(200).json({ popularServices });
+  } catch (error) {
+    console.error("Error fetching popular services:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
 module.exports = {
   addService,
   editService,
@@ -137,4 +174,5 @@ module.exports = {
   getServices,
   selectService,
   addServiceOfferDetails,
+  getPopularServices,
 };

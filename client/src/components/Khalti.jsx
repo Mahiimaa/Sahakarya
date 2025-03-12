@@ -3,7 +3,7 @@ import axios from "axios";
 
 const Khalti = forwardRef((props, ref) => {
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  const khaltiPublicKey = process.env.REACT_APP_KHALTI_PUBLIC_KEY;
+  const khaltiPublicKey = process.env.REACT_APP_KHALTI_PUBLIC_KEY || "b010be2aa27e4f9fa49d9656c30ea718";
   
   useEffect(() => {
     if (!document.getElementById('khalti-script')) {
@@ -34,6 +34,9 @@ const Khalti = forwardRef((props, ref) => {
       console.error("Khalti Public Key is missing! Make sure REACT_APP_KHALTI_PUBLIC_KEY is set in your environment.");
       return;
     }
+
+    console.log("Using Khalti Public Key:", khaltiPublicKey);
+    console.log("Amount Sent:", 1000);
     
     const config = {
       publicKey: khaltiPublicKey,

@@ -2,12 +2,18 @@ const Service = require('../models/Service');
 const User = require('../models/User');
 const Booking = require('../models/Booking');
 const Review = require("../models/Review");
+const mongoose = require("mongoose");
 
  const getProviderDetails = async (req, res) => {
     try {
       if (!req.params.providerId.match(/^[0-9a-fA-F]{24}$/)) {
         return res.status(400).json({ error: "Invalid provider ID format." });
     }
+    if (!mongoose.Types.ObjectId.isValid(req.params.providerId)) {
+      return res.status(400).json({ error: "Invalid provider ID format." });
+    }
+    console.log("Received providerId:", req.params.providerId);
+    console.log("Is providerId valid?", mongoose.Types.ObjectId.isValid(req.params.providerId));
       console.log("Fetching provider with ID:", req.params.providerId);
       const provider = await User.findById(req.params.providerId).populate("serviceDetails.serviceId", "serviceName");
       if (!provider) {
@@ -24,24 +30,21 @@ const getPreviousWork = async (req, res) => {
   try {
       const { providerId } = req.params;
 
-      // Validate providerId format
       if (!providerId.match(/^[0-9a-fA-F]{24}$/)) {
           return res.status(400).json({ error: "Invalid provider ID format." });
       }
 
       console.log("Fetching previous work for provider ID:", providerId);
 
-      // Find all completed bookings where provider is this providerId
       const completedBookings = await Booking.find({
           provider: providerId,
           status: "credit transferred",
           confirmedByRequester: true,
           confirmedByProvider: true
       })
-      .populate("service", "serviceName") // Fetch service details (service name)
-      .populate("requester", "username profilePicture"); // Fetch requester details (username, profile)
+      .populate("service", "serviceName") 
+      .populate("requester", "username profilePicture");
 
-      // Format response with additional details
       const previousWork = completedBookings.map(booking => ({
           _id: booking._id,
           serviceName: booking.service.serviceName,
@@ -49,9 +52,9 @@ const getPreviousWork = async (req, res) => {
               username: booking.requester.username,
               profilePicture: booking.requester.profilePicture
           },
-          timeCredits: booking.serviceDuration, // Assuming serviceDuration = time credits
+          timeCredits: booking.serviceDuration, 
           scheduleDate: booking.scheduleDate,
-          completedDate: booking.updatedAt, // Assuming updatedAt is when it was confirmed as completed
+          completedDate: booking.updatedAt,
       }));
 
       res.json({ previousWork });
@@ -94,7 +97,7 @@ const editReview = async (req, res) => {
     const userId = req.user.id;
   
     try {
-      const review = await User.findOne({  _id: reviewId, user: userId});
+      const review = await Review.findOne({  _id: reviewId, user: userId});
       if (!review) return res.status(404).json({ error: "Review not found or unauthorized" });
   
       review.rating = rating;
@@ -122,4 +125,52 @@ const deleteReview = async (req, res) => {
     }
   }
   
-  module.exports = {getProviderDetails, getPreviousWork, addReviews, editReview, deleteReview};
+  const getTopRatedProviders = async (req, res) => {
+    try {
+      console.log("Fetching top-rated providers...");
+  
+      const topProviders = await Review.aggregate([
+        {
+          $group: {
+            _id: "$provider",
+            avgRating: { $avg: "$rating" },
+            completedJobs: { $sum: 1 },
+          },
+        },
+        { $sort: { avgRating: -1, completedJobs: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: "users",
+            let: { providerId: "$_id" },
+            pipeline: [
+              { $match: { $expr: { $eq: ["$_id", { $toObjectId: "$$providerId" }] } } }, // ✅ Ensure ObjectId match
+              { $project: { _id: 1, username: 1, profilePicture: 1 } }
+            ],
+            as: "providerDetails",
+          },
+        },
+        { $unwind: { path: "$providerDetails", preserveNullAndEmptyArrays: true } }, // ✅ Prevent empty arrays
+        {
+          $project: {
+            _id: "$providerDetails._id",
+            username: { $ifNull: ["$providerDetails.username", "Unknown Provider"] }, // ✅ Default username
+            profilePicture: { $ifNull: ["$providerDetails.profilePicture", "/default-profile.png"] }, // ✅ Default profile
+            rating: { $ifNull: ["$avgRating", 0] },
+            completedJobs: "$completedJobs",
+          },
+        },
+      ]);
+  
+      console.log("🚀 Debugging: Top Providers Data:", topProviders);
+  
+      res.status(200).json({ topProviders });
+    } catch (error) {
+      console.error(" Error fetching top-rated providers:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  };
+  
+  
+  
+  module.exports = {getProviderDetails, getPreviousWork, addReviews, editReview, deleteReview, getTopRatedProviders};
