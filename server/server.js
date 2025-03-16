@@ -71,6 +71,29 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on("sendNotification", async ({ userId, message }) => {
+    if (!userId || !message) {
+      console.error("Invalid notification data:", { userId, message });
+      return;
+    }
+    
+    try {
+      const notification = new Notification({
+        userId,
+        message,
+        isRead: false,
+        createdAt: new Date(),
+      });
+
+      await notification.save();
+
+      io.to(userId.toString()).emit("newNotification", notification); // Send to specific user room
+      console.log(`Notification sent to ${userId}: ${message}`);
+    } catch (error) {
+      console.error("Error saving notification:", error);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log(`User disconnected: ${socket.id}`);
     users.forEach((socketId, userId) => {

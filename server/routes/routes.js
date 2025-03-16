@@ -14,6 +14,7 @@ const {getProviderDetails, getPreviousWork, addReviews, editReview, deleteReview
 const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, confirmServiceCompletion } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
 const {transferTimeCredit} = require('../controllers/timeCreditController');
+const {getNotifications, readNotifications} = require('../controllers/notification');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -109,5 +110,8 @@ router.get("/chats", verifyToken, getUserChats);
 
 router.put('/bookings/:bookingId/transfer-credits', verifyToken, transferTimeCredit);
 router.get('/transactions', verifyToken, getTransactions);
+
+router.get("/notifications/:userId", verifyToken, getNotifications );
+router.put("/notifications/mark-read/:id", verifyToken, readNotifications);
 
 module.exports = router;

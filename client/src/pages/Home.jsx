@@ -233,9 +233,9 @@ function Home() {
             ))}
           </div>
         ) : (
-          <div className="bg-white p-8 rounded-lg border border-gray-100 text-center">
-            <p className="text-gray-500 mb-4">No top-rated providers available yet.</p>
-            <p className="text-gray-500">Be the first to offer your services!</p>
+          <div className="bg-white p-8 rounded-lg border border-dark-grey text-center">
+            <p className="text-s mb-4">No top-rated providers available yet.</p>
+            <p className="text-grey">Be the first to offer your services!</p>
           </div>
         )}
       </div>

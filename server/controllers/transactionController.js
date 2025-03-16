@@ -41,14 +41,20 @@ const verifyTransaction =async (req, res) => {
           type: 'purchase',
           details: `Purchased ${creditsToAdd} time credits via Khalti.`
         });
-  
-        return res.json({ message: 'Payment verified and credits updated', credits: user.timeCredits });
+          return res.json({ message: 'Payment verified and credits updated', credits: user.timeCredits });
       } else {
         return res.status(400).json({ message: 'Payment verification failed', details: responseData });
       }
     } catch (error) {
       console.error("Verification Error:", error.response ? error.response.data : error.message);
-      return res.status(500).json({ message: 'Error verifying payment', error: error.message });
+      if (error.response) {
+        console.error("Full Error Response:", JSON.stringify(error.response.data, null, 2));
+      }
+    
+      return res.status(500).json({ 
+        message: 'Error verifying payment', 
+        error: error.response ? error.response.data : error.message 
+      });
     }
   };
 

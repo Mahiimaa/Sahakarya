@@ -142,27 +142,24 @@ const deleteReview = async (req, res) => {
         {
           $lookup: {
             from: "users",
-            let: { providerId: "$_id" },
-            pipeline: [
-              { $match: { $expr: { $eq: ["$_id", { $toObjectId: "$$providerId" }] } } }, // ✅ Ensure ObjectId match
-              { $project: { _id: 1, username: 1, profilePicture: 1 } }
-            ],
-            as: "providerDetails",
+            localField: "_id",
+            foreignField: "_id",
+            as: "providerDetails"
           },
         },
-        { $unwind: { path: "$providerDetails", preserveNullAndEmptyArrays: true } }, // ✅ Prevent empty arrays
+        { $unwind: { path: "$providerDetails", preserveNullAndEmptyArrays: true } }, 
         {
           $project: {
             _id: "$providerDetails._id",
-            username: { $ifNull: ["$providerDetails.username", "Unknown Provider"] }, // ✅ Default username
-            profilePicture: { $ifNull: ["$providerDetails.profilePicture", "/default-profile.png"] }, // ✅ Default profile
+            username: { $ifNull: ["$providerDetails.username", "Unknown Provider"] }, 
+            profilePicture: { $ifNull: ["$providerDetails.profilePicture", "/default-profile.png"] },
             rating: { $ifNull: ["$avgRating", 0] },
             completedJobs: "$completedJobs",
           },
         },
       ]);
   
-      console.log("🚀 Debugging: Top Providers Data:", topProviders);
+      console.log(" Debugging: Top Providers Data:", JSON.stringify(topProviders, null, 2));
   
       res.status(200).json({ topProviders });
     } catch (error) {

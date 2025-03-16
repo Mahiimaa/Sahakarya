@@ -3,12 +3,13 @@ import axios from "axios";
 
 const Khalti = forwardRef((props, ref) => {
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  const khaltiPublicKey = process.env.REACT_APP_KHALTI_PUBLIC_KEY || "b010be2aa27e4f9fa49d9656c30ea718";
+  const khaltiPublicKey = process.env.REACT_APP_KHALTI_PUBLIC_KEY || "15ef4852257b4064aa8bb38077ea7cf1";
   
   useEffect(() => {
     if (!document.getElementById('khalti-script')) {
       const script = document.createElement('script');
       script.id = 'khalti-script';
+      // KHALTI_ENDPOINT='https://dev.khalti.com/api/v2'
       script.src = "https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.22.0.0.0/khalti-checkout.iffe.js";
       script.async = true;
       script.onload = () => setIsScriptLoaded(true);
@@ -24,7 +25,7 @@ const Khalti = forwardRef((props, ref) => {
     }
   }, []);
 
-  const handlePayment = () => {
+  const handlePayment = (amount) => {
     if (!isScriptLoaded) {
       console.error("Khalti script is still loading, please try again.");
       return;
@@ -43,17 +44,16 @@ const Khalti = forwardRef((props, ref) => {
       productIdentity: "time-credit-001",
       productName: "Time Credits Purchase",
       productUrl: window.location.href,
-      amount: 1000, // 10 NPR = 1 Time Credit
+      amount: amount,
       paymentPreference: ["KHALTI"],
       eventHandler: {
         onSuccess(payload) {
           console.log("Payment Successful", payload);
           const apiUrl = process.env.REACT_APP_API_BASE_URL;
-          
           axios
             .post(`${apiUrl}/api/verify`, {
               token: payload.token,
-              amount: 10000
+              amount: amount,
             }, {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
