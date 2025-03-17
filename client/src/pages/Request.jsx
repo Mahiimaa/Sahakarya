@@ -18,7 +18,12 @@ const Request = () => {
   const [currentBookingId, setCurrentBookingId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState("incoming");
-
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [actualDuration, setActualDuration] = useState("");
+  const [proposedCredits, setProposedCredits] = useState("");
+  const [completionNotes, setCompletionNotes] = useState("");
+  const [disputeReason, setDisputeReason] = useState("");
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferBookingId, setTransferBookingId] = useState(null);
   const [transferProviderId, setTransferProviderId] = useState(null);
@@ -66,12 +71,18 @@ const Request = () => {
         const requestReceived = await axios.get(`${apiUrl}/api/bookings/provider`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setBookings(requestReceived.data);
+        const sortedIncoming = requestReceived.data.sort((a, b) => 
+          new Date(b.dateRequested) - new Date(a.dateRequested)
+        );
+        setBookings(sortedIncoming);
 
         const requestMade = await axios.get(`${apiUrl}/api/bookings/requester`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setOutgoingBookings(requestMade.data);
+        const sortedOutgoing = requestMade.data.sort((a, b) => 
+          new Date(b.dateRequested) - new Date(a.dateRequested)
+        );
+        setOutgoingBookings(sortedOutgoing);
       } catch (err) {
         console.error("Error fetching service requests:", err);
         setError("Failed to load requests.");
@@ -101,7 +112,7 @@ const Request = () => {
           b._id === currentBookingId
             ? { ...b, status: "scheduled", scheduleDate, serviceDuration }
             : b
-        ));
+        ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested)));
       setShowScheduleModal(false);
     } catch (error) {
       toast.error("Error accepting request.");
@@ -120,7 +131,87 @@ const Request = () => {
     }
   };
 
+  const initiateCompletion = (bookingId) => {
+    setCurrentBookingId(bookingId);
+    setShowCompletionModal(true);
+  };
+  
+  const submitProviderCompletion = async () => {
+    if (!actualDuration || !proposedCredits) {
+      toast.error("Please fill all required fields.");
+      return;
+    }
+    
+    try {
+      const { data } = await axios.put(
+        `${apiUrl}/api/bookings/${currentBookingId}/provider-completion`, 
+        { 
+          actualDuration, 
+          proposedCredits,
+          completionNotes 
+        }, 
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      toast.success("Service completion details submitted!");
+      setShowCompletionModal(false);
+      
+      setBookings((prevBookings) =>
+        prevBookings.map((b) =>
+          b._id === currentBookingId
+            ? { ...b, 
+                status: "awaiting requester confirmation", 
+                confirmedByProvider: true,
+                actualDuration,
+                proposedCredits,
+                completionNotes
+              }
+            : b
+        ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
+      );
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Error submitting completion details.");
+    }
+  };
+
+  const disputeCompletion = () => {
+    setShowDisputeModal(true);
+  };
+  
+  const submitDispute = async () => {
+    if (!disputeReason) {
+      toast.error("Please provide a reason for the dispute.");
+      return;
+    }
+    
+    try {
+      const { data } = await axios.put(
+        `${apiUrl}/api/bookings/${currentBookingId}/dispute`, 
+        { disputeReason }, 
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      toast.success("Dispute submitted!");
+      setShowDisputeModal(false);
+      
+      setOutgoingBookings((prevBookings) =>
+        prevBookings.map((b) =>
+          b._id === currentBookingId
+            ? { ...b, status: "disputed", disputeReason }
+            : b
+        ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
+      );
+    } catch (error) {
+      toast.error("Error submitting dispute.");
+    }
+  };
+
   const confirmCompletion = async (bookingId) => {
+    setCurrentBookingId(bookingId);
     try {
       const {data} =await axios.put(`${apiUrl}/api/${bookingId}/confirm`, {}, {
         headers: { Authorization: `Bearer ${token}` },
@@ -131,7 +222,15 @@ const Request = () => {
           b._id === bookingId
             ? { ...b, status: data.status, confirmedByRequester: data.confirmedByRequester, confirmedByProvider: data.confirmedByProvider }
             : b
-        ));
+          ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested)));
+
+          setOutgoingBookings((prevBookings) =>
+            prevBookings.map((b) =>
+              b._id === bookingId
+                ? { ...b, status: data.status, confirmedByRequester: data.confirmedByRequester, confirmedByProvider: data.confirmedByProvider }
+                : b
+            ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
+          );
     } catch (error) {
       toast.error("Error confirming service completion.");
     }
@@ -237,18 +336,14 @@ const Request = () => {
                   <div className="flex w-full justify-end">
                   {booking.status === "scheduled" && booking.scheduleDate && !isNaN(new Date(booking.scheduleDate)) && (
                       <button
-                        className={`bg-p text-white px-4 py-2 rounded  ${
-                          booking.confirmedByRequester && booking.confirmedByProvider ? "bg-p" : "bg-p"
-                        }`}
-                        onClick={() => confirmCompletion(booking._id)}
+                        className ="bg-p text-white px-4 py-2 rounded" 
+                        onClick={() => initiateCompletion(booking._id)}
                       >
                         {booking.confirmedByRequester && booking.confirmedByProvider
                      ? "Service Completed"
-                     : booking.confirmedByRequester
-                     ? "Confirmed by Requester"
                      : booking.confirmedByProvider
-                     ? "Confirmed by You"
-                     : "Confirm Completion"}
+                      ? "Completion Details Submitted"
+                      : "Submit Completion Details"}
                       </button>
                     )}
                     
@@ -280,6 +375,8 @@ const Request = () => {
                 booking.status === "scheduled" ? "text-p" : 
                 booking.status === "completed" ? "text-p" :
                 booking.status === "credit transferred" ? "text-p" :
+                booking.status === "awaiting requester confirmation" ? "text-s" :
+                booking.status === "disputed" ? "text-error" :
                 "text-error"}`}>
                 {booking.status}
               </span></p>
@@ -290,33 +387,45 @@ const Request = () => {
           <p><strong>Duration:</strong> {booking.serviceDuration} hour(s)</p>
         </div>
       )}
-          <div className="flex mt-4 justify-end">
-          {booking.status === "scheduled" && booking.scheduleDate && !isNaN(new Date(booking.scheduleDate)) && (
-        <button
-          className={`bg-p text-white px-4 py-2 rounded ${
-            booking.confirmedByRequester && booking.confirmedByProvider ? "bg-p" : "bg-p"
-          }`}
-          onClick={() => confirmCompletion(booking._id)}
-        >
-          {booking.status === "credit transferred"
-            ? "Credit Transferred"
-            :booking.confirmedByRequester && booking.confirmedByProvider
-           ? "Service Completed"
-           : booking.confirmedByRequester
-           ? "Confirmed by Requester"
-           : booking.confirmedByProvider
-           ? "Confirmed by Provider"
-           : "Confirm Completion"}
-        </button>
+          {booking.actualDuration && booking.proposedCredits && (
+        <div className="mt-2 p-2 bg-s/20 rounded-md">
+          <p><strong>Actual Duration:</strong> {booking.actualDuration} hour(s)</p>
+          <p><strong>Proposed Credits:</strong> {booking.proposedCredits}</p>
+          {booking.completionNotes && (
+            <p><strong>Notes:</strong> {booking.completionNotes}</p>
+          )}
+        </div>
       )}
-      {booking.confirmedByRequester && booking.confirmedByProvider && currentUser && currentUser._id === booking.requester._id && booking.status !== "credit transferred" && (
-                      <button
-                        className="bg-p text-white px-4 py-2 rounded ml-4"
-                        onClick={() => handleOpenTransferModal(booking._id, booking.provider._id, booking.serviceDuration)}
-                      >
-                        Transfer Time Credits
-                      </button>
-                    )}
+      
+      <div className="flex mt-4 justify-end">
+        {booking.status === "awaiting requester confirmation" && (
+          <>
+            <button
+              className="bg-p text-white px-4 py-2 rounded"
+              onClick={() => confirmCompletion(booking._id)}
+            >
+              Confirm Completion
+            </button>
+            <button
+              className="bg-white text-error border border-error hover:bg-error hover:text-white px-4 py-2 rounded ml-2"
+              onClick={() => {
+                setCurrentBookingId(booking._id);
+                disputeCompletion();
+              }}
+            >
+              Dispute
+            </button>
+          </>
+        )}
+        
+        {booking.status === "completed" && currentUser && currentUser._id === booking.requester._id && (
+          <button
+            className="bg-p text-white px-4 py-2 rounded ml-2"
+            onClick={() => handleOpenTransferModal(booking._id, booking.provider._id)}
+          >
+            Add Review
+          </button>
+        )}
       <button className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 " onClick={() => openChat(booking.requester, booking.provider)}>Chat</button>
       </div>
             </div>
@@ -354,6 +463,86 @@ const Request = () => {
           </div>
         </div>
       )}
+
+    {showCompletionModal && (
+      <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 z-50">
+        <div className="bg-white p-6 rounded-lg shadow-md w-96">
+          <h2 className="text-h2 font-bold mb-4">Service Completion Details</h2>
+          
+          <label className="font-semi-bold text-h3">Actual Service Duration (hours)</label>
+          <input 
+            type="number" 
+            placeholder="Hours spent on service" 
+            className="w-full p-2 border rounded mb-2"
+            value={actualDuration} 
+            onChange={(e) => setActualDuration(e.target.value)}
+          />
+          
+          <label className="font-semi-bold text-h3">Proposed Time Credits</label>
+          <input 
+            type="number" 
+            placeholder="Credits to transfer" 
+            className="w-full p-2 border rounded mb-2"
+            value={proposedCredits} 
+            onChange={(e) => setProposedCredits(e.target.value)}
+          />
+          
+          <label className="font-semi-bold text-h3">Notes (Optional)</label>
+          <textarea
+            placeholder="Any notes about the service completion"
+            className="w-full p-2 border rounded mb-2"
+            value={completionNotes}
+            onChange={(e) => setCompletionNotes(e.target.value)}
+          />
+          
+          <div className="flex justify-between mt-4">
+            <button 
+              className="bg-white border text-error border-error hover:bg-error hover:text-white px-4 py-2 rounded" 
+              onClick={() => setShowCompletionModal(false)}
+            >
+              Cancel
+            </button>
+            <button 
+              className="bg-p text-white px-4 py-2 rounded" 
+              onClick={submitProviderCompletion}
+            >
+              Submit Details
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {showDisputeModal && (
+      <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 z-50">
+        <div className="bg-white p-6 rounded-lg shadow-md w-96">
+          <h2 className="text-h2 font-bold mb-4">Dispute Service Completion</h2>
+          
+          <label className="font-semi-bold text-h3">Reason for Dispute</label>
+          <textarea
+            placeholder="Please explain why you're disputing this completion"
+            className="w-full p-2 border rounded mb-2"
+            value={disputeReason}
+            onChange={(e) => setDisputeReason(e.target.value)}
+          />
+          
+          <div className="flex justify-between mt-4">
+            <button 
+              className="bg-white border text-error border-error hover:bg-error hover:text-white px-4 py-2 rounded" 
+              onClick={() => setShowDisputeModal(false)}
+            >
+              Cancel
+            </button>
+            <button 
+              className="bg-p text-white px-4 py-2 rounded" 
+              onClick={submitDispute}
+            >
+              Submit Dispute
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 };

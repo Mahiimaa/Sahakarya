@@ -84,10 +84,9 @@ io.on('connection', (socket) => {
         isRead: false,
         createdAt: new Date(),
       });
-
       await notification.save();
-
-      io.to(userId.toString()).emit("newNotification", notification); // Send to specific user room
+      console.log(`Emitting newNotification event to userId: ${userId}`);
+      io.to(userId.toString()).emit("newNotification", notification);
       console.log(`Notification sent to ${userId}: ${message}`);
     } catch (error) {
       console.error("Error saving notification:", error);

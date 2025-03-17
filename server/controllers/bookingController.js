@@ -45,7 +45,11 @@ const requestService = async (req, res) => {
       status: "pending",
       serviceDuration: serviceDetail.duration,
     });
-
+    // io.to(providerId).emit("newNotification", {
+    //   message: `You have a new service request from ${requester}`,
+    //   createdAt: new Date(),
+    //   isRead: false,
+    // });
     await booking.save();
     res.status(201).json({ message: "Service requested successfully", booking });
   } catch (error) {
@@ -143,6 +147,43 @@ const getOutgoingBookings = async (req, res) => {
   }
 };
 
+const submitProviderCompletion = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { actualDuration, proposedCredits, completionNotes } = req.body;
+    const userId = req.user.id;
+
+    if (!actualDuration || !proposedCredits) {
+      return res.status(400).json({ error: "Actual duration and proposed credits are required" });
+    }
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.provider.toString() !== userId) {
+      return res.status(403).json({ error: "Unauthorized to submit completion for this booking" });
+    }
+
+    booking.actualDuration = actualDuration;
+    booking.proposedCredits = proposedCredits;
+    booking.completionNotes = completionNotes;
+    booking.confirmedByProvider = true;
+    booking.status = "awaiting requester confirmation";
+
+    await booking.save();
+    res.json({ 
+      message: "Completion details submitted successfully", 
+      status: booking.status,
+      confirmedByProvider: booking.confirmedByProvider
+    });
+  } catch (error) {
+    console.error("Error submitting completion details:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 const confirmServiceCompletion = async (req, res) => {
   const { bookingId } = req.params;
   const userId = req.user.id;
@@ -155,16 +196,52 @@ const confirmServiceCompletion = async (req, res) => {
     if (booking.requester.toString() === userId) {
       booking.confirmedByRequester = true;
     } else if (booking.provider.toString() === userId) {
-      booking.confirmedByProvider = true;
+      return res.status(400).json({ error: "Providers should use the detailed completion form" });
+    } else {
+      return res.status(403).json({ error: "Unauthorized to confirm this booking" });
     }
+
     if (booking.confirmedByRequester && booking.confirmedByProvider) {
       booking.status = "completed";
     }
+    
     await booking.save();
-    res.json({ message: "Service marked as completed." });
+    res.json({ 
+      message: "Service marked as completed.", 
+      status: booking.status,
+      confirmedByRequester: booking.confirmedByRequester,
+      confirmedByProvider: booking.confirmedByProvider
+    });
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }
   };
 
-module.exports = { requestService,getUserBookings, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, confirmServiceCompletion };
+  const disputeCompletion = async (req, res) => {
+    try {
+      const { bookingId } = req.params;
+      const { disputeReason } = req.body;
+      const userId = req.user.id;
+  
+      const booking = await Booking.findById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ error: "Booking not found" });
+      }
+  
+      if (booking.requester.toString() !== userId) {
+        return res.status(403).json({ error: "Unauthorized to dispute this booking" });
+      }
+  
+      booking.status = "disputed";
+      booking.disputeReason = disputeReason;
+      booking.confirmedByRequester = false;
+      
+      await booking.save();
+      res.json({ message: "Service completion disputed", status: booking.status });
+    } catch (error) {
+      console.error("Error disputing completion:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  };
+
+module.exports = { requestService,getUserBookings, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, submitProviderCompletion, confirmServiceCompletion, disputeCompletion };

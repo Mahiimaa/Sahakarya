@@ -5,12 +5,30 @@ import {NavLink, useNavigate} from "react-router-dom"
 import email from "../assets/email.png"
 import phone from "../assets/phone.png"
 import logout from "../assets/logout.png"
+import notification from "../assets/notification.png"
 import axios from "axios"
+import io from "socket.io-client";
+
+const socket = io(process.env.REACT_APP_API_BASE_URL, {
+  withCredentials: true,
+  transports: ["websocket", "polling"],
+});
+
+socket.on("connect", () => {
+  console.log("Connected to WebSocket server:", socket.id);
+});
+
+socket.on("connect_error", (err) => {
+  console.error("WebSocket connection error:", err);
+});
+
 
 function Navbar() {
 
   const [userDetails, setUserDetails] = useState(null);
   const [error, setError] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const setActiveClass = ({ isActive }) =>
     {
@@ -38,13 +56,39 @@ function Navbar() {
             },
           });
           setUserDetails(response.data);
-          console.log(userDetails);
+          console.log("Joining room with userId:", response.data.id);
+          socket.emit("joinRoom", { userId: response.data.id });
+
+          const notifResponse = await axios.get(`${apiUrl}/api/notifications`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          console.log("Joining room with userId:", response.data.id);
+          setNotifications(notifResponse.data);
+          setUnreadCount(notifResponse.data.filter((notif) => !notif.isRead).length);
         } catch (err) {
-          setError('Failed to load user details.');
+          setError("Failed to load user details.");
         }
       };
-  
       fetchUserDetails();
+
+      socket.on("connect", () => {
+        console.log("Connected to WebSocket server:", socket.id);
+      });
+    
+      socket.on("connect_error", (err) => {
+        console.error("WebSocket connection error:", err);
+      });
+
+      socket.on("newNotification", (notification) => {
+        console.log("Received new notification:", notification);
+        setNotifications((prev) => [notification, ...prev]);
+        setUnreadCount((prev) => prev + 1);
+      });
+  
+      return () => {
+        socket.off("newNotification");
+      };
     }, [apiUrl, navigate]);
 
     const handleLogout = async () => {
@@ -83,11 +127,39 @@ function Navbar() {
           </NavLink>
           </div>
           <div className="flex gap-8 justify-center items-center">
+            <details className="relative">
+            <summary  className="list-none cursor-pointer">
+              <img className="w-10 h-16 py-4" src={notification} alt="notification"/>
+              {unreadCount > 0 && (
+                <span className="absolute top-2 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+              </summary>
+              <ul className="absolute right-[50%] bg-white w-[16vw] border border-dark-grey rounded p-4 top-10 ">
+                <div className="flex justify-between">
+                <p>Notifications</p>
+                <p className='bg-p/60 border border-p rounded-full w-6 h-6 text-center'>{unreadCount}</p>
+                </div>
+                <hr className='my-2'/>
+                {notifications.length === 0 ? (
+              <p className="text-gray-500 text-center">No notifications</p>
+                ) : (
+                  notifications.map((notif, index) => (
+                    <div key={index} className="p-2 border-b">
+                      <p className="text-body">{notif.message}</p>
+                      <p className="text-small text-grey">{new Date(notif.createdAt).toLocaleString()}</p>
+                    </div>
+                  ))
+                )}
+              </ul>
+              </details>
+          
           <details className="relative">
           <summary className="list-none cursor-pointer ">
           <img className="w-10 h-16 py-4" src={profile} alt="profile"></img>
           </summary>
-          <ul className="absolute right-[50%] bg-white w-[16vw] border border-grey rounded p-4 top-10 ">
+          <ul className="absolute right-[50%] bg-white w-[16vw] border border-dark-grey rounded p-4 top-10 ">
           {error ? (
               <div className="text-error">{error}</div>
             ) : userDetails ? (

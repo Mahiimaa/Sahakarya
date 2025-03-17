@@ -55,7 +55,7 @@ const ChatList = () => {
                   alt={chat.user.username}
                   className="w-12 h-12 rounded-full object-cover"
                 />
-                <div>
+                <div className="flex flex-col items-start">
                   <p className="font-semi-bold text-h2">{chat.user.username}</p>
                   <p className="text-h3 text-grey">
                     {chat.lastMessage.content.length > 30

@@ -55,6 +55,11 @@ const sendMessage = async (req, res, io) => {
       createdAt: new Date(),
     });
 
+    io.to(receiverId).emit("newNotification", {
+      message: `New message from ${senderId}: ${message}`,
+      createdAt: new Date(),
+      isRead: false,
+    });
     console.log(`Sending message from ${senderId} to ${receiverId}`);
 
     if (global.io) {

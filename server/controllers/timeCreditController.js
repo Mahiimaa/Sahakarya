@@ -5,67 +5,65 @@ const Transaction = require("../models/Transaction");
 const bcrypt = require('bcrypt');
 
 const transferTimeCredit = async (req, res) => {
-  const { providerId, amount, password } = req.body;
-  const { bookingId } = req.params;
-  const userId = req.user.id;
-
   try {
-    if (!providerId || !amount || !password) {
-      return res.status(400).json({ error: "All fields are required." });
+    const { bookingId } = req.params;
+    const { password } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    const transferAmount = parseInt(amount);
-    if (transferAmount <= 0) {
-      return res.status(400).json({ error: "Time credits must be greater than 0." });
-    }
-
-    const requester = await User.findById(userId).select("+password");
-    const provider = await User.findById(providerId);
-    if (!requester || !provider) {
-      return res.status(404).json({ error: "User not found." });
-    }
-
-    const isMatch = await bcrypt.compare(password, requester.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Incorrect password." });
-    }
-
-    if (requester.timeCredits < transferAmount) {
-      return res.status(400).json({ error: "Insufficient time credits." });
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Invalid password" });
     }
 
     const booking = await Booking.findById(bookingId);
     if (!booking) {
-      return res.status(404).json({ error: "Booking not found." });
+      return res.status(404).json({ error: "Booking not found" });
     }
-    if (booking.status !== "completed") {
-      return res.status(400).json({ error: "Service must be completed before transferring credits." });
-    }
-    requester.timeCredits -= transferAmount;
-    provider.timeCredits += transferAmount;
-    await requester.save();
-    await provider.save();
-    
-    const transactionId = uuidv4();
 
-    const transaction = new Transaction({
-      transactionId,
-      sender: requester._id,
-      recipient: provider._id,
-      amount: transferAmount,
-      type: "service_payment",
-      details: `Transferred ${transferAmount} time credits for service ${booking.service}`,
-    });
-    await transaction.save();
+    if (booking.requester.toString() !== userId) {
+      return res.status(403).json({ error: "Unauthorized to transfer credits for this booking" });
+    }
+
+    if (booking.status !== "completed") {
+      return res.status(400).json({ error: "Booking must be completed before transferring credits" });
+    }
+
+    if (!booking.proposedCredits) {
+      return res.status(400).json({ error: "No proposed credits amount found" });
+    }
+
+    const provider = await User.findById(booking.provider);
+    if (!provider) {
+      return res.status(404).json({ error: "Provider not found" });
+    }
+
+    const creditsToTransfer = Number(booking.proposedCredits);
     
+    if (user.timeCredits < creditsToTransfer) {
+      return res.status(400).json({ error: "Not enough time credits" });
+    }
+
+    user.timeCredits -= creditsToTransfer;
+    provider.timeCredits += creditsToTransfer;
     booking.status = "credit transferred";
+
+    await user.save();
+    await provider.save();
     await booking.save();
-    res.json({ message: "Time credits transferred successfully!", requesterBalance: requester.timeCredits });
+
+    res.json({ 
+      message: "Time credits transferred successfully", 
+      status: booking.status 
+    });
   } catch (error) {
-    console.error("Error transferring time credits:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Error transferring credits:", error);
+    res.status(500).json({ error: "Server error" });
   }
 };
-
 
 module.exports = { transferTimeCredit };

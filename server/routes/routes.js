@@ -11,10 +11,10 @@ const {editProfile} = require('../controllers/profile');
 const {verifyTransaction, getTransactions} = require('../controllers/transactionController');
 const { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService, getAllServiceDetails} = require('../controllers/serviceDetails');
 const {getProviderDetails, getPreviousWork, addReviews, editReview, deleteReview, getTopRatedProviders} = require('../controllers/ProviderController');
-const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, confirmServiceCompletion } = require("../controllers/bookingController");
+const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, submitProviderCompletion, disputeCompletion, confirmServiceCompletion } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
 const {transferTimeCredit} = require('../controllers/timeCreditController');
-const {getNotifications, readNotifications} = require('../controllers/notification');
+const {getNotifications, readNotifications} = require('../controllers/notificationController');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -95,6 +95,8 @@ router.get("/bookings/provider", verifyToken, getServiceRequestsForProvider);
 router.get("/bookings/requester", verifyToken, getOutgoingBookings);
 router.put("/:bookingId/accept", verifyToken, acceptServiceRequest);
 router.put("/:bookingId/reject", verifyToken, rejectServiceRequest);
+router.put('/bookings/:bookingId/provider-completion', verifyToken, submitProviderCompletion);
+router.put('/bookings/:bookingId/dispute', verifyToken, disputeCompletion);
 router.put("/:bookingId/confirm",verifyToken, confirmServiceCompletion);
 router.post('/verify',verifyToken, verifyTransaction);
 router.post("/sendMessage", verifyToken, (req, res) => {
@@ -111,7 +113,7 @@ router.get("/chats", verifyToken, getUserChats);
 router.put('/bookings/:bookingId/transfer-credits', verifyToken, transferTimeCredit);
 router.get('/transactions', verifyToken, getTransactions);
 
-router.get("/notifications/:userId", verifyToken, getNotifications );
+router.get("/notifications", verifyToken, getNotifications );
 router.put("/notifications/mark-read/:id", verifyToken, readNotifications);
 
 module.exports = router;
