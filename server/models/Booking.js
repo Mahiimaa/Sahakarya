@@ -15,6 +15,10 @@ const bookingSchema = new mongoose.Schema({
   completionNotes:{type: String},
   disputeReason: {type: String},
   completedAt: { type: Date },
+  reviewed: {
+    type: Boolean,
+    default: false
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Booking", bookingSchema);

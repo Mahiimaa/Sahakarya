@@ -38,7 +38,7 @@ const getPreviousWork = async (req, res) => {
 
       const completedBookings = await Booking.find({
           provider: providerId,
-          status: "credit transferred",
+          status: "completed",
           confirmedByRequester: true,
           confirmedByProvider: true
       })
@@ -66,7 +66,7 @@ const getPreviousWork = async (req, res) => {
 
 
 const addReviews = async (req, res) => {
-    const { providerId, rating, comment } = req.body;
+    const { providerId, rating, comment, bookingId } = req.body;
     const userId = req.user.id;
   
     if (!rating || !comment) return res.status(400).json({ error: "Rating and comment required" });
@@ -78,15 +78,64 @@ const addReviews = async (req, res) => {
       const newReview = new Review({
         provider: providerId,
         user: userId,
+        booking: bookingId,
         rating,
         comment,
         createdAt: new Date(),
       });
       await newReview.save();
       await newReview.populate("user", "username profilePicture");
-  
+      if (bookingId) {
+        await Booking.findByIdAndUpdate(bookingId, { reviewed: true });
+      }
       res.json({ message: "Review added successfully", review: newReview });
     } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  };
+
+  const getReviewsByProvider = async (req, res) => {
+    const { providerId } = req.params;
+  
+    try {
+      const reviews = await Review.find({ provider: providerId })
+        .populate("user", "username profilePicture")
+        .sort({ createdAt: -1 });
+  
+      res.json({ reviews });
+    } catch (error) {
+      console.error("Error fetching provider reviews:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  };
+
+  const getReviewsByBooking = async (req, res) => {
+    const { bookingId } = req.params;
+  
+    try {
+      const review = await Review.findOne({ booking: bookingId })
+        .populate("user", "username profilePicture");
+  
+      if (!review) {
+        return res.status(404).json({ error: "No review found for this booking" });
+      }
+  
+      res.json({ review });
+    } catch (error) {
+      console.error("Error fetching booking review:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  };
+
+
+  const checkReviewExists = async (req, res) => {
+    const { bookingId } = req.params;
+  
+    try {
+      const review = await Review.findOne({ booking: bookingId });
+      res.json({ exists: !!review });
+    } catch (error) {
+      console.error("Error checking review existence:", error);
       res.status(500).json({ error: "Server error" });
     }
   };
@@ -170,4 +219,4 @@ const deleteReview = async (req, res) => {
   
   
   
-  module.exports = {getProviderDetails, getPreviousWork, addReviews, editReview, deleteReview, getTopRatedProviders};
+  module.exports = {getProviderDetails, getPreviousWork, addReviews, getReviewsByProvider, getReviewsByBooking, checkReviewExists, editReview, deleteReview, getTopRatedProviders};

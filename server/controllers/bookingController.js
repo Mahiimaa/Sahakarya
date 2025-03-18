@@ -194,20 +194,38 @@ const confirmServiceCompletion = async (req, res) => {
       return res.status(404).json({ error: "Booking not found" });
     }
     if (booking.requester.toString() === userId) {
+      if (!booking.confirmedByProvider) {
+        return res.status(400).json({ error: "Provider must submit completion details first" });
+      }
+
       booking.confirmedByRequester = true;
-    } else if (booking.provider.toString() === userId) {
+      
+      if (booking.confirmedByProvider) {
+        const requester = await User.findById(booking.requester);
+        const provider = await User.findById(booking.provider);
+        
+        if (!requester || !provider) {
+          return res.status(404).json({ error: "User not found" });
+        }
+        
+        const creditsToTransfer = Number(booking.proposedCredits);
+        
+        provider.timeCredits += creditsToTransfer;
+        await provider.save();
+        
+        booking.status = "completed";
+        booking.creditTransferred = true;
+      }
+    } 
+    else if (booking.provider.toString() === userId) {
       return res.status(400).json({ error: "Providers should use the detailed completion form" });
     } else {
       return res.status(403).json({ error: "Unauthorized to confirm this booking" });
     }
-
-    if (booking.confirmedByRequester && booking.confirmedByProvider) {
-      booking.status = "completed";
-    }
     
     await booking.save();
     res.json({ 
-      message: "Service marked as completed.", 
+      message: "Service marked as completed and credits transfered.", 
       status: booking.status,
       confirmedByRequester: booking.confirmedByRequester,
       confirmedByProvider: booking.confirmedByProvider

@@ -23,6 +23,21 @@ function ProviderDetails() {
   const [previousWork, setPreviousWork] = useState([]);
   const [activeTab, setActiveTab] = useState("details");
   const [showModal, setShowModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const { data } = await axios.get(`${apiUrl}/api/user/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCurrentUser(data);
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    };
+    fetchCurrentUser();
+  }, [apiUrl, token]);
 
   console.log("Extracted serviceId:", serviceId);
   useEffect(() => {
@@ -128,6 +143,10 @@ function ProviderDetails() {
   const calculateAverageRating = () => {
     if (!reviews || reviews.length === 0) return 0;
     return reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+  };
+
+  const isReviewOwner = (review) => {
+    return currentUser && review.user._id === currentUser._id;
   };
 
   return (
@@ -264,7 +283,6 @@ function ProviderDetails() {
               <div>
                 <div className="flex justify-between mb-2">
                 <h2 className="text-h2 font-semi-bold  mb-4">Client Reviews</h2>
-                <button className="bg-p hover:bg-p/90 text-white px-6 py-2 rounded-md font-medium transition-colors" onClick={() => setShowModal(true)}>Add Review</button>
                 </div>
                 {reviews.length > 0 ? (
                   <div className="space-y-4">
@@ -287,6 +305,7 @@ function ProviderDetails() {
                             <p className="text-h3 ">{review.comment}</p>
                             </div>
                           
+                            {isReviewOwner(review) && (
                           <div className="flex self-end gap-4">
                             <button 
                               className="text-p hover:text-p/60 text-sm font-medium transition-colors" 
@@ -306,6 +325,7 @@ function ProviderDetails() {
                               Delete
                             </button>
                           </div>
+                            )}
                         </div>
                       </div>
                     ))}
@@ -344,7 +364,7 @@ function ProviderDetails() {
             <button className="absolute right-3 top-3 text-xl" onClick={() => { setShowModal(false); setEditingReview(null); setRating(0); setComment(""); }}>
               <IoClose size={24} />
             </button>
-            <h2 className="text-h2 font-semi-bold">{editingReview ? "Edit Review" : "Add Review"}</h2>
+            <h2 className="text-h2 font-semi-bold">Edit Review</h2>
             <ReactStars count={5} size={36} value={rating} isHalf={true} onChange={(newRating) => setRating(newRating)} />
             <textarea className="w-full h-28 border rounded-md p-2 mt-2" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Write a review..." />
             <button className="bg-p text-white px-4 py-2 rounded-md mt-2 w-full" onClick={editingReview ? handleEditReview : handleReviewSubmit}>{editingReview ? "Update Review" : "Submit Review"}</button>

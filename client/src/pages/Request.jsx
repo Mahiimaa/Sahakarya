@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import Navbar from "../components/Navbar";
 import Chat from "../components/Chat";
 import ScheduleModal from "../components/Schedule";
+import ReactStars from "react-rating-stars-component";
 
 const Request = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -24,11 +25,11 @@ const Request = () => {
   const [completionNotes, setCompletionNotes] = useState("");
   const [disputeReason, setDisputeReason] = useState("");
   const [showDisputeModal, setShowDisputeModal] = useState(false);
-  const [showTransferModal, setShowTransferModal] = useState(false);
-  const [transferBookingId, setTransferBookingId] = useState(null);
-  const [transferProviderId, setTransferProviderId] = useState(null);
-  const [transferAmount, setTransferAmount] = useState(""); 
-  const [transferPassword, setTransferPassword] = useState("");
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewBookingId, setReviewBookingId] = useState(null);
+  const [reviewProviderId, setReviewProviderId] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
 
     const openChat = (requester, provider) => {
       if (!requester || !provider) {
@@ -217,17 +218,21 @@ const Request = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Service confirmation successful!");
-      setBookings((prevBookings) =>
-        prevBookings.map((b) =>
-          b._id === bookingId
-            ? { ...b, status: data.status, confirmedByRequester: data.confirmedByRequester, confirmedByProvider: data.confirmedByProvider }
-            : b
-          ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested)));
+      // setBookings((prevBookings) =>
+      //   prevBookings.map((b) =>
+      //     b._id === bookingId
+      //       ? { ...b, status: data.status, confirmedByRequester: data.confirmedByRequester, confirmedByProvider: data.confirmedByProvider }
+      //       : b
+      //     ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested)));
 
           setOutgoingBookings((prevBookings) =>
             prevBookings.map((b) =>
               b._id === bookingId
-                ? { ...b, status: data.status, confirmedByRequester: data.confirmedByRequester, confirmedByProvider: data.confirmedByProvider }
+                ? { ...b, 
+                  status: data.status, 
+                  confirmedByRequester: data.confirmedByRequester, 
+                  confirmedByProvider: data.confirmedByProvider,
+                  creditTransferred: data.creditTransferred }
                 : b
             ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
           );
@@ -236,37 +241,37 @@ const Request = () => {
     }
   };
 
-  const handleOpenTransferModal = (bookingId, providerId, serviceDuration) => {
-    setTransferBookingId(bookingId);
-    setTransferProviderId(providerId);
-    setTransferAmount(serviceDuration);
-    setShowTransferModal(true);
+  const handleOpenReviewModal = (bookingId, providerId) => {
+    setReviewBookingId(bookingId);
+    setReviewProviderId(providerId);
+    setShowReviewModal(true);
   };
-
-  const transferTimeCredits = async () => {
-    if (!transferAmount || !transferPassword) {
-      toast.error("Please fill all fields.");
-      return;
-    }
-
+  
+  const submitReview = async () => {
     try {
-      await axios.put(`${apiUrl}/api/bookings/${transferBookingId}/transfer-credits`, 
-        { providerId: transferProviderId, amount: transferAmount, password: transferPassword },
+      await axios.post(
+        `${apiUrl}/api/reviews`, 
+        {
+          bookingId: reviewBookingId,
+          providerId: reviewProviderId,
+          rating,
+          comment: reviewText
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Time credits transferred successfully!");
-      setBookings((prevBookings) =>
+      toast.success("Review submitted successfully!");
+      setShowReviewModal(false);
+      setOutgoingBookings((prevBookings) =>
         prevBookings.map((b) =>
-          b._id === transferBookingId ? { ...b, status: "credit transferred" } : b
-        )
+          b._id === reviewBookingId ? { ...b, reviewed: true } : b
+        ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
       );
-      setShowTransferModal(false);
+      setRating(5);
+      setReviewText("");
     } catch (error) {
-      toast.error(error.response?.data?.error || "Error transferring time credits.");
+      toast.error(error.response?.data?.error || "Error submitting review.");
     }
   };
-
-  
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -390,10 +395,13 @@ const Request = () => {
           {booking.actualDuration && booking.proposedCredits && (
         <div className="mt-2 p-2 bg-s/20 rounded-md">
           <p><strong>Actual Duration:</strong> {booking.actualDuration} hour(s)</p>
-          <p><strong>Proposed Credits:</strong> {booking.proposedCredits}</p>
+          <p><strong>Proposed Time Credits:</strong> {booking.proposedCredits}</p>
           {booking.completionNotes && (
             <p><strong>Notes:</strong> {booking.completionNotes}</p>
           )}
+          <p className="text-s mt-2">
+          <strong>Note:</strong> Confirming will automatically transfer {booking.proposedCredits} time credits to the provider.
+        </p>
         </div>
       )}
       
@@ -404,7 +412,7 @@ const Request = () => {
               className="bg-p text-white px-4 py-2 rounded"
               onClick={() => confirmCompletion(booking._id)}
             >
-              Confirm Completion
+              Confirm & Transfer Credits
             </button>
             <button
               className="bg-white text-error border border-error hover:bg-error hover:text-white px-4 py-2 rounded ml-2"
@@ -418,15 +426,18 @@ const Request = () => {
           </>
         )}
         
-        {booking.status === "completed" && currentUser && currentUser._id === booking.requester._id && (
+        {booking.status === "completed" && !booking.reviewed && (
           <button
             className="bg-p text-white px-4 py-2 rounded ml-2"
-            onClick={() => handleOpenTransferModal(booking._id, booking.provider._id)}
+            onClick={() => handleOpenReviewModal(booking._id, booking.provider._id)}
           >
-            Add Review
+            Leave Review
           </button>
         )}
-      <button className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 " onClick={() => openChat(booking.requester, booking.provider)}>Chat</button>
+        {booking.reviewed && (
+          <span className="text-p font-medium ml-2">Review Submitted</span>
+        )}
+        <button className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 " onClick={() => openChat(booking.requester, booking.provider)}>Chat</button>
       </div>
             </div>
           ))
@@ -444,26 +455,6 @@ const Request = () => {
         onSchedule={acceptBooking}
       />
     </div>
-    {showTransferModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-md w-96">
-            <h2 className="text-h2 font-bold mb-4">Transfer Time Credits</h2>
-            <label className="font-semi-bold text-h3"> Time credits</label>
-            <input type="number" placeholder="Enter Time Credits" className="w-full p-2 border rounded mb-2"
-              value={transferAmount} onChange={(e) => setTransferAmount(e.target.value)}
-            />
-            <label className="font-semi-bold text-h3">Password</label>
-            <input type="password" placeholder="Enter Password" className="w-full p-2 border rounded mb-2"
-              value={transferPassword} onChange={(e) => setTransferPassword(e.target.value)}
-            />
-            <div className="flex justify-between mt-4">
-              <button className="bg-white border text-error border-error hover:bg-error hover:text-white px-4 py-2 rounded" onClick={() => setShowTransferModal(false)}>Cancel</button>
-              <button className="bg-p text-white px-4 py-2 rounded" onClick={transferTimeCredits}>Transfer</button>
-            </div>
-          </div>
-        </div>
-      )}
-
     {showCompletionModal && (
       <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 z-50">
         <div className="bg-white p-6 rounded-lg shadow-md w-96">
@@ -512,7 +503,6 @@ const Request = () => {
         </div>
       </div>
     )}
-
     {showDisputeModal && (
       <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 z-50">
         <div className="bg-white p-6 rounded-lg shadow-md w-96">
@@ -538,6 +528,50 @@ const Request = () => {
               onClick={submitDispute}
             >
               Submit Dispute
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {showReviewModal && (
+      <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 z-50">
+        <div className="bg-white p-6 rounded-lg shadow-md w-96">
+          <h2 className="text-h2 font-bold mb-4">Rate Your Experience</h2>
+          
+          <div className="mb-4">
+            <label className="font-semi-bold text-h3">Rating</label>
+            <div className="flex items-center gap-2 my-2">
+                <ReactStars
+                  count={5}
+                  onChange={setRating}
+                  size={36}
+                  value={rating}
+                  activeColor="#ffd700"
+                />
+              </div>
+          </div>
+          
+          <label className="font-semi-bold text-h3">Review</label>
+          <textarea
+            placeholder="Share your experience with this service"
+            className="w-full p-2 border rounded mb-2"
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+          />
+          
+          <div className="flex justify-between mt-4">
+            <button 
+              className="bg-white border text-error border-error hover:bg-error hover:text-white px-4 py-2 rounded" 
+              onClick={() => setShowReviewModal(false)}
+            >
+              Cancel
+            </button>
+            <button 
+              className="bg-p text-white px-4 py-2 rounded" 
+              onClick={submitReview}
+            >
+              Submit Review
             </button>
           </div>
         </div>
