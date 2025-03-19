@@ -176,15 +176,41 @@ const deleteReview = async (req, res) => {
   
   const getTopRatedProviders = async (req, res) => {
     try {
-      console.log("Fetching top-rated providers...");
+      const allReviews = await Review.find({});
+      
+      console.log('All Reviews:', allReviews.map(review => ({
+        _id: review._id,
+        provider: review.provider,
+        providerType: typeof review.provider,
+        isValidObjectId: mongoose.Types.ObjectId.isValid(review.provider)
+      })));
+      const validProviderIds = allReviews
+        .map(review => review.provider)
+        .filter(id => mongoose.Types.ObjectId.isValid(id));
   
+      console.log('Valid Provider IDs:', validProviderIds);
+      const existingProviders = await User.find({
+        _id: { $in: validProviderIds }
+      });
+  
+      console.log('Existing Providers:', existingProviders.map(p => ({
+        _id: p._id,
+        username: p.username
+      })));
       const topProviders = await Review.aggregate([
+        {
+          $match: {
+            provider: { 
+              $in: existingProviders.map(p => p._id)
+            }
+          }
+        },
         {
           $group: {
             _id: "$provider",
             avgRating: { $avg: "$rating" },
-            completedJobs: { $sum: 1 },
-          },
+            completedJobs: { $sum: 1 }
+          }
         },
         { $sort: { avgRating: -1, completedJobs: -1 } },
         { $limit: 5 },
@@ -194,26 +220,43 @@ const deleteReview = async (req, res) => {
             localField: "_id",
             foreignField: "_id",
             as: "providerDetails"
-          },
+          }
         },
-        { $unwind: { path: "$providerDetails", preserveNullAndEmptyArrays: true } }, 
+        { 
+          $unwind: { 
+            path: "$providerDetails", 
+            preserveNullAndEmptyArrays: false 
+          } 
+        },
         {
           $project: {
             _id: "$providerDetails._id",
-            username: { $ifNull: ["$providerDetails.username", "Unknown Provider"] }, 
-            profilePicture: { $ifNull: ["$providerDetails.profilePicture", "/default-profile.png"] },
-            rating: { $ifNull: ["$avgRating", 0] },
-            completedJobs: "$completedJobs",
-          },
-        },
+            username: "$providerDetails.username",
+            profilePicture: { $ifNull: ["$providerDetails.profilePicture", ""] },
+            rating: { $round: ["$avgRating", 1] },
+            completedJobs: "$completedJobs"
+          }
+        }
       ]);
   
-      console.log(" Debugging: Top Providers Data:", JSON.stringify(topProviders, null, 2));
+      console.log('Top Providers Aggregation Result:', JSON.stringify(topProviders, null, 2));
   
-      res.status(200).json({ topProviders });
+      res.status(200).json({ 
+        topProviders: topProviders.length > 0 ? topProviders : [],
+        message: topProviders.length === 0 ? "No top providers found" : undefined
+      });
+  
     } catch (error) {
-      console.error(" Error fetching top-rated providers:", error);
-      res.status(500).json({ error: "Server error" });
+      console.error('Detailed Error in getTopRatedProviders:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+  
+      res.status(500).json({ 
+        error: "Server error while fetching top providers",
+        details: error.message
+      });
     }
   };
   

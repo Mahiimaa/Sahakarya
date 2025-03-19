@@ -134,8 +134,15 @@ const addServiceOfferDetails = async (req, res) => {
 
 const getPopularServices = async (req, res) => {
   try {
+    console.log('Fetching Popular Services');
+
     const popularServices = await Booking.aggregate([
-      { $group: { _id: "$service", count: { $sum: 1 } } }, 
+      { 
+        $group: { 
+          _id: "$service", 
+          count: { $sum: 1 } 
+        } 
+      }, 
       { $sort: { count: -1 } }, 
       { $limit: 5 }, 
       {
@@ -152,17 +159,31 @@ const getPopularServices = async (req, res) => {
           _id: "$serviceDetails._id",
           name: "$serviceDetails.serviceName",
           category: "$serviceDetails.category",
-          timeCreditsRequired: "$serviceDetails.timeCreditsRequired",
-          description: "$serviceDetails.description",
+          icon: "$serviceDetails.icon",
           bookings: "$count",
         },
       },
     ]);
 
-    res.status(200).json({ popularServices });
+    console.log('Popular Services Result:', JSON.stringify(popularServices, null, 2));
+
+    res.status(200).json({ 
+      popularServices: popularServices.length > 0 ? popularServices : [],
+      message: popularServices.length === 0 ? "No popular services found" : undefined
+    });
+
   } catch (error) {
-    console.error("Error fetching popular services:", error);
-    res.status(500).json({ error: "Server error" });
+    console.error('Detailed Error in getPopularServices:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack
+    });
+
+    res.status(500).json({ 
+      error: "Server error fetching popular services",
+      details: error.message,
+      fullError: error
+    });
   }
 };
 

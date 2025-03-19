@@ -41,43 +41,109 @@ function Home() {
   }, [apiUrl, navigate]);
 
 
-  useEffect(() => {
-  const fetchTopRatedUsers = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}/api/providers/top-rated`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log("Fetched Top Providers:", response.data.topProviders);
-      if (response.data && response.data.topProviders) {
-        setTopRatedUsers(response.data.topProviders);
-      } else {
+
+    const fetchTopRatedUsers = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/api/providers/top-rated`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000
+        });
+    
+        console.log('Top Providers Full Response:', {
+          status: response.status,
+          data: response.data
+        });
+    
+        const topProviders = response.data?.topProviders || [];
+        
+        console.log('Processed Top Providers:', {
+          count: topProviders.length,
+          providers: topProviders
+        });
+    
+        setTopRatedUsers(topProviders);
+      } catch (err) {
+        console.error('Top Providers Fetch Error:', {
+          errorMessage: err.message,
+          errorResponse: err.response?.data,
+          errorStatus: err.response?.status,
+          fullError: err
+        });
+    
+        // Error handling
+        if (err.response) {
+          const errorMessage = err.response.data?.error || 'Failed to fetch top providers';
+          setError(errorMessage);
+          console.error('Server Error Details:', err.response.data);
+        } else if (err.request) {
+          setError('No response from server');
+        } else {
+          setError('Error preparing request');
+        }
+    
         setTopRatedUsers([]);
       }
-    } catch (err) {
-      console.error("Failed to fetch top users", err);
-      setTopRatedUsers([]);
-    }
-  };
+    };
+    
+    // Fetch Popular Services
+    const fetchPopularServices = async () => {
+      try {
+        console.log('Fetching Popular Services', {
+          url: `${apiUrl}/api/services/popular`,
+          token: token ? 'Token Present' : 'No Token'
+        });
+    
+        const response = await axios.get(`${apiUrl}/api/services/popular`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000
+        });
+    
+        console.log('Full Popular Services Response:', {
+          status: response.status,
+          data: response.data
+        });
+    
+        const popularServices = response.data?.popularServices || [];
+        
+        console.log('Processed Popular Services:', {
+          count: popularServices.length,
+          services: popularServices
+        });
+    
+        setPopularServices(popularServices);
+      } catch (err) {
+        console.error('Detailed Popular Services Fetch Error:', {
+          errorMessage: err.message,
+          errorResponse: err.response?.data,
+          errorStatus: err.response?.status,
+          fullError: err
+        });
+    
+        // Comprehensive error handling
+        if (err.response) {
+          const errorMessage = err.response.data?.error || 'Failed to fetch popular services';
+          setError(errorMessage);
+          console.error('Server Error Details:', err.response.data);
+        } else if (err.request) {
+          setError('No response from server');
+        } else {
+          setError('Error preparing request');
+        }
+    
+        setPopularServices([]);
+      }
+    };
 
-  const fetchPopularServices = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}/api/services/popular`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      setPopularServices(response.data.popularServices);
-    } catch (err) {
-      console.error("Failed to fetch popular services", err);
-    }
-  };
-
-  fetchTopRatedUsers();
+    useEffect(() => {
+    fetchTopRatedUsers();
   fetchPopularServices();
-}, [apiUrl, navigate]);
-
+}, [apiUrl, token, navigate]);
 
   const handleLogout = async () => {
     try {
