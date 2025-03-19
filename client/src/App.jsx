@@ -54,6 +54,8 @@ return (
         <Route path="/userProfile" element={<UserProfile />} />
         <Route path ="/editProfile" element={<EditProfile />} />
         <Route path="/my-services" element={<UserServices />} />
+        <Route path="/payment/success" element={<TimeCredit />} />
+        <Route path="/payment/error" element={<TimeCredit />} />
         <Route path="/timeCredit" element={<TimeCredit/>} />
         <Route path="/services" element={<AdminService />} />
         <Route path="/booking/:serviceId/:providerId" element={<Booking />} />

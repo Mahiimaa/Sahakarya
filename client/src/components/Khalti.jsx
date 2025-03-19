@@ -2,110 +2,82 @@ import React, { useImperativeHandle, forwardRef, useEffect, useState } from "rea
 import axios from "axios";
 import {toast} from "react-toastify";
 
-const Khalti = forwardRef((props, ref) => {
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  const khaltiPublicKey = process.env.REACT_APP_KHALTI_PUBLIC_KEY;
+const Khalti = ({ creditAmount, onSuccess, onError }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const token = localStorage.getItem('token');
+  const pricePerCredit = 100; 
 
-  useEffect(() => {
-    if (!document.getElementById('khalti-script')) {
-      const script = document.createElement('script');
-      script.id = 'khalti-script';
-      script.src = "https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.22.0.0.0/khalti-checkout.iffe.js";
-      script.async = true;
-      script.onload = () => {
-        console.log("Khalti script loaded successfully");
-        setIsScriptLoaded(true);
-      };
-      script.onerror = (error) => {
-        console.error("Failed to load Khalti script:", error);
-      };
-      document.body.appendChild(script);
-      
-      return () => {
-        if (document.getElementById('khalti-script')) {
-          document.getElementById('khalti-script').remove();
-        }
-      };
-    } else {
-      setIsScriptLoaded(true);
-    }
-  }, []);
-
-  const handlePayment = (amount) => {
-    if (!isScriptLoaded) {
-      console.error("Khalti script is still loading, please try again.");
-      toast.error("Payment system is still loading. Please try again in a moment.");
-      return;
-    }
-    
-    if (!khaltiPublicKey) {
-      console.error("Khalti Public Key is missing! Make sure REACT_APP_KHALTI_PUBLIC_KEY is set in your environment.");
-      toast.error("Payment configuration error. Please contact support.");
+  const initiatePayment = async () => {
+    if (creditAmount <= 0) {
+      toast.error("Please enter a valid credit amount");
       return;
     }
 
-    console.log("Using Khalti Public Key:", khaltiPublicKey);
-    console.log("Processing amount:", amount);
+    setIsLoading(true);
     
-    const config = {
-      publicKey: "b010be2aa27e4f9fa49d9656c30ea718",
-      productIdentity: "time-credit-001",
-      productName: "Time Credits Purchase",
-      productUrl: "http://localhost:3000",
-      amount: amount,
-      paymentPreference: ["KHALTI"],
-      eventHandler: {
-        onSuccess(payload) {
-          console.log("Payment Successful", payload);
-          toast.info("Payment successful! Verifying...");
-          axios
-            .post(`${apiUrl}/api/verify`, {
-              token: payload.token,
-              amount: amount,
-            }, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-              },
-            })
-            .then(response => {
-              console.log("Backend Verification Successful", response.data);
-              toast.success("Credits purchased successfully!");
-              if (props.onSuccess) props.onSuccess(response.data);
-              window.location.reload();
-            })
-            .catch(error => {
-              console.error("Backend Verification Error", error.response ? error.response.data : error.message);
-              toast.error("Verification failed. Please contact support.");
-              if (props.onError) props.onError(error);
-            });
-        },
-        onError(error) {
-          console.error("Payment Error", error);
-          toast.error("Payment failed. Please try again.");
-          if (props.onError) props.onError(error);
-        },
-        onClose() {
-          console.log("Khalti widget closed");
-          if (props.onClose) props.onClose();
-        },
-      },
-    };
-
     try {
-      const checkout = new window.KhaltiCheckout(config);
-      checkout.show({ amount: amount });
-    } catch (err) {
-      console.error("Failed to initialize Khalti checkout:", err);
-      toast.error("Failed to initialize payment. Please try again.");
+      const amountInPaisa = creditAmount * pricePerCredit * 100;
+      
+      const response = await axios.post(
+        `${apiUrl}/api/payment/initiate`,
+        {
+          amount: amountInPaisa,
+          creditAmount: creditAmount
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      
+      if (response.data && response.data.paymentUrl) {
+        window.location.href = response.data.paymentUrl;
+      } else {
+        throw new Error("Payment URL not received");
+      }
+      
+    } catch (error) {
+      console.error("Error initiating payment:", error);
+      toast.error("Failed to initiate payment. Please try again.");
+      
+      if (onError) {
+        onError(error);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useImperativeHandle(ref, () => ({
-    handlePayment,
-  }));
+  return (
+    <button
+      className="bg-[#5D2E8F] text-white px-4 py-2 rounded-lg w-full"
+      onClick={initiatePayment}
+      disabled={isLoading}
+    >
+       {isLoading ? (
+        <>
+          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Processing...
+        </>
+      ) : (
+        <>
+          <img 
+            src="https://khalti.com/static/img/khalti-logo.svg" 
+            alt="Khalti Logo" 
+            className="h-5 w-5 mr-2" 
+          />
+          Pay with Khalti
+        </>
+      )}
+    </button>
+  );
+};
 
-  return null;
-});
 
 export default Khalti;

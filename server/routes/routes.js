@@ -8,12 +8,15 @@ const { getStats } = require('../controllers/stats');
 const {getAllUsers, deleteUser, assignRole, getUserDetails} = require('../controllers/user');
 const {changePassword} = require('../controllers/changePassword');
 const {editProfile} = require('../controllers/profile');
-const {verifyTransaction, getTransactions} = require('../controllers/transactionController');
+const {
+  initiatePayment,
+  verifyPayment,
+  handlePaymentCallback
+} = require("../controllers/Payment");
 const { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService, getAllServiceDetails} = require('../controllers/serviceDetails');
 const {getProviderDetails, getPreviousWork, addReviews, getReviewsByProvider, getReviewsByBooking, checkReviewExists, editReview, deleteReview, getTopRatedProviders} = require('../controllers/ProviderController');
 const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, submitProviderCompletion, disputeCompletion, confirmServiceCompletion } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
-const {transferTimeCredit} = require('../controllers/timeCreditController');
 const {getNotifications, readNotifications} = require('../controllers/notificationController');
 const multer = require('multer');
 const path = require('path');
@@ -101,7 +104,6 @@ router.put("/:bookingId/reject", verifyToken, rejectServiceRequest);
 router.put('/bookings/:bookingId/provider-completion', verifyToken, submitProviderCompletion);
 router.put('/bookings/:bookingId/dispute', verifyToken, disputeCompletion);
 router.put("/:bookingId/confirm",verifyToken, confirmServiceCompletion);
-router.post('/verify',verifyToken, verifyTransaction);
 router.post("/sendMessage", verifyToken, (req, res) => {
   const io = req.app.get('io');
   sendMessage(req, res, io);
@@ -112,9 +114,9 @@ router.put("/messages/:providerId/read", verifyToken, (req, res) => {
   markMessagesAsRead(req, res, io);
 });
 router.get("/chats", verifyToken, getUserChats);
-
-router.put('/bookings/:bookingId/transfer-credits', verifyToken, transferTimeCredit);
-router.get('/transactions', verifyToken, getTransactions);
+router.post("/payment/initiate", verifyToken, initiatePayment);
+router.post("/payment/verify", verifyToken, verifyPayment);
+router.get("/payment/callback", handlePaymentCallback);
 
 router.get("/notifications", verifyToken, getNotifications );
 router.put("/notifications/mark-read/:id", verifyToken, readNotifications);
