@@ -435,7 +435,7 @@ const Request = () => {
           </button>
         )}
         {booking.reviewed && (
-          <span className="text-p font-medium ml-2">Review Submitted</span>
+          <span className="text-p font-medium ml-2 self-center">Review Submitted</span>
         )}
         <button className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 " onClick={() => openChat(booking.requester, booking.provider)}>Chat</button>
       </div>

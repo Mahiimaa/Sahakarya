@@ -1,6 +1,7 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const { createNotification } = require('./bookingController');
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -48,6 +49,11 @@ const sendMessage = async (req, res, io) => {
   }
   const receiverId = senderId.toString() === providerId.toString() ? requesterId : providerId;
   try {
+    const sender = await User.findById(senderId, 'username');
+    if (!sender) {
+      return res.status(404).json({ message: 'Sender not found' });
+    }
+
     const message = new Message({
       sender: senderId,
       receiver: receiverId,
@@ -55,13 +61,21 @@ const sendMessage = async (req, res, io) => {
       createdAt: new Date(),
     });
 
-    io.to(receiverId).emit("newNotification", {
-      message: `New message from ${senderId}: ${message}`,
-      createdAt: new Date(),
-      isRead: false,
-    });
+    await message.save();
     console.log(`Sending message from ${senderId} to ${receiverId}`);
-
+    
+    const truncatedContent = content.length > 30 
+      ? `${content.substring(0, 30)}...` 
+      : content;
+    
+    await createNotification(
+      receiverId, 
+      `New message from ${sender.username}: ${truncatedContent}`,
+      'chat', 
+      {
+        senderId: senderId
+      }
+    );
     if (global.io) {
       global.io.to(senderId.toString()).emit("chat message", message);
       global.io.to(receiverId.toString()).emit("chat message", message);

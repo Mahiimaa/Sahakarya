@@ -1,6 +1,33 @@
 const Booking = require("../models/Booking");
 const User = require("../models/User");
 const Service = require("../models/Service");
+const Notification = require("../models/Notification");
+
+const createNotification = async (userId, message, type, data = {}) => {
+  try {
+    const notification = new Notification({
+      userId,
+      message,
+      type,
+      data,
+      isRead: false,
+      createdAt: new Date()
+    });
+    
+    await notification.save();
+    if (global.io) {
+      global.io.to(userId.toString()).emit("newNotification", notification);
+      console.log(`Notification sent to ${userId}: ${message}`);
+    } else {
+      console.warn("Socket.io is not initialized yet.");
+    }
+    
+    return notification;
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    throw error;
+  }
+};
 
 const requestService = async (req, res) => {
   try {
@@ -38,6 +65,9 @@ const requestService = async (req, res) => {
     user.timeCredits -= requiredTimeCredits;
     await user.save();
 
+    const service = await Service.findById(serviceId);
+    const serviceName = service ? service.serviceName : "requested service";
+
     const booking = new Booking({
       service: serviceId,
       provider: providerId,
@@ -45,12 +75,17 @@ const requestService = async (req, res) => {
       status: "pending",
       serviceDuration: serviceDetail.duration,
     });
-    // io.to(providerId).emit("newNotification", {
-    //   message: `You have a new service request from ${requester}`,
-    //   createdAt: new Date(),
-    //   isRead: false,
-    // });
     await booking.save();
+    await createNotification(
+      providerId, 
+      `You have a new service request for ${serviceName} from ${user.username}`,
+      'booking', 
+      {
+        bookingId: booking._id,
+        serviceId: serviceId,
+        requesterId: req.user.id
+      }
+    );
     res.status(201).json({ message: "Service requested successfully", booking });
   } catch (error) {
     console.error("Error requesting service:", error);
@@ -95,6 +130,22 @@ const acceptServiceRequest = async (req, res) => {
       booking.serviceDuration = serviceDuration;
   
       await booking.save();
+      const formattedDate = new Date(scheduleDate).toLocaleDateString('en-US', {
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      await createNotification(
+        booking.requester._id, 
+        `Your request for ${booking.service.serviceName} has been accepted and scheduled for ${formattedDate}`,
+        'booking', 
+        {
+          bookingId: booking._id,
+          serviceId: booking.service._id
+        }
+      );
       res.json({ message: "Service request accepted and scheduled", booking });
   
     } catch (error) {
@@ -112,6 +163,16 @@ const rejectServiceRequest = async (req, res) => {
 
     booking.status = "rejected";
     await booking.save();
+
+    await createNotification(
+      booking.requester._id, 
+      `Your request for ${booking.service.serviceName} has been rejected`,
+      'booking', 
+      {
+        bookingId: booking._id,
+        serviceId: booking.service._id
+      }
+    );
     res.json({ message: "Service request rejected", booking });
   } catch (error) {
     console.error("Error rejecting booking:", error);
@@ -215,6 +276,17 @@ const confirmServiceCompletion = async (req, res) => {
         
         booking.status = "completed";
         booking.creditTransferred = true;
+
+        await createNotification(
+          booking.provider._id, 
+          `${requester.username} has confirmed completion of ${booking.service.serviceName}. ${creditsToTransfer} time credits have been transferred to your account.`,
+          'booking', 
+          {
+            bookingId: booking._id,
+            serviceId: booking.service._id,
+            requesterId: booking.requester
+          }
+        );
       }
     } 
     else if (booking.provider.toString() === userId) {
@@ -255,6 +327,17 @@ const confirmServiceCompletion = async (req, res) => {
       booking.confirmedByRequester = false;
       
       await booking.save();
+
+      await createNotification(
+        booking.provider._id, 
+        `Your completion of ${booking.service.serviceName} has been disputed. Reason: ${disputeReason}`,
+        'booking', 
+        {
+          bookingId: booking._id,
+          serviceId: booking.service._id,
+          requesterId: booking.requester
+        }
+      );
       res.json({ message: "Service completion disputed", status: booking.status });
     } catch (error) {
       console.error("Error disputing completion:", error);
@@ -262,4 +345,4 @@ const confirmServiceCompletion = async (req, res) => {
     }
   };
 
-module.exports = { requestService,getUserBookings, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, submitProviderCompletion, confirmServiceCompletion, disputeCompletion };
+module.exports = { requestService,getUserBookings, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, submitProviderCompletion, confirmServiceCompletion, disputeCompletion, createNotification };

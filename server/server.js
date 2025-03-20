@@ -7,6 +7,7 @@ const {Server} = require('socket.io');
 const authRoutes = require("./routes/routes"); 
 const Message = require("./models/Message");
 require("dotenv").config();
+const Notification = require("./models/Notification");
 
 const app = express();
 // app.set('io', io);
@@ -65,6 +66,27 @@ io.on('connection', (socket) => {
       io.to(sender.toString()).emit("chatMessage", message);
       io.to(receiver.toString()).emit("chatMessage", message);
 
+      const senderUser = await mongoose.model('User').findById(sender);
+      const senderName = senderUser ? senderUser.username : 'Someone';
+
+      const truncatedContent = content.length > 30 
+        ? `${content.substring(0, 30)}...` 
+        : content;
+
+        const notification = new Notification({
+          userId: receiver,
+          message: `New message from ${senderName}: ${truncatedContent}`,
+          type: 'chat',
+          data: {
+            senderId: sender
+          },
+          isRead: false,
+          createdAt: new Date()
+        });
+        
+        await notification.save();
+        io.to(receiver.toString()).emit("newNotification", notification);
+  
       console.log(`Message sent from ${sender} to ${receiver}: ${content}`);
     } catch (error) {
       console.error("Error saving message:", error);
@@ -81,6 +103,8 @@ io.on('connection', (socket) => {
       const notification = new Notification({
         userId,
         message,
+        type: type || 'general',
+        data: data || {}, 
         isRead: false,
         createdAt: new Date(),
       });

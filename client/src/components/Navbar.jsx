@@ -24,11 +24,11 @@ socket.on("connect_error", (err) => {
 
 
 function Navbar() {
-
   const [userDetails, setUserDetails] = useState(null);
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
   const setActiveClass = ({ isActive }) =>
     {
@@ -56,40 +56,97 @@ function Navbar() {
             },
           });
           setUserDetails(response.data);
+
           console.log("Joining room with userId:", response.data.id);
           socket.emit("joinRoom", { userId: response.data.id });
-
+          try{
           const notifResponse = await axios.get(`${apiUrl}/api/notifications`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           
-          console.log("Joining room with userId:", response.data.id);
-          setNotifications(notifResponse.data);
-          setUnreadCount(notifResponse.data.filter((notif) => !notif.isRead).length);
-        } catch (err) {
-          setError("Failed to load user details.");
+          if (Array.isArray(notifResponse.data)) {
+            setNotifications(notifResponse.data);
+            setUnreadCount(notifResponse.data.filter((notif) => !notif.isRead).length);
+          } else if (notifResponse.data && Array.isArray(notifResponse.data.notifications)) {
+            // If API returns object with notifications array inside
+            setNotifications(notifResponse.data.notifications);
+            setUnreadCount(notifResponse.data.unreadCount || 0);
+          } else {
+            // Default to empty array if response format is unexpected
+            console.warn("Unexpected notifications format:", notifResponse.data);
+            setNotifications([]);
+            setUnreadCount(0);
+          }
+        } catch (notifError) {
+          console.error("Error fetching notifications:", notifError);
+          setNotifications([]);
         }
-      };
-      fetchUserDetails();
-
-      socket.on("connect", () => {
-        console.log("Connected to WebSocket server:", socket.id);
-      });
-    
-      socket.on("connect_error", (err) => {
-        console.error("WebSocket connection error:", err);
-      });
-
+      } catch (err) {
+        console.error("Error fetching user details:", err);
+        setNotifications([]);
+        setError("Failed to load user details.");
+      }
+    };
+    fetchUserDetails();
       socket.on("newNotification", (notification) => {
         console.log("Received new notification:", notification);
-        setNotifications((prev) => [notification, ...prev]);
-        setUnreadCount((prev) => prev + 1);
+        if (notification) {
+          setNotifications(prev => {
+            return Array.isArray(prev) ? [notification, ...prev] : [notification];
+          });
+          setUnreadCount(prev => prev + 1);
+        }
       });
   
       return () => {
         socket.off("newNotification");
       };
     }, [apiUrl, navigate]);
+
+    const handleNotificationClick = async (notification) => {
+      try {
+        if (!notification || !notification._id) {
+          console.error("Invalid notification:", notification);
+          return;
+        }
+        await axios.put(`${apiUrl}/api/notifications/mark-read/${notification._id}`, {}, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        setNotifications(prev => {
+          if (!Array.isArray(prev)) return [];
+          return prev.map(n => 
+            n._id === notification._id ? { ...n, isRead: true } : n
+          );
+        });
+        
+        if (!notification.isRead) {
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+        if (notification.type === 'request') {
+          navigate(`/request/${notification.data.requestId}`);
+        } else if (notification.type === 'chat') {
+          navigate(`/chat/${notification.data.senderId}`);
+        }
+        setShowDropdown(false);
+      } catch (error) {
+        console.error("Error handling notification:", error);
+      }
+    };
+
+    const markAllAsRead = async () => {
+      try {
+        await axios.put(`${apiUrl}/api/read-all`, {}, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        setNotifications(prev => {
+          if (!Array.isArray(prev)) return [];
+          return prev.map(n => ({ ...n, isRead: true }));
+        });
+        setUnreadCount(0);
+      } catch (error) {
+        console.error("Error marking all as read:", error);
+      }
+    };
 
     const handleLogout = async () => {
       try {
@@ -105,6 +162,33 @@ function Navbar() {
     const UserProfile = () => {
       navigate("/userProfile");
     }
+
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} min ago`;
+      if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+      if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+      
+      return date.toLocaleDateString();
+    };
+
+    const getNotificationIcon = (type) => {
+      switch (type) {
+        case 'request':
+          return '🔔'; 
+        case 'chat':
+          return '💬';
+        default:
+          return '📢';
+      }
+    };
  
   return (
         <div className=" flex justify-between p-2 px-28 bg-white">
@@ -127,33 +211,70 @@ function Navbar() {
           </NavLink>
           </div>
           <div className="flex gap-8 justify-center items-center">
-            <details className="relative">
-            <summary  className="list-none cursor-pointer">
-              <img className="w-10 h-16 py-4" src={notification} alt="notification"/>
-              {unreadCount > 0 && (
-                <span className="absolute top-2 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-              </summary>
-              <ul className="absolute right-[50%] bg-white w-[16vw] border border-dark-grey rounded p-4 top-10 ">
-                <div className="flex justify-between">
-                <p>Notifications</p>
-                <p className='bg-p/60 border border-p rounded-full w-6 h-6 text-center'>{unreadCount}</p>
+            <div className="relative">
+            <button 
+            className="relative focus:outline-none" 
+            onClick={() => setShowDropdown(prev => !prev)}
+          >
+            <img className="w-10 h-16 py-4 mt-2" src={notification} alt="notification"/>
+            {unreadCount > 0 && (
+              <span className="absolute top-2 right-2 bg-error text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
+          
+          {showDropdown && (
+            <div className="absolute right-0 bg-white w-80 border border-dark-grey rounded-lg shadow-lg z-50">
+              <div className="flex justify-between items-center p-3 border-b">
+                <h3 className="font-medium">Notifications</h3>
+                <div className="flex items-center gap-2">
+                  <span className="bg-p/60 border border-p rounded-full w-6 h-6 text-sm text-center">
+                    {unreadCount}
+                  </span>
+                  {unreadCount > 0 && (
+                    <button 
+                      onClick={markAllAsRead}
+                      className="text-xs text-p hover:underline"
+                    >
+                      Mark all as read
+                    </button>
+                  )}
                 </div>
-                <hr className='my-2'/>
-                {notifications.length === 0 ? (
-              <p className="text-gray-500 text-center">No notifications</p>
+              </div>
+              <div className="max-h-80 overflow-y-auto">
+                {!Array.isArray(notifications) ? (
+                  <p className="text-grey text-center p-4">Error loading notifications</p>
+                ) : notifications.length === 0 ? (
+                  <p className="text-grey text-center p-4">No notifications</p>
                 ) : (
-                  notifications.map((notif, index) => (
-                    <div key={index} className="p-2 border-b">
-                      <p className="text-body">{notif.message}</p>
-                      <p className="text-small text-grey">{new Date(notif.createdAt).toLocaleString()}</p>
+                  notifications.map((notif) => (
+                    <div 
+                      key={notif._id} 
+                      onClick={() => handleNotificationClick(notif)}
+                      className={`p-3 border-b cursor-pointer hover:bg-dark-grey transition-colors ${!notif.isRead ? 'bg-p/20' : ''}`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="text-lg mt-1">
+                          {getNotificationIcon(notif.type)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm">{notif.message}</p>
+                          <p className="text-xs text-dark-grey mt-1">
+                            {formatDate(notif.createdAt)}
+                          </p>
+                        </div>
+                        {!notif.isRead && (
+                          <div className="h-2 w-2 bg-p rounded-full mt-1"></div>
+                        )}
+                      </div>
                     </div>
                   ))
                 )}
-              </ul>
-              </details>
+              </div>
+            </div>
+          )}
+        </div>
           
           <details className="relative">
           <summary className="list-none cursor-pointer ">

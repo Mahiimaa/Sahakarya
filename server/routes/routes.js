@@ -17,7 +17,7 @@ const { getServiceDetails, getServiceById, getUserServices, updateServiceDetails
 const {getProviderDetails, getPreviousWork, addReviews, getReviewsByProvider, getReviewsByBooking, checkReviewExists, editReview, deleteReview, getTopRatedProviders} = require('../controllers/ProviderController');
 const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, submitProviderCompletion, disputeCompletion, confirmServiceCompletion } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
-const {getNotifications, readNotifications} = require('../controllers/notificationController');
+const {getNotifications,markAllAsRead, deleteNotification, deleteAllRead, readNotifications} = require('../controllers/notificationController');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -120,5 +120,8 @@ router.get("/payment/callback", handlePaymentCallback);
 
 router.get("/notifications", verifyToken, getNotifications );
 router.put("/notifications/mark-read/:id", verifyToken, readNotifications);
+router.put("/read-all", verifyToken, markAllAsRead);
+router.delete("/:notificationId", verifyToken, deleteNotification);
+router.delete("/delete-read",verifyToken, deleteAllRead);
 
 module.exports = router;
