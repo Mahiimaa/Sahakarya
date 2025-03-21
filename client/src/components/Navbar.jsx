@@ -8,6 +8,8 @@ import logout from "../assets/logout.png"
 import notification from "../assets/notification.png"
 import axios from "axios"
 import io from "socket.io-client";
+import { IoGitPullRequestOutline, IoChatbubbleEllipsesOutline } from "react-icons/io5";
+import { TfiAnnouncement } from "react-icons/tfi";
 
 const socket = io(process.env.REACT_APP_API_BASE_URL, {
   withCredentials: true,
@@ -121,9 +123,9 @@ function Navbar() {
           setUnreadCount(prev => Math.max(0, prev - 1));
         }
         if (notification.type === 'request') {
-          navigate(`/request/${notification.data.requestId}`);
+          navigate(`/request`);
         } else if (notification.type === 'chat') {
-          navigate(`/chat/${notification.data.senderId}`);
+          navigate(`/chat`);
         }
         setShowDropdown(false);
       } catch (error) {
@@ -180,11 +182,11 @@ function Navbar() {
     const getNotificationIcon = (type) => {
       switch (type) {
         case 'request':
-          return '🔔'; 
+          return <IoGitPullRequestOutline />; 
         case 'chat':
-          return '💬';
+          return <IoChatbubbleEllipsesOutline/>;
         default:
-          return '📢';
+          return <TfiAnnouncement/>;
       }
     };
  
@@ -216,14 +218,14 @@ function Navbar() {
           >
             <img className="w-10 h-16 py-4 mt-2" src={notification} alt="notification"/>
             {unreadCount > 0 && (
-              <span className="absolute top-2 right-2 bg-error text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute top-4 left-4 bg-p/90 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
           </button>
           
           {showDropdown && (
-            <div className="absolute right-0 bg-white w-80 border border-dark-grey rounded-lg shadow-lg z-50">
+            <div className="absolute right-4 bg-white w-80 border border-dark-grey rounded-lg shadow-lg z-50 top-3/4">
               <div className="flex justify-between items-center p-3 border-b">
                 <h3 className="font-medium">Notifications</h3>
                 <div className="flex items-center gap-2">
