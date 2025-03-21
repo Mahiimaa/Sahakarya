@@ -325,13 +325,13 @@ const Request = () => {
                 {booking.status === "pending" && (
                   <>
                   <button
-                    className="bg-p text-white px-4 py-2 rounded whitespace-nowrap"
+                    className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded whitespace-nowrap"
                     onClick={() => handleOpenScheduleModal(booking._id)}
                   >
                     Accept & Schedule
                   </button>
                   <button
-                    className="bg-error text-white px-4 py-2 rounded"
+                    className="bg-error hover:bg-error/90 text-white px-4 py-2 rounded"
                     onClick={() => rejectBooking(booking._id)}
                   >
                     Reject
@@ -341,7 +341,7 @@ const Request = () => {
                   <div className="flex w-full justify-end">
                   {booking.status === "scheduled" && booking.scheduleDate && !isNaN(new Date(booking.scheduleDate)) && (
                       <button
-                        className ="bg-p text-white px-4 py-2 rounded" 
+                        className ="bg-p hover:bg-p/90 text-white px-4 py-2 rounded" 
                         onClick={() => initiateCompletion(booking._id)}
                       >
                         {booking.confirmedByRequester && booking.confirmedByProvider
@@ -409,7 +409,7 @@ const Request = () => {
         {booking.status === "awaiting requester confirmation" && (
           <>
             <button
-              className="bg-p text-white px-4 py-2 rounded"
+              className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded"
               onClick={() => confirmCompletion(booking._id)}
             >
               Confirm & Transfer Credits
@@ -494,7 +494,7 @@ const Request = () => {
               Cancel
             </button>
             <button 
-              className="bg-p text-white px-4 py-2 rounded" 
+              className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded" 
               onClick={submitProviderCompletion}
             >
               Submit Details
@@ -524,7 +524,7 @@ const Request = () => {
               Cancel
             </button>
             <button 
-              className="bg-p text-white px-4 py-2 rounded" 
+              className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded" 
               onClick={submitDispute}
             >
               Submit Dispute

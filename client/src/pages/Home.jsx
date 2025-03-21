@@ -181,7 +181,7 @@ function Home() {
               Explore Now
             </button>
             <button 
-              className="bg-white border border-p text-p py-2 px-6 rounded-md font-semibold"
+              className="bg-white border hover:bg-p hover:text-white border-p text-p py-2 px-6 rounded-md font-semibold"
               onClick={handleLogout}
             >
               Logout

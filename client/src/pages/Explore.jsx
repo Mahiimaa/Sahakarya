@@ -148,7 +148,7 @@ function Explore() {
                    <span className="font-semi-bold text-h3">{service.timeCredits || "N/A"} credits</span>
                    </div>
                     <button
-                      className="mt-4 bg-p text-white p-2 rounded-lg w-full hover:bg-opacity-90"
+                      className="mt-4 bg-p text-white p-2 rounded-lg w-full hover:bg-p/90"
                       onClick={async (e) => {
                         e.stopPropagation();
                         try {

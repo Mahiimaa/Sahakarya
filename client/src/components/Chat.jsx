@@ -145,7 +145,7 @@ const handleSendMessage = async (e) => {
             }
           }}
           />
-          <button type="submit" className="bg-p text-white px-4 py-2 rounded disabled:opacity-50 " disabled={!newMessage.trim()}>
+          <button type="submit" className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded disabled:opacity-50 " disabled={!newMessage.trim()}>
             Send
           </button>
         </form>

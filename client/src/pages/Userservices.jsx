@@ -177,7 +177,7 @@ function UserServices() {
             {previewImage && <img src={previewImage} alt="Service Preview" className="mt-2 w-full rounded-md" />}
 
             <div className="flex justify-end mt-4">
-              <button className="bg-p text-white px-4 py-2 rounded-md" onClick={handleSaveChanges}>
+              <button className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded-md" onClick={handleSaveChanges}>
                 Save
               </button>
             </div>

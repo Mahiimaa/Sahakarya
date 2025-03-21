@@ -70,7 +70,7 @@ function Signup() {
               </button>
               <button
                 className={`ml-2 px-4 py-2 rounded-full ${
-                  user.role === 'admin' ? 'bg-p text-white' : 'bg-gray-300 text-gray-700'
+                  user.role === 'admin' ? 'bg-p text-white' : 'bg-dark-grey text-grey'
                 }`}
                 onClick={handleToggleRole}
               >
@@ -130,7 +130,7 @@ function Signup() {
               {error && <p className="text-error">{error}</p>}
 
               <div className="flex flex-col justify-center items-center mt-6">
-                <button className="bg-p hover:bg-p-dark text-h2 p-2 px-24 rounded-md text-white">Sign Up</button>
+                <button className="bg-p hover:bg-p/90 text-h2 p-2 px-24 rounded-md text-white">Sign Up</button>
                 <div className="flex gap-2">
                   <p>Already have an account?</p>
                   <Link to="/" className='text-p'>Log in</Link>

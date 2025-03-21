@@ -345,7 +345,7 @@ function ProviderDetails() {
         <div className="fixed inset-0 bg-grey bg-opacity-75 flex justify-center items-center z-50" onClick={closeModal}>
           <div className="relative p-4 max-w-4xl">
             <button
-              className="absolute top-0 right-0 text-white bg-p hover:bg-opacity-70 rounded-full w-10 h-10 flex items-center justify-center"
+              className="absolute top-0 right-0 text-white bg-p hover:bg-p/90 rounded-full w-10 h-10 flex items-center justify-center"
               onClick={closeModal}
             >
               ✕

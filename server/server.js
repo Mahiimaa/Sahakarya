@@ -95,7 +95,7 @@ io.on('connection', (socket) => {
 
   socket.on("sendNotification", async ({ userId, message }) => {
     if (!userId || !message) {
-      console.error("Invalid notification data:", { userId, message });
+      console.error("Invalid notification data:", { userId, message, type, data });
       return;
     }
     

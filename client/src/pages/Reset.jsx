@@ -89,7 +89,7 @@ const Reset = () => {
     <div className="flex h-screen w-screen justify-center items-center relative">
       <Link 
         to="/forgot"
-        className="hidden desk:absolute desk:left-16 desk:top-16 bg-p text-white border-2 border-button desk:flex justify-center items-center px-6 py-2 text-xl font-medium text-button gap-2 hover:bg-button"
+        className="hidden desk:absolute desk:left-16 desk:top-16 bg-p text-white border-2 border-button desk:flex justify-center items-center px-6 py-2 text-xl font-medium text-button gap-2 hover:bg-p/90"
       >
         <IoChevronBackOutline /> Back
       </Link>
@@ -136,7 +136,7 @@ const Reset = () => {
 
         <button
           type="submit"
-          className="border outline-none bg-p rounded-md text-white px-6 py-2 hover:bg-button w-full disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="border outline-none bg-p rounded-md text-white px-6 py-2 hover:bg-p/90 w-full disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={loading}
         >
           {loading ? "Resetting Password..." : "Reset Password"}

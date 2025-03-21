@@ -92,7 +92,7 @@ function AdminService() {
        <div className="bg-screen p-4  border-none rounded-2xl">
        <div className="flex justify-between items-center ">
         <h1 className="font-bold text-h1"> Service Management</h1> 
-        <button className='bg-p text-white font-poppins border rounded-md p-2 mr-4' onClick={toggleModal}> Add Service </button>
+        <button className='bg-p hover:bg-p/90 text-white font-poppins border rounded-md p-2 mr-4' onClick={toggleModal}> Add Service </button>
         </div>
         {error && <div className=" text-error p-2 rounded">{error}</div>}
         {success && <div className=" text-s p-2 rounded">{success}</div>}
@@ -163,7 +163,7 @@ function AdminService() {
                 <div className="flex justify-end">
                   <button
                     type="submit"
-                    className="bg-p text-white px-4 py-2 rounded hover:bg-blue-600"
+                    className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded hover:bg-blue-600"
                   >
                     Add Service
                   </button>

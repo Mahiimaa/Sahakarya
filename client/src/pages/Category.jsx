@@ -34,7 +34,7 @@ function Category() {
           setSuccess('Category added successfully');
           setCategoryName('');
           setAddServiceForm(false);
-          fetchCategories(); // Refresh the list
+          fetchCategories();
       } catch (error) {
           setError(error.response?.data?.message || 'Error adding category');
       }
@@ -46,7 +46,7 @@ function Category() {
               const response = await axios.delete(`${apiUrl}/api/admin/category/${id}`);
               console.log('delete response : ', response.data)
               setSuccess('Category deleted successfully');
-              fetchCategories(); // Refresh the list
+              fetchCategories();
           } catch (error) {
               setError('Error deleting category');
           }
@@ -119,7 +119,7 @@ function Category() {
                            <div className="flex justify-end">
                              <button
                                type="submit"
-                               className="bg-p text-white px-4 py-2 rounded hover:bg-blue-600"
+                               className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded"
                              >
                                Add Category
                              </button>

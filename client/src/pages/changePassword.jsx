@@ -84,7 +84,7 @@ const ChangePassword = () => {
   return (
     <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col">
       <div className="flex justify-start mb-8">
-        <button className="bg-p text-white rounded py-2 px-4">
+        <button className="bg-p hover:bg-p/90 text-white rounded py-2 px-4">
           <NavLink to="/home" className="flex items-center">
             <svg
               className="w-5 h-5 mr-2"
@@ -204,7 +204,7 @@ const ChangePassword = () => {
               )}
               <button
                 type="submit"
-                className="w-full mt-4 bg-p text-white rounded py-3 px-6 transition-colors"
+                className="w-full mt-4 bg-p hover:bg-p/90 text-white rounded py-3 px-6 transition-colors"
               >
                 Submit
               </button>

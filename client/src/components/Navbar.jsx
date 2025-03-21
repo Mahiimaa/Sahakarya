@@ -68,11 +68,9 @@ function Navbar() {
             setNotifications(notifResponse.data);
             setUnreadCount(notifResponse.data.filter((notif) => !notif.isRead).length);
           } else if (notifResponse.data && Array.isArray(notifResponse.data.notifications)) {
-            // If API returns object with notifications array inside
             setNotifications(notifResponse.data.notifications);
             setUnreadCount(notifResponse.data.unreadCount || 0);
           } else {
-            // Default to empty array if response format is unexpected
             console.warn("Unexpected notifications format:", notifResponse.data);
             setNotifications([]);
             setUnreadCount(0);
@@ -310,7 +308,7 @@ function Navbar() {
               </div>
               <div className="flex justify-center">
                 <button
-                  className="w-[100%] bg-p rounded p-2 mt-2 text-white "
+                  className="w-[100%] bg-p hover:bg-p/60 rounded p-2 mt-2 text-white "
                   onClick={openChangePassword}
                 >
                   Change Password

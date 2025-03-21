@@ -8,21 +8,15 @@ const createNotification = async (userId, message, type, data = {}) => {
     const notification = new Notification({
       userId,
       message,
-      type,
-      data,
+      type : type || 'general',
+      data : data || {},
       isRead: false,
       createdAt: new Date()
     });
     
     await notification.save();
-    if (global.io) {
-      global.io.to(userId.toString()).emit("newNotification", notification);
+      io.to(userId.toString()).emit("newNotification", notification);
       console.log(`Notification sent to ${userId}: ${message}`);
-    } else {
-      console.warn("Socket.io is not initialized yet.");
-    }
-    
-    return notification;
   } catch (error) {
     console.error("Error creating notification:", error);
     throw error;

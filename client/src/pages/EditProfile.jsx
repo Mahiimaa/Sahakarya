@@ -225,7 +225,7 @@ const EditProfile = () => {
   return (
     <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col">
       <div className="flex justify-start">
-        <button className="bg-p text-white rounded py-2 px-4">
+        <button className="bg-p hover:bg-p/90 text-white rounded py-2 px-4">
           <NavLink to="/userProfile" className="flex items-center">
             <svg
               className="w-5 h-5 mr-2"
@@ -268,7 +268,7 @@ const EditProfile = () => {
                 aria-label="Upload profile picture"
               />
               <div
-                className="w-24 h-24 rounded-full border-2 border-neutral-300 flex items-center justify-center overflow-hidden cursor-pointer"
+                className="w-24 h-24 rounded-full border-2 flex items-center justify-center overflow-hidden cursor-pointer"
                 onClick={() => document.getElementById("profilePicture").click()}
                 role="button"
                 tabIndex={0}
@@ -380,7 +380,7 @@ const EditProfile = () => {
 
             <button
               type="submit"
-              className="w-full bg-p text-white rounded py-3 px-6 hover:bg-blue-700 transition-colors"
+              className="w-full bg-p hover:bg-p/90 text-white rounded py-3 px-6 transition-colors"
               disabled={loading}
             >
               {loading ? "Saving..." : "Save Changes"}

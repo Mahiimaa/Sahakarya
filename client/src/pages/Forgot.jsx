@@ -205,7 +205,7 @@ const Forgot = () => {
   return (
     <div className="flex h-screen w-screen justify-center items-center relative">
       <button
-        className="hidden desk:absolute desk:left-16 desk:top-16 bg-p text-white border-2 border-button desk:flex justify-center items-center px-6 py-2 text-xl font-medium text-button gap-2 hover:bg-button"
+        className="hidden desk:absolute desk:left-16 desk:top-16 bg-p hover:bg-p/90 text-white border-2 border-button desk:flex justify-center items-center px-6 py-2 text-xl font-medium text-button gap-2"
         onClick={handleBack}
       >
         <IoChevronBackOutline /> Back
@@ -228,7 +228,7 @@ const Forgot = () => {
             autoFocus
           />
           <button
-            className="border outline-none bg-p rounded-md text-white px-6 py-2 hover:bg-button disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="border outline-none bg-p hover:bg-p/90 rounded-md text-white px-6 py-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? "Sending..." : "Request OTP"}
@@ -250,7 +250,7 @@ const Forgot = () => {
             <div className="flex flex-col gap-2 items-center">
               <button
                 type="submit"
-                className="bg-p text-white w-fit px-6 py-2 rounded hover:bg-s disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="bg-p text-white w-fit px-6 py-2 rounded hover:bg-p/90 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 disabled={timer === 0}
               >
                 Verify OTP
@@ -258,7 +258,7 @@ const Forgot = () => {
               <button
                 type="button"
                 onClick={handleResendOTP}
-                className={`text-sm ${resendDisabled ? 'text-gray-400 cursor-not-allowed' : 'text-blue-500 hover:text-blue-700'}`}
+                className={`text-sm ${resendDisabled ? 'text-grey cursor-not-allowed' : 'text-p hover:text-p'}`}
                 disabled={resendDisabled}
               >
                 Resend OTP

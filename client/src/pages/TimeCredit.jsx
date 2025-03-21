@@ -154,7 +154,7 @@ function TimeCredit() {
                 </p>
                 <button 
                   onClick={handleManualVerify}
-                  className="mt-2 text-body bg-p hover:bg-p text-white py-1.5 px-3 rounded-md transition duration-200"
+                  className="mt-2 text-body bg-p hover:bg-p/90 text-white py-1.5 px-3 rounded-md transition duration-200"
                 >
                   Verify Payment
                 </button>
@@ -238,7 +238,7 @@ function TimeCredit() {
           )}
         </div>
         
-        <div className="mt-6 text-center text-xs text-gray-500">
+        <div className="mt-6 text-center text-xs text-dark-grey">
           Need help? Contact our <a href="#" className="text-blue-600 hover:underline">support team</a>
         </div>
       </div>

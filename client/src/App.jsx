@@ -21,7 +21,6 @@ import Explore from "./pages/Explore";
 import ServiceDetails from "./pages/ServiceDetails";
 import ProviderDetails from "./pages/ProviderDetails";
 import Request from "./pages/Request";
-import Booking from "./pages/Booking";
 import ChatHistory from "./pages/ChatHistory";
 import UserProfile from "./pages/UserProfile";
 import EditProfile from './pages/EditProfile';
@@ -58,7 +57,6 @@ return (
         <Route path="/payment/error" element={<TimeCredit />} />
         <Route path="/timeCredit" element={<TimeCredit/>} />
         <Route path="/services" element={<AdminService />} />
-        <Route path="/booking/:serviceId/:providerId" element={<Booking />} />
         <Route path="/request" element={<Request />} />
         <Route path="/users" element={<Users />} />
         <Route path="/transactions" element={<Transactions />} />

@@ -130,7 +130,7 @@ const UserProfileInfoPage = () => {
   return (
     <div className="min-h-screen p-6 flex flex-col ">
      <div className="flex justify-start">
-    <button className="bg-p text-white rounded py-2 px-4">
+    <button className="bg-p hover:bg-p/90 text-white rounded py-2 px-4">
       <NavLink to="/home" className="flex items-center">
         <svg
           className="w-5 h-5 mr-2"
@@ -155,7 +155,7 @@ const UserProfileInfoPage = () => {
       <p className="flex justify-self-center text-p text-h2 font-semi-bold p-4"> User Profile </p>
         {/* Profile Picture */}
         <div className="text-center mb-6">
-          <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-300">
+          <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 ">
             <img
               src={user?.profilePicture || "https://via.placeholder.com/150"}
               alt="Profile"
@@ -202,7 +202,7 @@ const UserProfileInfoPage = () => {
           )}
         </div>
         </div>
-        <button className="bg-p p-2 text-white border rounded-md flex justify-self-center m-3" onClick ={openEditProfile} >Edit Profile</button>
+        <button className="bg-p hover:bg-p/90 p-2 text-white border rounded-md flex justify-self-center m-3" onClick ={openEditProfile} >Edit Profile</button>
       </div>
     </div>
     {showModal && (
@@ -237,7 +237,7 @@ const UserProfileInfoPage = () => {
             {previewImage && <img src={previewImage} alt="Service Preview" className="mt-2 w-24 h-24 object-contain rounded-md" />}
 
             <div className="flex justify-end mt-4">
-              <button className="bg-p text-white px-4 py-2 rounded-md" onClick={handleSaveDescription}>Save</button>
+              <button className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded-md" onClick={handleSaveDescription}>Save</button>
             </div>
           </div>
           
