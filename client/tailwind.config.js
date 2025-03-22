@@ -32,10 +32,10 @@ module.exports = {
       'semi-bold': '600',
       'regular': '400', 
     },
-    screens: {
-      'mob': '0px',
-      'desk': '768px',
-    },
+    // screens: {
+    //   'mob': '0px',
+    //   'desk': '768px',
+    // },
   },
   plugins: [],
 }

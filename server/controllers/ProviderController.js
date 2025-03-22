@@ -176,90 +176,66 @@ const deleteReview = async (req, res) => {
   
   const getTopRatedProviders = async (req, res) => {
     try {
-      const allReviews = await Review.find({});
+      const limit = 5; // Number of top providers to return
       
-      console.log('All Reviews:', allReviews.map(review => ({
-        _id: review._id,
-        provider: review.provider,
-        providerType: typeof review.provider,
-        isValidObjectId: mongoose.Types.ObjectId.isValid(review.provider)
-      })));
-      const validProviderIds = allReviews
-        .map(review => review.provider)
-        .filter(id => mongoose.Types.ObjectId.isValid(id));
-  
-      console.log('Valid Provider IDs:', validProviderIds);
-      const existingProviders = await User.find({
-        _id: { $in: validProviderIds }
-      });
-  
-      console.log('Existing Providers:', existingProviders.map(p => ({
-        _id: p._id,
-        username: p.username
-      })));
-      const topProviders = await Review.aggregate([
-        {
-          $match: {
-            provider: { 
-              $in: existingProviders.map(p => p._id)
-            }
-          }
-        },
-        {
-          $group: {
+      // First find all provider IDs with their review counts and total ratings
+      const providerStats = await Review.aggregate([
+        { $group: {
             _id: "$provider",
-            avgRating: { $avg: "$rating" },
-            completedJobs: { $sum: 1 }
+            totalRating: { $sum: "$rating" },
+            completedJobs: { $sum: 1 } // Use $sum: 1 instead of $count for compatibility
           }
         },
-        { $sort: { avgRating: -1, completedJobs: -1 } },
-        { $limit: 5 },
-        {
-          $lookup: {
-            from: "users",
-            localField: "_id",
-            foreignField: "_id",
-            as: "providerDetails"
-          }
-        },
-        { 
-          $unwind: { 
-            path: "$providerDetails", 
-            preserveNullAndEmptyArrays: false 
+        { $sort: { 
+            totalRating: -1, 
+            completedJobs: -1 
           } 
         },
-        {
-          $project: {
-            _id: "$providerDetails._id",
-            username: "$providerDetails.username",
-            profilePicture: { $ifNull: ["$providerDetails.profilePicture", ""] },
-            rating: { $round: ["$avgRating", 1] },
-            completedJobs: "$completedJobs"
-          }
-        }
+        { $limit: limit * 2 } // Get a few extra to ensure we have enough valid ones
       ]);
-  
-      console.log('Top Providers Aggregation Result:', JSON.stringify(topProviders, null, 2));
-  
-      res.status(200).json({ 
-        topProviders: topProviders.length > 0 ? topProviders : [],
-        message: topProviders.length === 0 ? "No top providers found" : undefined
+      
+      // Ensure we have valid ObjectIds - add this part for safety
+      const validProviderIds = providerStats
+        .filter(stat => mongoose.Types.ObjectId.isValid(stat._id))
+        .map(stat => new mongoose.Types.ObjectId(stat._id));
+      
+      // Get the provider details for these IDs
+      const providers = await User.find(
+        { _id: { $in: validProviderIds } },
+        { username: 1, profilePicture: 1 }
+      ).lean();
+      
+      // Match providers with their stats
+      const providerMap = {};
+      providers.forEach(p => {
+        providerMap[p._id.toString()] = p;
       });
-  
+      
+      // Combine the data
+      const topProviders = providerStats
+        .filter(stat => stat._id && providerMap[stat._id.toString()]) // Only keep stats with matching providers
+        .map(stat => {
+          const provider = providerMap[stat._id.toString()];
+          return {
+            _id: stat._id.toString(), // Convert ObjectId to string for the response
+            username: provider.username,
+            profilePicture: provider.profilePicture || "",
+            rating: Number((stat.totalRating / stat.completedJobs).toFixed(1)),
+            completedJobs: stat.completedJobs
+          };
+        })
+        .sort((a, b) => b.rating - a.rating || b.completedJobs - a.completedJobs)
+        .slice(0, limit);
+      
+      res.status(200).json({ topProviders });
+      
     } catch (error) {
-      console.error('Detailed Error in getTopRatedProviders:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
-  
+      console.error('Error in getTopRatedProviders:', error);
       res.status(500).json({ 
         error: "Server error while fetching top providers",
-        details: error.message
+        details: error.message 
       });
     }
   };
-  
-  
   
   module.exports = {getProviderDetails, getPreviousWork, addReviews, getReviewsByProvider, getReviewsByBooking, checkReviewExists, editReview, deleteReview, getTopRatedProviders};

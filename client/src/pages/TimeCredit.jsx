@@ -239,7 +239,7 @@ function TimeCredit() {
         </div>
         
         <div className="mt-6 text-center text-xs text-dark-grey">
-          Need help? Contact our <a href="#" className="text-blue-600 hover:underline">support team</a>
+          Need help? Contact our <a href="#" className="text-p hover:underline">support team</a>
         </div>
       </div>
     </div>

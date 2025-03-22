@@ -32,7 +32,7 @@ const initiatePayment = async (req, res) => {
         customer_info: {
           name: user.name || user.username,
           email: user.email,
-          phone: user.phoneNumber || '9800000000'
+          phone: user.phoneNumber || '9876453765'
         },
         product_details: [
           {

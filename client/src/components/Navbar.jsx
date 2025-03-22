@@ -314,7 +314,7 @@ function Navbar() {
               </div>
               <div className="flex justify-center">
                 <button
-                  className="w-[100%] bg-p hover:bg-p/60 rounded p-2 mt-2 text-white "
+                  className="w-[100%] bg-p hover:bg-p/90 rounded p-2 mt-2 text-white "
                   onClick={openChangePassword}
                 >
                   Change Password

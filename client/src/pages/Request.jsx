@@ -428,7 +428,7 @@ const Request = () => {
         
         {booking.status === "completed" && !booking.reviewed && (
           <button
-            className="bg-p text-white px-4 py-2 rounded ml-2"
+            className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded ml-2"
             onClick={() => handleOpenReviewModal(booking._id, booking.provider._id)}
           >
             Leave Review
@@ -568,7 +568,7 @@ const Request = () => {
               Cancel
             </button>
             <button 
-              className="bg-p text-white px-4 py-2 rounded" 
+              className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded" 
               onClick={submitReview}
             >
               Submit Review

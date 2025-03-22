@@ -40,8 +40,6 @@ function Home() {
     fetchUserDetails();
   }, [apiUrl, navigate]);
 
-
-
     const fetchTopRatedUsers = async () => {
       try {
         const response = await axios.get(`${apiUrl}/api/providers/top-rated`, {
@@ -50,11 +48,6 @@ function Home() {
             'Content-Type': 'application/json'
           },
           timeout: 10000
-        });
-    
-        console.log('Top Providers Full Response:', {
-          status: response.status,
-          data: response.data
         });
     
         const topProviders = response.data?.topProviders || [];
@@ -72,8 +65,6 @@ function Home() {
           errorStatus: err.response?.status,
           fullError: err
         });
-    
-        // Error handling
         if (err.response) {
           const errorMessage = err.response.data?.error || 'Failed to fetch top providers';
           setError(errorMessage);
@@ -271,7 +262,7 @@ function Home() {
             {topRatedUsers.map((user) => (
               <div 
                 key={user._id}
-                className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200"
+                className="bg-white p-6 rounded-lg border border-light-grey shadow-sm hover:shadow-lg transition-shadow hover:-translate-y-1.5 duration-200"
               >
                 <div className="flex flex-col items-center text-center">
                   <img 
@@ -282,15 +273,15 @@ function Home() {
                   <h3 className="font-poppins font-semibold text-lg mb-1">{user.username}</h3>
                   <p className="text-gray-600 mb-2">{user.category || "Service Provider"}</p>
                   <div className="flex items-center gap-1 mb-2">
-                    <span className="text-yellow-400">★</span>
+                    <span > <Star className="text-[yellow]"/></span>
                     <span className="font-medium">{user.rating ? user.rating.toFixed(1) : "New"}</span>
-                    <span className="text-gray-500 text-sm">
+                    <span className="text-grey text-sm">
                       ({user.completedJobs || 0} {user.completedJobs === 1 ? "task" : "tasks"})
                     </span>
                   </div>
                   <button 
                     className="mt-2 w-full py-2 px-4 rounded-md bg-p text-white font-medium hover:bg-opacity-90 transition-colors"
-                    onClick={() => navigate(`/provider/${user._id}`)}
+                    onClick={() => navigate(`/provider-details/${user._id}`)}
                   >
                     View Profile
                   </button>

@@ -21,10 +21,9 @@ function ProviderDetails() {
   const [editingReview, setEditingReview] = useState(null);
   const [fullImage, setFullImage] = useState(null);
   const [previousWork, setPreviousWork] = useState([]);
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState(serviceId ? "details" : "reviews");
   const [showModal, setShowModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
@@ -191,12 +190,14 @@ function ProviderDetails() {
           {/* Tab Navigation */}
           <div className="bg-white rounded-lg mb-6 overflow-hidden">
             <div className="flex ">
+            {serviceId && (
               <button 
                 className={`px-6 py-3 text-h3 font-semi-bold ${activeTab === 'details' ? 'border-b-2 border-p text-p' : 'text-grey'}`}
                 onClick={() => setActiveTab('details')}
               >
                 Service Task Details
               </button>
+            )}
               <button 
                 className={`px-6 py-3 text-h3 font-semi-bold ${activeTab === 'previous' ? 'border-b-2 border-p text-p' : 'text-grey'}`}
                 onClick={() => setActiveTab('previous')}
@@ -265,7 +266,7 @@ function ProviderDetails() {
                       <div className="p-4">
                         <h3 className="text-h3 font-semi-bold ">{work.serviceName}</h3>
                         <p className="text-h3 mt-1">Requested by: {work.requester.username}</p>
-                        <p className="text-h3 mt-1">Time Credits: {work.timeCredits}</p>
+                        <p className="text-h3 mt-1">Time Credits: <span className="text-p font-semi-bold">{work.timeCredits}</span></p>
                         <p className="text-h3 mt-1">Scheduled Date: {new Date(work.scheduleDate).toLocaleDateString()}</p>
                         <p className="text-h3 mt-1">Completed On: {new Date(work.completedDate).toLocaleDateString()}</p>
                       </div>
