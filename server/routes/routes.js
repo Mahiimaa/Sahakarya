@@ -18,6 +18,7 @@ const {getProviderDetails, getPreviousWork, addReviews, getReviewsByProvider, ge
 const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, submitProviderCompletion, disputeCompletion, confirmServiceCompletion } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
 const {getNotifications,markAllAsRead, deleteNotification, deleteAllRead, readNotifications} = require('../controllers/notificationController');
+const {getTransactions, getTransactionById, getTransactionStats} = require('../controllers/transactionController');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -123,5 +124,7 @@ router.put("/notifications/mark-read/:notificationId", verifyToken, readNotifica
 router.put("/read-all", verifyToken, markAllAsRead);
 router.delete("/:notificationId", verifyToken, deleteNotification);
 router.delete("/delete-read",verifyToken, deleteAllRead);
-
+router.get('/transactions', verifyToken, getTransactions);
+router.get('/:id', verifyToken, getTransactionById);
+router.get('/stats', verifyToken, getTransactionStats);
 module.exports = router;
