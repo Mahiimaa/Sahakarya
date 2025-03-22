@@ -70,6 +70,7 @@ function Navbar() {
             setNotifications(notifResponse.data);
             setUnreadCount(notifResponse.data.filter((notif) => !notif.isRead).length);
           } else if (notifResponse.data && Array.isArray(notifResponse.data.notifications)) {
+            console.log("notifications:", notifResponse.data.notifications);
             setNotifications(notifResponse.data.notifications);
             setUnreadCount(notifResponse.data.unreadCount || 0);
           } else {
@@ -126,6 +127,9 @@ function Navbar() {
           navigate(`/request`);
         } else if (notification.type === 'chat') {
           navigate(`/chat`);
+        }
+        else {
+          navigate(`/request`);
         }
         setShowDropdown(false);
       } catch (error) {
@@ -226,7 +230,7 @@ function Navbar() {
           
           {showDropdown && (
             <div className="absolute right-4 bg-white w-80 border border-dark-grey rounded-lg shadow-lg z-50 top-3/4">
-              <div className="flex justify-between items-center p-3 border-b">
+              <div className="flex justify-between items-center p-3 border-b border-light-grey ">
                 <h3 className="font-medium">Notifications</h3>
                 <div className="flex items-center gap-2">
                   <span className="bg-p/60 border border-p rounded-full w-6 h-6 text-sm text-center">
@@ -252,7 +256,7 @@ function Navbar() {
                     <div 
                       key={notif._id} 
                       onClick={() => handleNotificationClick(notif)}
-                      className={`p-3 border-b cursor-pointer hover:bg-dark-grey transition-colors ${!notif.isRead ? 'bg-p/20' : ''}`}
+                      className={`p-3 border-b border-grey cursor-pointer hover:bg-light-grey transition-colors ${!notif.isRead ? 'bg-p/20' : ''}`}
                     >
                       <div className="flex items-start gap-2">
                         <div className="text-lg mt-1">
@@ -260,7 +264,7 @@ function Navbar() {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm">{notif.message}</p>
-                          <p className="text-xs text-dark-grey mt-1">
+                          <p className="text-small text-grey mt-1">
                             {formatDate(notif.createdAt)}
                           </p>
                         </div>

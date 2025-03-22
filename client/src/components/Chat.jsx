@@ -107,7 +107,7 @@ const handleSendMessage = async (e) => {
         <button className="absolute top-2 right-2 text-grey" onClick={onClose}>
           <IoClose size={24} />
         </button>
-        <h2 className="text-lg font-bold mb-4">Chat with {provider.username}</h2>
+        <h2 className="text-h3 font-bold mb-4">Chat with {provider.username}</h2>
         <div className="h-96 overflow-y-auto border border-dark-grey p-2 mb-2 flex flex-col">
           {messages.map((msg, index) => {
            const isSentByUser = userId && msg.sender && 
@@ -122,8 +122,8 @@ const handleSendMessage = async (e) => {
                 : "bg-dark-grey rounded-bl-none"
             }`}
             >
-               <div className="break-words">{msg.content}</div>
-               <div className="text-body mt-1 text-white opacity-70 text-right">
+               <div className="break-words text-body">{msg.content}</div>
+               <div className="text-small mt-1 text-white opacity-70 text-right">
             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
             </div>

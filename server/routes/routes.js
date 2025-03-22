@@ -119,7 +119,7 @@ router.post("/payment/verify", verifyToken, verifyPayment);
 router.get("/payment/callback", handlePaymentCallback);
 
 router.get("/notifications", verifyToken, getNotifications );
-router.put("/notifications/mark-read/:id", verifyToken, readNotifications);
+router.put("/notifications/mark-read/:notificationId", verifyToken, readNotifications);
 router.put("/read-all", verifyToken, markAllAsRead);
 router.delete("/:notificationId", verifyToken, deleteNotification);
 router.delete("/delete-read",verifyToken, deleteAllRead);

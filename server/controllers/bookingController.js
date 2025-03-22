@@ -3,10 +3,29 @@ const User = require("../models/User");
 const Service = require("../models/Service");
 const Notification = require("../models/Notification");
 
-const createNotification = async (userId, message, type, data = {}) => {
+const createNotification = async (userId, message, type, data = {}, actorId = null) => {
   try {
-    const notification = new Notification({
+    if (actorId && userId.toString() === actorId.toString()) {
+      console.log(`Skipping notification because userId ${userId} is the same as actorId ${actorId}`);
+      return null;
+    }
+    
+    console.log("Creating notification:", {
       userId,
+      message,
+      type,
+      data
+    });
+    
+    if (!userId) {
+      console.error("Missing userId for notification");
+      return null;
+    }
+
+    const userIdStr = userId.toString();
+
+    const notification = new Notification({
+      userId : userIdStr,
       message,
       type : type || 'general',
       data : data || {},
@@ -14,9 +33,17 @@ const createNotification = async (userId, message, type, data = {}) => {
       createdAt: new Date()
     });
     
-    await notification.save();
-      io.to(userId.toString()).emit("newNotification", notification);
-      console.log(`Notification sent to ${userId}: ${message}`);
+    const savedNotification = await notification.save();
+    console.log("Notification saved with ID:", savedNotification._id);
+    if (typeof io === 'undefined') {
+      console.error("Socket.io (io) is not defined in this context");
+      return savedNotification;
+    }
+    
+    io.to(userIdStr).emit("newNotification", savedNotification);
+    console.log(`Notification emitted to ${userIdStr}: ${message}`);
+    
+    return savedNotification;
   } catch (error) {
     console.error("Error creating notification:", error);
     throw error;
@@ -106,7 +133,7 @@ const acceptServiceRequest = async (req, res) => {
     const userId = req.user.id;
 
     try {
-      const booking = await Booking.findById(bookingId);
+      let booking = await Booking.findById(bookingId);
       if (!booking) {
         return res.status(404).json({ error: "Booking not found" });
       }
@@ -124,6 +151,10 @@ const acceptServiceRequest = async (req, res) => {
       booking.serviceDuration = serviceDuration;
   
       await booking.save();
+      booking = await Booking.findById(bookingId)
+      .populate("service", "serviceName")
+      .populate("requester", "username");
+
       const formattedDate = new Date(scheduleDate).toLocaleDateString('en-US', {
         year: 'numeric', 
         month: 'long', 
@@ -131,14 +162,16 @@ const acceptServiceRequest = async (req, res) => {
         hour: '2-digit',
         minute: '2-digit'
       });
+      const serviceName = booking.service ? booking.service.serviceName : "requested service";
       await createNotification(
         booking.requester._id, 
-        `Your request for ${booking.service.serviceName} has been accepted and scheduled for ${formattedDate}`,
+        `Your request for ${serviceName} has been accepted and scheduled for ${formattedDate}`,
         'booking', 
         {
           bookingId: booking._id,
           serviceId: booking.service._id
-        }
+        },
+        userId
       );
       res.json({ message: "Service request accepted and scheduled", booking });
   
@@ -150,7 +183,7 @@ const acceptServiceRequest = async (req, res) => {
 
 const rejectServiceRequest = async (req, res) => {
   try {
-    const booking = await Booking.findById(req.params.bookingId);
+    let booking = await Booking.findById(req.params.bookingId);
 
     if (!booking) return res.status(404).json({ error: "Booking not found" });
     if (booking.provider.toString() !== req.user.id) return res.status(403).json({ error: "Unauthorized" });
@@ -158,9 +191,15 @@ const rejectServiceRequest = async (req, res) => {
     booking.status = "rejected";
     await booking.save();
 
+    booking = await Booking.findById(req.params.bookingId)
+      .populate("service", "serviceName")
+      .populate("requester", "username");
+
+      const serviceName = booking.service ? booking.service.serviceName : "requested service";
+
     await createNotification(
       booking.requester._id, 
-      `Your request for ${booking.service.serviceName} has been rejected`,
+      `Your request for ${serviceName} has been rejected`,
       'booking', 
       {
         bookingId: booking._id,
@@ -244,7 +283,7 @@ const confirmServiceCompletion = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const booking = await Booking.findById(bookingId);
+    let booking = await Booking.findById(bookingId);
     if (!booking) {
       return res.status(404).json({ error: "Booking not found" });
     }
@@ -270,10 +309,14 @@ const confirmServiceCompletion = async (req, res) => {
         
         booking.status = "completed";
         booking.creditTransferred = true;
+        await booking.save();
+
+        booking = await Booking.findById(bookingId).populate("service", "serviceName");
+        const serviceName = booking.service ? booking.service.serviceName : "requested service";
 
         await createNotification(
           booking.provider._id, 
-          `${requester.username} has confirmed completion of ${booking.service.serviceName}. ${creditsToTransfer} time credits have been transferred to your account.`,
+          `${requester.username} has confirmed completion of ${serviceName}. ${creditsToTransfer} time credits have been transferred to your account.`,
           'booking', 
           {
             bookingId: booking._id,
@@ -289,7 +332,9 @@ const confirmServiceCompletion = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized to confirm this booking" });
     }
     
-    await booking.save();
+    if (!booking.confirmedByProvider) {
+      await booking.save();
+    }
     res.json({ 
       message: "Service marked as completed and credits transfered.", 
       status: booking.status,
@@ -307,7 +352,7 @@ const confirmServiceCompletion = async (req, res) => {
       const { disputeReason } = req.body;
       const userId = req.user.id;
   
-      const booking = await Booking.findById(bookingId);
+      let booking = await Booking.findById(bookingId);
       if (!booking) {
         return res.status(404).json({ error: "Booking not found" });
       }
@@ -322,9 +367,12 @@ const confirmServiceCompletion = async (req, res) => {
       
       await booking.save();
 
+      booking = await Booking.findById(bookingId).populate("service", "serviceName");
+      const serviceName = booking.service ? booking.service.serviceName : "requested service";
+
       await createNotification(
         booking.provider._id, 
-        `Your completion of ${booking.service.serviceName} has been disputed. Reason: ${disputeReason}`,
+        `Your completion of ${serviceName} has been disputed. Reason: ${disputeReason}`,
         'booking', 
         {
           bookingId: booking._id,
