@@ -186,11 +186,11 @@ function Navbar() {
     const getNotificationIcon = (type) => {
       switch (type) {
         case 'request':
-          return <IoGitPullRequestOutline />; 
+          return <IoGitPullRequestOutline className="text-p"/>; 
         case 'chat':
-          return <IoChatbubbleEllipsesOutline/>;
+          return <IoChatbubbleEllipsesOutline className="text-p"/>;
         default:
-          return <TfiAnnouncement/>;
+          return <TfiAnnouncement className="text-p"/>;
       }
     };
  
@@ -256,7 +256,7 @@ function Navbar() {
                     <div 
                       key={notif._id} 
                       onClick={() => handleNotificationClick(notif)}
-                      className={`p-3 border-b border-grey cursor-pointer hover:bg-light-grey transition-colors ${!notif.isRead ? 'bg-p/20' : ''}`}
+                      className={`p-3 border-b border-dark-grey cursor-pointer hover:bg-light-grey transition-colors ${!notif.isRead ? 'bg-p/20' : ''}`}
                     >
                       <div className="flex items-start gap-2">
                         <div className="text-lg mt-1">

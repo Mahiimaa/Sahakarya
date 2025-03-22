@@ -3,13 +3,14 @@ import Navbar from "../components/Navbar"
 import { useNavigate } from 'react-router-dom';
 import userhome from "../assets/userhome.png"
 import axios from 'axios';
-import { Star, CheckCircle, Search, ArrowRight, LogOut } from 'lucide-react';
+import { Star, CheckCircle, Search, ArrowRight, LogOut, Calendar, Clock } from 'lucide-react';
 import explore from "../assets/explore.png";
 
 function Home() {
   const [userDetails, setUserDetails] = useState(null);
   const [topRatedUsers, setTopRatedUsers] = useState([]);
   const [popularServices, setPopularServices] = useState([]);
+  const [recentBookings, setRecentBookings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
   const apiUrl = process.env.REACT_APP_API_BASE_URL
@@ -136,6 +137,51 @@ function Home() {
   fetchPopularServices();
 }, [apiUrl, token, navigate]);
 
+    useEffect(() => {
+      const fetchRecentBookings = async () => {
+        try {
+          const response = await axios.get(`${apiUrl}/api/bookings/requester`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 10000
+          });
+          const sortedBookings = response.data.sort((a, b) => 
+            new Date(b.dateRequested) - new Date(a.dateRequested)
+          );
+          
+          const recent = sortedBookings.slice(0, 3);
+          
+          console.log('Recent Bookings:', {
+            count: recent.length,
+            bookings: recent
+          });
+
+          setRecentBookings(recent);
+        } catch (err) {
+          console.error('Recent Bookings Fetch Error:', {
+            errorMessage: err.message,
+            errorResponse: err.response?.data,
+            errorStatus: err.response?.status,
+          });
+
+          if (err.response) {
+            const errorMessage = err.response.data?.error || 'Failed to fetch recent bookings';
+            setError(errorMessage);
+          } else if (err.request) {
+            setError('No response from server');
+          } else {
+            setError('Error preparing request');
+          }
+
+          setRecentBookings([]);
+        }
+      };
+      fetchRecentBookings()
+    },[apiUrl, token, navigate])
+
+
   const handleLogout = async () => {
     try {
       await axios.post(`${apiUrl}/api/logout`);
@@ -154,12 +200,40 @@ function Home() {
   const getProfileImage = (profilePicture) => {
     return profilePicture || "/api/placeholder/64/64";
   };
+
+  const getStatusColorClass = (status) => {
+    switch(status) {
+      case "pending": return "text-s";
+      case "scheduled": return "text-p";
+      case "completed": return "text-p";
+      case "credit transferred": return "text-p";
+      case "awaiting requester confirmation": return "text-s";
+      case "disputed": return "text-error";
+      case "rejected": return "text-error";
+      default: return "text-grey";
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const viewBookingDetails = () => {
+    navigate('/request' );
+  };
   return (
     <div className ="flex flex-col">
        <Navbar/>
        <div className="px-6 py-8 flex flex-col ">
         <div className="px-6  flex justify-center items-center">
-        <div className="bg-light-grey text-black w-3/4 hover:bg-dark-grey hover:text-white rounded-lg p-6 flex justify-between items-center">
+        <div className="bg-p/50 text-black w-3/4 rounded-lg p-6 flex justify-between items-center">
           <div>
             <h2 className="font-poppins text-2xl font-bold mb-2">Ready to get started?</h2>
             <p className="max-w-md">Explore to find the perfect service provider for your needs.</p>
@@ -258,7 +332,7 @@ function Home() {
         </div>
         
         {topRatedUsers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 m-auto ">
             {topRatedUsers.map((user) => (
               <div 
                 key={user._id}
@@ -301,23 +375,73 @@ function Home() {
       <div className="px-6 md:px-12 lg:px-24 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-poppins text-2xl font-bold">Your Recent Bookings</h2>
-          <button className="text-p font-semibold">See All</button>
+          <button className="text-p font-semibold"
+          onClick={viewBookingDetails}
+          >See All</button>
         </div>
-        
+        {recentBookings.length > 0 ? (
+          <div className="grid  grid-cols-1 gap-4">
+            {recentBookings.map((booking) => (
+              <div 
+                key={booking._id} 
+                className="bg-white p-6 rounded-lg shadow-sm border border-light-grey hover:shadow-md transition-shadow"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-poppins font-semi-bold text-body">{booking?.service?.serviceName}</h3>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColorClass(booking.status)}`}>
+                    {booking.status}
+                  </span>
+                </div>
+                
+                <p className="text-grey mb-4">Provider: {booking?.provider?.username}</p>
+                
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                  <div className="flex items-center gap-1">
+                    <Calendar size={16} className='text-p' />
+                    <span>Requested: {formatDate(booking.dateRequested)}</span>
+                  </div>
+                  
+                  {booking.scheduleDate && (
+                    <div className="flex items-center gap-1">
+                      <Clock size={16} className='text-p'/>
+                      <span>Scheduled: {formatDate(booking.scheduleDate)}</span>
+                    </div>
+                  )}
+                  </div>
+                  {booking.status === "awaiting requester confirmation" && (
+                  <div className="mt-2 p-2 bg-s/10 rounded-md text-sm">
+                    <p><strong>Duration:</strong> {booking.actualDuration} hour(s)</p>
+                    <p><strong>Credits:</strong> {booking.proposedCredits}</p>
+                    {booking.completionNotes && (
+                      <p className="truncate"><strong>Notes:</strong> {booking.completionNotes}</p>
+                    )}
+                  </div>
+                )}
+                
+                <div className="flex justify-end mt-3">
+                  <button 
+                    className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded-md"
+                    onClick={viewBookingDetails}
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+           ) : (
         <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-          <div className="text-center py-8">
-            <p className="text-gray-500">You don't have any recent bookings.</p>
+            <p className="text-grey">You don't have any recent bookings.</p>
             <button 
               onClick={toExplore}
-              className="mt-4 py-2 px-6 bg-p text-white rounded-md font-semibold"
+              className="mt-4 py-2 px-6 bg-p text-white rounded-md font-semi-bold"
             >
               Explore Services
             </button>
           </div>
+           )}
         </div>
-      </div>
-    </div>
-    
+ </div>
   )
 }
 
