@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import Navbar from "../components/Navbar";
 import Chat from "../components/Chat";
 import ScheduleModal from "../components/Schedule";
-import ReactStars from "react-rating-stars-component";
+import Mediation from "../components/Mediation";
 
 const Request = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -28,6 +28,9 @@ const Request = () => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewBookingId, setReviewBookingId] = useState(null);
   const [reviewProviderId, setReviewProviderId] = useState(null);
+  const [showMediationModal, setShowMediationModal] = useState(false);
+  const [mediationNotes, setMediationNotes] = useState("");
+  const [mediationMessages, setMediationMessages] = useState([]);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
 
@@ -206,6 +209,9 @@ const Request = () => {
             : b
         ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
       );
+      if (window.confirm("Would you like to request mediation for this dispute?")) {
+        setShowMediationModal(true);
+      }
     } catch (error) {
       toast.error("Error submitting dispute.");
     }
@@ -246,30 +252,51 @@ const Request = () => {
     setReviewProviderId(providerId);
     setShowReviewModal(true);
   };
-  
-  const submitReview = async () => {
+
+  const requestMediation = async () => {
     try {
       await axios.post(
-        `${apiUrl}/api/reviews`, 
-        {
-          bookingId: reviewBookingId,
-          providerId: reviewProviderId,
-          rating,
-          comment: reviewText
-        },
+        `${apiUrl}/api/bookings/${currentBookingId}/mediation`,
+        { additionalInfo: mediationNotes },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Review submitted successfully!");
-      setShowReviewModal(false);
+      
+      toast.success("Mediation requested successfully!");
+      setShowMediationModal(false);
       setOutgoingBookings((prevBookings) =>
         prevBookings.map((b) =>
-          b._id === reviewBookingId ? { ...b, reviewed: true } : b
+          b._id === currentBookingId
+            ? { ...b, status: "in mediation" }
+            : b
         ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
       );
-      setRating(5);
-      setReviewText("");
     } catch (error) {
-      toast.error(error.response?.data?.error || "Error submitting review.");
+      toast.error(error.response?.data?.error || "Error requesting mediation.");
+    }
+  };
+  const fetchMediationMessages = async (bookingId) => {
+    try {
+      const { data } = await axios.get(
+        `${apiUrl}/api/bookings/${bookingId}/mediation-messages`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMediationMessages(data);
+    } catch (error) {
+      console.error("Error fetching mediation messages:", error);
+    }
+  };
+  const sendMediationMessage = async (bookingId, message) => {
+    if (!message.trim()) return;
+    
+    try {
+      await axios.post(
+        `${apiUrl}/api/bookings/${bookingId}/mediation-messages`,
+        { message },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchMediationMessages(bookingId);
+    } catch (error) {
+      toast.error("Error sending message");
     }
   };
 
@@ -351,7 +378,10 @@ const Request = () => {
                       : "Submit Completion Details"}
                       </button>
                     )}
-                    
+                    {booking.status === "in mediation" && (
+                      <Mediation booking={booking} currentUser={currentUser} />
+                    )}
+
                   <button
                     className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4"
                     onClick={() => openChat(booking.provider, booking.requester)}
@@ -381,6 +411,8 @@ const Request = () => {
                 booking.status === "completed" ? "text-p" :
                 booking.status === "credit transferred" ? "text-p" :
                 booking.status === "awaiting requester confirmation" ? "text-s" :
+                booking.status === "in mediation" ? "bg-s/20 text-s" :
+                booking.status === "mediation resolved" ? "bg-p/20 text-p" :
                 booking.status === "disputed" ? "text-error" :
                 "text-error"}`}>
                 {booking.status}
@@ -425,6 +457,17 @@ const Request = () => {
             </button>
           </>
         )}
+        {booking.status === "disputed" && (
+          <button
+            className="bg-s hover:bg-s/90 text-white px-4 py-2 rounded"
+            onClick={() => {
+              setCurrentBookingId(booking._id);
+              setShowMediationModal(true);
+            }}
+          >
+            Request Mediation
+          </button>
+        )}
         
         {booking.status === "completed" && !booking.reviewed && (
           <button
@@ -439,6 +482,9 @@ const Request = () => {
         )}
         <button className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 " onClick={() => openChat(booking.requester, booking.provider)}>Chat</button>
       </div>
+      {booking.status === "in mediation" && (
+        <Mediation booking={booking} currentUser={currentUser} />
+      )}
             </div>
           ))
         ) : (
@@ -534,44 +580,35 @@ const Request = () => {
       </div>
     )}
 
-    {showReviewModal && (
+    {showMediationModal && (
       <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 z-50">
         <div className="bg-white p-6 rounded-lg shadow-md w-96">
-          <h2 className="text-h2 font-bold mb-4">Rate Your Experience</h2>
+          <h2 className="text-h2 font-bold mb-4">Request Mediation</h2>
           
-          <div className="mb-4">
-            <label className="font-semi-bold text-h3">Rating</label>
-            <div className="flex items-center gap-2 my-2">
-                <ReactStars
-                  count={5}
-                  onChange={setRating}
-                  size={36}
-                  value={rating}
-                  activeColor="#ffd700"
-                />
-              </div>
-          </div>
+          <p className="mb-4">
+            Requesting mediation will assign a neutral third party to review this dispute and make a final decision.
+          </p>
           
-          <label className="font-semi-bold text-h3">Review</label>
+          <label className="font-semi-bold text-h3">Additional Information</label>
           <textarea
-            placeholder="Share your experience with this service"
+            placeholder="Provide any additional details that may help the mediator"
             className="w-full p-2 border rounded mb-2"
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
+            value={mediationNotes}
+            onChange={(e) => setMediationNotes(e.target.value)}
           />
           
           <div className="flex justify-between mt-4">
             <button 
-              className="bg-white border text-error border-error hover:bg-error hover:text-white px-4 py-2 rounded" 
-              onClick={() => setShowReviewModal(false)}
+              className="bg-white border text-dark-grey border-dark-grey hover:bg-light-grey px-4 py-2 rounded" 
+              onClick={() => setShowMediationModal(false)}
             >
-              Cancel
+              Not Now
             </button>
             <button 
               className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded" 
-              onClick={submitReview}
+              onClick={requestMediation}
             >
-              Submit Review
+              Request Mediation
             </button>
           </div>
         </div>

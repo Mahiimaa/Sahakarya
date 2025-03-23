@@ -6,7 +6,7 @@ const Khalti = ({ creditAmount, onSuccess, onError }) => {
   const [isLoading, setIsLoading] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const token = localStorage.getItem('token');
-  const pricePerCredit = 100; 
+  const pricePerCredit = 2; 
 
   const initiatePayment = async () => {
     if (creditAmount <= 0) {

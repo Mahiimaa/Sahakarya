@@ -19,6 +19,40 @@ const bookingSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  disputeReason: {
+    type: String,
+    default: ''
+  },
+  mediationRequestedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  mediationRequestedAt: {
+    type: Date
+  },
+  mediationAdditionalInfo: {
+    type: String,
+    default: ''
+  },
+  mediationStatus: {
+    type: String,
+    enum: ['pending', 'in progress', 'resolved'],
+    default: 'pending'
+  },
+  mediationResolvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  mediationResolvedAt: {
+    type: Date
+  },
+  mediationDecision: {
+    type: String,
+    default: ''
+  },
+  finalCredits: {
+    type: Number
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Booking", bookingSchema);

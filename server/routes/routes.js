@@ -18,6 +18,7 @@ const {getProviderDetails, getPreviousWork, addReviews, getReviewsByProvider, ge
 const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, submitProviderCompletion, disputeCompletion, confirmServiceCompletion } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
 const {getNotifications,markAllAsRead, deleteNotification, deleteAllRead, readNotifications} = require('../controllers/notificationController');
+const {requestMediation, getMediationCases, getMediationCaseDetails, sendMediationMessage, resolveMediation, getMediationMessages} = require("../controllers/mediationController");
 const {getTransactions, getTransactionById, getTransactionStats} = require('../controllers/transactionController');
 const multer = require('multer');
 const path = require('path');
@@ -127,4 +128,12 @@ router.delete("/delete-read",verifyToken, deleteAllRead);
 router.get('/transactions', verifyToken, getTransactions);
 router.get('/:id', verifyToken, getTransactionById);
 router.get('/stats', verifyToken, getTransactionStats);
+
+router.post('/bookings/:bookingId/mediation', requestMediation);
+router.get('/mediation/cases', getMediationCases);
+router.get('/mediation/cases/:caseId', getMediationCaseDetails);
+router.post('/bookings/:bookingId/mediation-messages', sendMediationMessage);
+router.get('/bookings/:bookingId/mediation-messages', getMediationMessages);
+router.post('/mediation/:caseId/resolve', resolveMediation);
+
 module.exports = router;
