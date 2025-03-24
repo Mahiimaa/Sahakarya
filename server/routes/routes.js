@@ -20,6 +20,7 @@ const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('.
 const {getNotifications,markAllAsRead, deleteNotification, deleteAllRead, readNotifications} = require('../controllers/notificationController');
 const {requestMediation, getMediationCases, getMediationCaseDetails, sendMediationMessage, resolveMediation, getMediationMessages, getResolvedMediationCases} = require("../controllers/mediationController");
 const {getTransactions, getTransactionById, getTransactionStats} = require('../controllers/transactionController');
+const {createServiceRequest, getAllServiceRequests } = require('../controllers/ServiceRequest');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -138,4 +139,7 @@ router.get('/bookings/:bookingId/mediation-messages', verifyToken, getMediationM
 router.post('/mediation/:caseId/resolve',verifyToken, resolveMediation);
 router.get('/mediation/resolved-cases', verifyToken, getResolvedMediationCases);
 
+
+router.post('/service-requests', verifyToken, createServiceRequest);
+router.get('/admin/service-requests', verifyToken, getAllServiceRequests);
 module.exports = router;

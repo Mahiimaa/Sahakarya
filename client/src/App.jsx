@@ -18,6 +18,7 @@ import AdminTransaction from "./pages/AdminTransaction";
 import Category from "./pages/Category";
 import AdminSettings from "./pages/AdminSettings";
 import AdminMediation from "./pages/AdminMediation";
+import AdminRequest from "./pages/AdminRequests";
 import Explore from "./pages/Explore";
 import ServiceDetails from "./pages/ServiceDetails";
 import ProviderDetails from "./pages/ProviderDetails";
@@ -65,6 +66,7 @@ return (
         <Route path="/category" element={<Category />} />
         <Route path="/adminsettings" element={<AdminSettings />} />
         <Route path="/adminMediation" element={<AdminMediation />} />
+        <Route path="/adminrequest" element={<AdminRequest/>} />
         </Routes>
         </BrowserRouter>
         </div>

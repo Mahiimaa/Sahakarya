@@ -18,6 +18,12 @@ const EditProfile = () => {
   const [services, setServices] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ServiceRequestForm, setServiceRequestForm] = useState(false);
+  const [serviceRequest, setServiceRequest] = useState({
+    serviceName: "",
+    description: ""
+  });
+  const [requestSubmitting, setRequestSubmitting] = useState(false);
 
   const fetchUserProfile = async () => {
     try {
@@ -153,6 +159,55 @@ const EditProfile = () => {
     }));
   };
 
+  const handleServiceRequestChange = (e) => {
+    const { name, value } = e.target;
+    setServiceRequest(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleServiceRequestSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!serviceRequest.serviceName.trim()) {
+      toast.error("Service name is required");
+      return;
+    }
+    
+    setRequestSubmitting(true);
+    
+    try {
+      await axios.post(`${apiUrl}/api/service-requests`, {
+        serviceName: serviceRequest.serviceName.trim(),
+        description: serviceRequest.description.trim()
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      toast.success("Service request submitted successfully!");
+      setServiceRequest({ serviceName: "", description: "" });
+      setServiceRequestForm(false);
+    } catch (err) {
+      const message = err.response?.data?.error || `Failed to submit service request: ${err.message}`;
+      console.error("Error submitting service request:", err);
+      toast.error(message);
+    } finally {
+      setRequestSubmitting(false);
+    }
+  };
+
+  const openServiceRequestForm = () => {
+    setServiceRequestForm(true);
+  };
+
+  const closeServiceRequestForm = () => {
+    setServiceRequestForm(false);
+    setServiceRequest({ serviceName: "", description: "" });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -221,6 +276,18 @@ const EditProfile = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (ServiceRequestForm) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [ServiceRequestForm]);
+
 
   return (
     <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col">
@@ -374,6 +441,15 @@ const EditProfile = () => {
                 Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select
                 multiple options.
               </p>
+              <div className="mt-2 text-center">
+                <button
+                  type="button"
+                  onClick={openServiceRequestForm}
+                  className="text-p hover:text-p/80 text-h3 font-medium underline"
+                >
+                Can't find a service? Request one
+                </button>
+              </div>
             </div>
 
             {error && <p className="text-error text-h3">{error}</p>}
@@ -389,6 +465,84 @@ const EditProfile = () => {
         </div>
         <ToastContainer pauseOnHover theme="light" />
       </div>
+      {ServiceRequestForm && (
+        <div className="fixed inset-0 bg-dark-grey bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+            <button
+              onClick={closeServiceRequestForm}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              aria-label="Close modal"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            
+            <h2 className="text-h2 font-bold mb-4">Request a New Service</h2>
+            
+            <form onSubmit={handleServiceRequestSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="serviceName" className=" font-semi-bold mb-2">
+                  Service Name*
+                </label>
+                <input
+                  type="text"
+                  id="serviceName"
+                  name="serviceName"
+                  value={serviceRequest.serviceName}
+                  onChange={handleServiceRequestChange}
+                  placeholder="Enter service name"
+                  className="w-full border rounded border-grey p-3"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="description" className="text-body font-semi-bold mb-2">
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={serviceRequest.description}
+                  onChange={handleServiceRequestChange}
+                  placeholder="Briefly describe this service"
+                  className="w-full border rounded border-grey p-3"
+                  rows="4"
+                />
+              </div>
+              
+              <div className="flex space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={closeServiceRequestForm}
+                  className="flex-1 bg-white hover:bg-error/80 text-error border hover:text-white border-error rounded py-3 px-4"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-p hover:bg-p/90 text-white rounded py-3 px-4"
+                  disabled={requestSubmitting}
+                >
+                  {requestSubmitting ? "Submitting..." : "Submit Request"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -8,6 +8,7 @@ import transaction from "../assets/transaction.png"
 import category from "../assets/category.png"
 import settings from "../assets/settings.png"
 import mediation from "../assets/mediation.png"
+import request from "../assets/request.png"
 function AdminNav() {
     const setActiveClass = ({ isActive }) =>
     {
@@ -57,6 +58,13 @@ function AdminNav() {
                 <div className='flex items-center gap-6 p-2'>
                   <img className="w-8 h-8"  src={mediation} alt="" />
                   <p className='font-poppins font-regular'>Mediation</p>
+                  </div>
+                </NavLink>
+
+                <NavLink to="/adminRequest" className={setActiveClass}>
+                <div className='flex items-center gap-6 p-2'>
+                  <img className="w-8 h-8"  src={request} alt="" />
+                  <p className='font-poppins font-regular'>Requests</p>
                   </div>
                 </NavLink>
               </div>
