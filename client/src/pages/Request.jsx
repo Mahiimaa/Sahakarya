@@ -95,6 +95,7 @@ const Request = () => {
 
     fetchRequests();
   }, [apiUrl, token]);
+  
 
   const handleOpenScheduleModal = (bookingId) => {
     setCurrentBookingId(bookingId);
@@ -285,19 +286,9 @@ const Request = () => {
       console.error("Error fetching mediation messages:", error);
     }
   };
-  const sendMediationMessage = async (bookingId, message) => {
-    if (!message.trim()) return;
-    
-    try {
-      await axios.post(
-        `${apiUrl}/api/bookings/${bookingId}/mediation-messages`,
-        { message },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchMediationMessages(bookingId);
-    } catch (error) {
-      toast.error("Error sending message");
-    }
+
+  const handleViewMediationDetails = (bookingId) => {
+    fetchMediationMessages(bookingId);
   };
 
   return (
@@ -341,7 +332,15 @@ const Request = () => {
         ? "text-p" 
         : booking.status === "rejected"
         ? "text-error"  
-        : "text-grey" 
+        : booking.status === "awaiting requester confirmation"
+        ? "text-s" 
+        : booking.status === "disputed"
+        ? "text-error" 
+        : booking.status === "in mediation"
+        ? "text-s" 
+        : booking.status === "mediation resolved"
+        ? "text-p" 
+        : "text-p" 
     }`}
   >
     {booking.status}
@@ -365,10 +364,11 @@ const Request = () => {
                   </button>
                   </>
                   )} 
-                  <div className="flex w-full justify-end">
+                  <div className="flex flex-col w-full justify-end">
                   {booking.status === "scheduled" && booking.scheduleDate && !isNaN(new Date(booking.scheduleDate)) && (
+                    
                       <button
-                        className ="bg-p hover:bg-p/90 text-white px-4 py-2 rounded" 
+                        className ="bg-p hover:bg-p/90 text-white px-4 py-2 rounded self-end" 
                         onClick={() => initiateCompletion(booking._id)}
                       >
                         {booking.confirmedByRequester && booking.confirmedByProvider
@@ -378,16 +378,19 @@ const Request = () => {
                       : "Submit Completion Details"}
                       </button>
                     )}
-                    {booking.status === "in mediation" && (
-                      <Mediation booking={booking} currentUser={currentUser} />
-                    )}
-
-                  <button
-                    className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4"
+                    <button
+                    className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 self-end"
                     onClick={() => openChat(booking.provider, booking.requester)}
                   >
                     Chat
                   </button>
+                  {booking.status === "in mediation" || booking.status === "mediation resolved" ? (
+                    <Mediation 
+                      booking={booking} 
+                      currentUser={currentUser} 
+                      onViewDetails={() => handleViewMediationDetails(booking._id)}
+                    />
+                  ) : null}
                   </div>
                 </div>
                </div>
@@ -411,8 +414,8 @@ const Request = () => {
                 booking.status === "completed" ? "text-p" :
                 booking.status === "credit transferred" ? "text-p" :
                 booking.status === "awaiting requester confirmation" ? "text-s" :
-                booking.status === "in mediation" ? "bg-s/20 text-s" :
-                booking.status === "mediation resolved" ? "bg-p/20 text-p" :
+                booking.status === "in mediation" ? "text-s" :
+                booking.status === "mediation resolved" ? " text-p" :
                 booking.status === "disputed" ? "text-error" :
                 "text-error"}`}>
                 {booking.status}
@@ -425,7 +428,7 @@ const Request = () => {
         </div>
       )}
           {booking.actualDuration && booking.proposedCredits && (
-        <div className="mt-2 p-2 bg-s/20 rounded-md">
+        <div className="mt-2 p-2 bg-s/10 rounded-md">
           <p><strong>Actual Duration:</strong> {booking.actualDuration} hour(s)</p>
           <p><strong>Proposed Time Credits:</strong> {booking.proposedCredits}</p>
           {booking.completionNotes && (
@@ -482,9 +485,13 @@ const Request = () => {
         )}
         <button className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 " onClick={() => openChat(booking.requester, booking.provider)}>Chat</button>
       </div>
-      {booking.status === "in mediation" && (
-        <Mediation booking={booking} currentUser={currentUser} />
-      )}
+      {booking.status === "in mediation" || booking.status === "mediation resolved" ? (
+        <Mediation 
+          booking={booking} 
+          currentUser={currentUser} 
+          onViewDetails={() => handleViewMediationDetails(booking._id)}
+        />
+      ) : null}
             </div>
           ))
         ) : (
@@ -585,7 +592,7 @@ const Request = () => {
         <div className="bg-white p-6 rounded-lg shadow-md w-96">
           <h2 className="text-h2 font-bold mb-4">Request Mediation</h2>
           
-          <p className="mb-4">
+          <p className="mb-4 text-s">
             Requesting mediation will assign a neutral third party to review this dispute and make a final decision.
           </p>
           

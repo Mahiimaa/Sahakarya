@@ -1,4 +1,5 @@
 import React from 'react'
+import {NavLink} from "react-router-dom"
 import logo from "../assets/logo.png"
 import dashboard from "../assets/dashboard.png"
 import user from "../assets/user.png"
@@ -6,7 +7,7 @@ import service from "../assets/services.png"
 import transaction from "../assets/transaction.png"
 import category from "../assets/category.png"
 import settings from "../assets/settings.png"
-import { NavLink } from "react-router-dom";
+import mediation from "../assets/mediation.png"
 function AdminNav() {
     const setActiveClass = ({ isActive }) =>
     {
@@ -51,7 +52,14 @@ function AdminNav() {
                   <p className='font-poppins font-regular'>Category</p>
                   </div>
                 </NavLink>
-            </div>
+
+                <NavLink to="/adminMediation" className={setActiveClass}>
+                <div className='flex items-center gap-6 p-2'>
+                  <img className="w-8 h-8"  src={mediation} alt="" />
+                  <p className='font-poppins font-regular'>Mediation</p>
+                  </div>
+                </NavLink>
+              </div>
             </div>
 
                 <div className="flex flex-col left-0 self-start justify-center items-center pl-8">

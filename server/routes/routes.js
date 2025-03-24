@@ -18,7 +18,7 @@ const {getProviderDetails, getPreviousWork, addReviews, getReviewsByProvider, ge
 const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, submitProviderCompletion, disputeCompletion, confirmServiceCompletion } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
 const {getNotifications,markAllAsRead, deleteNotification, deleteAllRead, readNotifications} = require('../controllers/notificationController');
-const {requestMediation, getMediationCases, getMediationCaseDetails, sendMediationMessage, resolveMediation, getMediationMessages} = require("../controllers/mediationController");
+const {requestMediation, getMediationCases, getMediationCaseDetails, sendMediationMessage, resolveMediation, getMediationMessages, getResolvedMediationCases} = require("../controllers/mediationController");
 const {getTransactions, getTransactionById, getTransactionStats} = require('../controllers/transactionController');
 const multer = require('multer');
 const path = require('path');
@@ -103,8 +103,9 @@ router.get("/bookings/provider", verifyToken, getServiceRequestsForProvider);
 router.get("/bookings/requester", verifyToken, getOutgoingBookings);
 router.put("/:bookingId/accept", verifyToken, acceptServiceRequest);
 router.put("/:bookingId/reject", verifyToken, rejectServiceRequest);
-router.put('/bookings/:bookingId/provider-completion', verifyToken, submitProviderCompletion);
 router.put('/bookings/:bookingId/dispute', verifyToken, disputeCompletion);
+router.put('/bookings/:bookingId/provider-completion', verifyToken, submitProviderCompletion);
+
 router.put("/:bookingId/confirm",verifyToken, confirmServiceCompletion);
 router.post("/sendMessage", verifyToken, (req, res) => {
   const io = req.app.get('io');
@@ -129,11 +130,12 @@ router.get('/transactions', verifyToken, getTransactions);
 router.get('/:id', verifyToken, getTransactionById);
 router.get('/stats', verifyToken, getTransactionStats);
 
-router.post('/bookings/:bookingId/mediation', requestMediation);
-router.get('/mediation/cases', getMediationCases);
-router.get('/mediation/cases/:caseId', getMediationCaseDetails);
-router.post('/bookings/:bookingId/mediation-messages', sendMediationMessage);
-router.get('/bookings/:bookingId/mediation-messages', getMediationMessages);
-router.post('/mediation/:caseId/resolve', resolveMediation);
+router.post('/bookings/:bookingId/mediation', verifyToken, requestMediation);
+router.get('/mediation/cases', verifyToken, getMediationCases);
+router.get('/mediation/cases/:caseId', verifyToken, getMediationCaseDetails);
+router.post('/bookings/:bookingId/mediation-messages', verifyToken, sendMediationMessage);
+router.get('/bookings/:bookingId/mediation-messages', verifyToken, getMediationMessages);
+router.post('/mediation/:caseId/resolve',verifyToken, resolveMediation);
+router.get('/mediation/resolved-cases', verifyToken, getResolvedMediationCases);
 
 module.exports = router;

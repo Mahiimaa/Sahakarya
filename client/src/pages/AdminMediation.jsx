@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/AdminNav";
+import Topbar from "../components/AdminTop";
 
 const AdminMediation = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const token = localStorage.getItem("token");
-  const [mediationCases, setMediationCases] = useState([]);
+  const [activeCases, setActiveCases] = useState([]);
+  const [resolvedCases, setResolvedCases] = useState([]);
   const [activeCase, setActiveCase] = useState(null);
   const [mediationMessages, setMediationMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [activeTab, setActiveTab] = useState("active");
   const [mediationDecision, setMediationDecision] = useState("");
   const [proposedCredits, setProposedCredits] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showDecisionModal, setShowDecisionModal] = useState(false);
 
   useEffect(() => {
@@ -20,10 +25,14 @@ const AdminMediation = () => {
 
   const fetchMediationCases = async () => {
     try {
-      const { data } = await axios.get(`${apiUrl}/api/mediation/cases`, {
+      const { data: activeData } = await axios.get(`${apiUrl}/api/mediation/cases`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setMediationCases(data);
+      setActiveCases(activeData);
+      const { data: resolvedData } = await axios.get(`${apiUrl}/api/mediation/resolved-cases`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setResolvedCases(resolvedData);
     } catch (error) {
       console.error("Error fetching mediation cases:", error);
       toast.error("Failed to load mediation cases");
@@ -56,16 +65,20 @@ const AdminMediation = () => {
   };
 
   const sendMediationMessage = async () => {
-    if (!newMessage.trim() || !activeCase) return;
-    
+    if (!newMessage.trim() || !activeCase || sendingMessage) return;
+    setSendingMessage(true);
     try {
-      await axios.post(
+      const { data } = await axios.post(
         `${apiUrl}/api/bookings/${activeCase._id}/mediation-messages`,
         { message: newMessage, isFromMediator: true },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      if (data && data._id) {
+        setMediationMessages(prev => [...prev, data]);
+      } else {
+        fetchMediationMessages(activeCase._id);
+      }
       setNewMessage("");
-      fetchMediationMessages(activeCase._id);
       toast.success("Message sent");
     } catch (error) {
       toast.error("Error sending message");
@@ -106,22 +119,56 @@ const AdminMediation = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString();
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <div className="container mx-auto p-4">
+    <div className ="flex gap-4">
+       <Navbar/>
+       <div className="flex flex-col gap-4">
+       <Topbar/>
+      <div className="bg-screen p-4  border-none rounded-2xl">
         <h1 className="text-h1 font-bold mb-6">Mediation Dashboard</h1>
-        
+        <div className="flex mb-6">
+            <button
+              className={`py-2 px-4 font-medium ${
+                activeTab === "active" 
+                  ? "border-b-2 border-p text-p" 
+                  : "text-dark-grey"
+              }`}
+              onClick={() => setActiveTab("active")}
+            >
+              Active Cases ({activeCases.length})
+            </button>
+            <button
+              className={`py-2 px-4 font-medium ${
+                activeTab === "resolved" 
+                  ? "border-b-2 border-p text-p" 
+                  : "text-dark-grey"
+              }`}
+              onClick={() =>{
+                 setActiveTab("resolved");
+                 setActiveCase(null);
+                }}
+            >
+              Resolved Cases ({resolvedCases.length})
+            </button>
+          </div>
         <div className="flex gap-6">
           {/* Case List */}
-          <div className="w-1/3 bg-white rounded-lg shadow-md p-4">
-            <h2 className="text-h2 font-semibold mb-4">Mediation Cases</h2>
+          <div className="w-1/3 bg-white rounded-lg shadow-md p-4 max-h-[680px] overflow-y-auto ">
+            <h2 className="text-h2 font-semi-bold mb-4">
+            {activeTab === "active" ? "Active Mediation Cases" : "Resolved Mediation Cases"}</h2>
             
-            {mediationCases.length === 0 ? (
+            {loading ? (
+                <div className="text-center py-4">Loading cases...</div>
+              ) : activeTab === "active" ? (
+                activeCases.length === 0 ? (
               <p className="text-grey italic">No active mediation cases</p>
             ) : (
               <div className="space-y-2">
-                {mediationCases.map((mCase) => (
+                {activeCases.map((mCase) => (
                   <div 
                     key={mCase._id}
                     className={`p-3 rounded-md cursor-pointer border ${
@@ -131,7 +178,7 @@ const AdminMediation = () => {
                     }`}
                     onClick={() => fetchCaseDetails(mCase._id)}
                   >
-                    <div className="font-medium">{mCase.service.serviceName}</div>
+                    <div className="font-semi-bold">{mCase.service?.serviceName}</div>
                     <div className="text-sm">
                       <span className="text-grey">Requester:</span> {mCase.requester.username}
                     </div>
@@ -144,11 +191,44 @@ const AdminMediation = () => {
                   </div>
                 ))}
               </div>
-            )}
+            )
+          ) : (
+            resolvedCases.length === 0 ? (
+              <p className="text-grey italic">No resolved mediation cases</p>
+            ) : (
+              <div className="space-y-2">
+                {resolvedCases.map((mCase) => (
+                  <div 
+                    key={mCase._id}
+                    className={`p-3 rounded-md cursor-pointer border ${
+                      activeCase && activeCase._id === mCase._id 
+                        ? "border-p bg-p/10" 
+                        : "border-grey hover:bg-light-grey"
+                    }`}
+                    onClick={() => fetchCaseDetails(mCase._id)}
+                  >
+                    <div className="font-semi-bold">{mCase.service?.serviceName || "Unknown Service"}</div>
+                    <div className="text-sm">
+                      <span className="text-grey">Requester:</span> {mCase.requester?.username || "Unknown"}
+                    </div>
+                    <div className="text-sm">
+                      <span className="text-grey">Provider:</span> {mCase.provider?.username || "Unknown"}
+                    </div>
+                    <div className="text-sm">
+                      <span className="text-grey">Resolved:</span> {formatDate(mCase.mediationResolvedAt)}
+                    </div>
+                    <div className="text-sm mt-1 text-p">
+                      Credits: {mCase.finalCredits}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
           </div>
           
           {/* Case Details */}
-          <div className="w-2/3 bg-white rounded-lg shadow-md p-4">
+          <div className="w-2/3 bg-white rounded-lg shadow-md p-4 max-h-[680px] overflow-y-auto">
             {!activeCase ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-grey">Select a case to see details</p>
@@ -156,57 +236,90 @@ const AdminMediation = () => {
             ) : (
               <div>
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-h2 font-semibold">Case Details</h2>
+                  <h2 className="text-h2 font-semi-bold">Case Details</h2>
+                  {activeCase.status === "in mediation" && (
                   <button
                     className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded"
                     onClick={openDecisionModal}
                   >
                     Resolve Mediation
                   </button>
+                  )}
+                  {activeCase.status === "mediation resolved" && (
+                      <span className="bg-p/50 text-p px-3 py-1 rounded-full text-small font-semi-bold">
+                        Resolved on {formatDate(activeCase.mediationResolvedAt)}
+                      </span>
+                    )}
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <h3 className="text-h3 font-medium mb-2">Service Information</h3>
-                    <p><span className="font-medium">Service:</span> {activeCase.service.serviceName}</p>
-                    <p><span className="font-medium">Original Duration:</span> {activeCase.serviceDuration}h</p>
-                    <p><span className="font-medium">Completed At:</span> {activeCase.completedAt && new Date(activeCase.completedAt).toLocaleString()}</p>
+                    <h3 className="text-h3 font-semi-bold mb-2">Service Information</h3>
+                    <p><span className="font-semi-bold">Service:</span> {activeCase.service.serviceName}</p>
+                    <p><span className="font-semi-bold">Original Duration:</span> {activeCase.serviceDuration}h</p>
+                    <p><span className="font-semi-bold">Completed At:</span> {activeCase.completedAt && new Date(activeCase.completedAt).toLocaleString()}</p>
                   </div>
                   
                   <div>
-                    <h3 className="text-h3 font-medium mb-2">Dispute Information</h3>
-                    <p><span className="font-medium">Claimed Duration:</span> {activeCase.actualDuration}h</p>
-                    <p><span className="font-medium">Proposed Credits:</span> {activeCase.proposedCredits}</p>
-                    <p><span className="font-medium">Dispute Reason:</span> {activeCase.disputeReason}</p>
+                    <h3 className="text-h3 font-semi-bold mb-2">Dispute Information</h3>
+                    <p><span className="font-semi-bold">Claimed Duration:</span> {activeCase.actualDuration}h</p>
+                    <p><span className="font-semi-bold">Proposed Credits:</span> {activeCase.proposedCredits}</p>
+                    <p><span className="font-semi-bold">Dispute Reason:</span> {activeCase.disputeReason}</p>
                   </div>
                 </div>
+
+                {activeCase.status === "mediation resolved" && (
+                    <div className="bg-p/20 p-4 rounded-md mb-6 border border-p">
+                      <h3 className="text-h3 font-semi-bold mb-2 text-p">Resolution</h3>
+                      <p><span className="font-medium">Final Credits:</span> {activeCase.finalCredits}</p>
+                      <p><span className="font-medium">Decision:</span> {activeCase.mediationDecision}</p>
+                      <p><span className="font-medium">Resolved By:</span> Admin</p>
+                      <p><span className="font-medium">Resolved On:</span> {formatDate(activeCase.mediationResolvedAt)}</p>
+                      <p><span className="font-medium">Credit Transfer Status:</span> {activeCase.creditTransferred ? "Transferred" : "Pending"}</p>
+                    </div>
+                  )}
                 
                 <div className="mb-4">
-                  <h3 className="text-h3 font-medium mb-2">Communication</h3>
+                <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-h3 font-semi-bold">Communication</h3>
+                      <button
+                        className="text-p text-small hover:underline"
+                        onClick={() => fetchMediationMessages(activeCase._id)}
+                      >
+                        Refresh
+                      </button>
+                    </div>
                   <div className="bg-light-grey p-4 rounded-md h-64 overflow-y-auto mb-2">
                     {mediationMessages.length > 0 ? (
-                      mediationMessages.map((msg) => (
+                      mediationMessages.map((msg) => {
+                        const isFromMediator = msg.isFromMediator;
+                        const isFromRequester = !isFromMediator && msg.sender === activeCase.requester._id;
+                        const isResolution = msg.isResolution;
+                        return(
                         <div 
                           key={msg._id} 
                           className={`p-2 mb-2 rounded-md ${
-                            msg.isFromMediator 
+                            isResolution
+                            ? "bg-p/20 border border-p/50 text-p"
+                                  : isFromMediator 
                               ? "bg-s/20 ml-auto max-w-[80%]" 
-                              : msg.sender === activeCase.requester._id 
+                              : isFromRequester
                                 ? "bg-p/20 max-w-[80%]" 
-                                : "bg-grey/20 max-w-[80%]"
+                                : "bg-dark-grey/50 max-w-[80%]"
                           }`}
                         >
-                          <div className="text-xs text-dark-grey mb-1">
+                          <div className="text-small text-grey mb-1">
                             {msg.isFromMediator ? "Mediator" : msg.senderName} • {new Date(msg.timestamp).toLocaleString()}
                           </div>
-                          <div>{msg.message}</div>
+                          <div className="whitespace-pre-line">{msg.message}</div>
                         </div>
-                      ))
+                      );
+                    })
                     ) : (
                       <p className="text-grey italic">No messages yet</p>
                     )}
                   </div>
-                  
+                  {activeCase.status === "in mediation" && (
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -214,14 +327,20 @@ const AdminMediation = () => {
                       className="flex-1 p-2 border rounded"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMediationMessage()}
+                      disabled={sendingMessage}
                     />
                     <button
-                      className="bg-p hover:bg-p/90 text-white px-3 py-1 rounded"
+                      className={`bg-p hover:bg-p/90 text-white px-3 py-1 rounded ${
+                        sendingMessage ? "opacity-70 cursor-not-allowed" : ""
+                        }`}
                       onClick={sendMediationMessage}
+                      disabled={sendingMessage}
                     >
-                      Send
+                     {sendingMessage ? "Sending..." : "Send"}
                     </button>
                   </div>
+                  )}
                 </div>
               </div>
             )}
@@ -270,6 +389,7 @@ const AdminMediation = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

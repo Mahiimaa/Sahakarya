@@ -367,24 +367,33 @@ const confirmServiceCompletion = async (req, res) => {
       
       await booking.save();
 
-      booking = await Booking.findById(bookingId).populate("service", "serviceName");
+      booking = await Booking.findById(bookingId)
+      .populate("service", "serviceName")
+      .populate("provider");
+
       const serviceName = booking.service ? booking.service.serviceName : "requested service";
 
-      await createNotification(
-        booking.provider._id, 
-        `Your completion of ${serviceName} has been disputed. Reason: ${disputeReason}`,
-        'booking', 
-        {
-          bookingId: booking._id,
-          serviceId: booking.service._id,
-          requesterId: booking.requester
+      if (booking.provider) {
+        try {
+          await createNotification(
+            booking.provider._id, 
+            `Your completion of ${serviceName} has been disputed. Reason: ${disputeReason}`,
+            'booking', 
+            {
+              bookingId: booking._id,
+              serviceId: booking.service._id,
+              requesterId: booking.requester
+            }
+          );
+        } catch (notificationError) {
+          console.error("Error creating notification:", notificationError);
         }
-      );
-      res.json({ message: "Service completion disputed", status: booking.status });
-    } catch (error) {
-      console.error("Error disputing completion:", error);
-      res.status(500).json({ error: "Server error" });
-    }
-  };
+      }
+          res.json({ message: "Service completion disputed", status: booking.status });
+        } catch (error) {
+          console.error("Error disputing completion:", error);
+          res.status(500).json({ error: "Server error" });
+        }
+      };
 
 module.exports = { requestService,getUserBookings, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, submitProviderCompletion, confirmServiceCompletion, disputeCompletion, createNotification };

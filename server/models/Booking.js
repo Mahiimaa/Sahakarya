@@ -4,7 +4,10 @@ const bookingSchema = new mongoose.Schema({
   service: { type: mongoose.Schema.Types.ObjectId, ref: "Service", required: true },
   provider: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   requester: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  status: { type: String, enum: ["pending","scheduled", "completed", "rejected", "credit transferred", "awaiting requester confirmation", ], default: "pending" },
+  status: { type: String, enum: ["pending","scheduled", "completed", "rejected", "credit transferred", "awaiting requester confirmation", 'disputed',                    // Add this
+      'in mediation',                
+      'mediation resolved', 
+      'credit transferred' ], default: "pending" },
   dateRequested: { type: Date, default: Date.now },
   scheduleDate: { type: Date },
   serviceDuration: { type: Number }, 
