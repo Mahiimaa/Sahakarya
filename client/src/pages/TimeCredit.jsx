@@ -9,9 +9,11 @@ function TimeCredit() {
     const [isLoading, setIsLoading] = useState(true);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [recentTransaction, setRecentTransaction] = useState(null);
+    const [cashoutOpen, setCashoutOpen] = useState(false);
+    const [historyOpen, setHistoryOpen] = useState(false);
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const token = localStorage.getItem('token');
-    const pricePerCredit = 100;
+    const pricePerCredit = 1;
 
     useEffect(() => {
     const fetchUserData = async () => {
