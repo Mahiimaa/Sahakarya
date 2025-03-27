@@ -5,12 +5,9 @@ import { toast } from 'react-toastify';
 function CashoutForm({ currentCredits, onSuccess, onClose }) {
   const [creditAmount, setCreditAmount] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [accountDetails, setAccountDetails] = useState({
-    accountNumber: '',
-    bank: '',
-    name: '',
-    contact: ''
-  });
+  const [khaltiId, setKhaltiId] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [remarks, setRemarks] = useState('');
 
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const token = localStorage.getItem('token');
@@ -21,12 +18,9 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
     setCreditAmount(isNaN(value) ? 1 : Math.max(1, Math.min(value, currentCredits)));
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setAccountDetails({
-      ...accountDetails,
-      [name]: value
-    });
+  const validatePhoneNumber = (number) => {
+    const phoneRegex = /^9\d{9}$/;
+    return phoneRegex.test(number);
   };
 
   const handleSubmit = async (e) => {
@@ -37,8 +31,8 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
       return;
     }
 
-    if (!accountDetails.accountNumber || !accountDetails.bank) {
-      toast.error("Please provide your bank account details");
+    if (!phoneNumber || !validatePhoneNumber(phoneNumber)) {
+      toast.error("Please provide a valid phone number (10 digits, starting with 9)");
       return;
     }
 
@@ -46,10 +40,11 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
 
     try {
       const response = await axios.post(
-        `${apiUrl}/api/cashout/request`,
+        `${apiUrl}/api/cashout/khalti`,
         {
           creditAmount,
-          accountDetails
+          phoneNumber,
+          remarks: remarks || `Cashout for ${creditAmount} credits`
         },
         {
           headers: {
@@ -119,42 +114,26 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
 
         <div className="mb-4">
           <label className="block text-body font-medium mb-2">
-            Bank Details
+            Your Khalti Account
           </label>
           <input
             type="text"
-            name="bank"
-            placeholder="Bank Name"
-            value={accountDetails.bank}
-            onChange={handleInputChange}
+            placeholder="Phone Number (e.g., 9801234567)"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
             className="border border-grey rounded-lg py-2 px-4 w-full mb-2"
             required
           />
           <input
             type="text"
-            name="accountNumber"
-            placeholder="Account Number"
-            value={accountDetails.accountNumber}
-            onChange={handleInputChange}
-            className="border border-grey rounded-lg py-2 px-4 w-full mb-2"
-            required
-          />
-          <input
-            type="text"
-            name="name"
-            placeholder="Account Holder Name"
-            value={accountDetails.name}
-            onChange={handleInputChange}
-            className="border border-grey rounded-lg py-2 px-4 w-full mb-2"
-          />
-          <input
-            type="text"
-            name="contact"
-            placeholder="Contact Number"
-            value={accountDetails.contact}
-            onChange={handleInputChange}
+            placeholder="Remarks (optional)"
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
             className="border border-grey rounded-lg py-2 px-4 w-full"
           />
+          <p className="text-xs text-grey mt-1">
+            The amount will be sent directly to your Khalti wallet associated with this phone number.
+          </p>
         </div>
 
         <div className="bg-light-grey p-4 rounded-lg mb-5">
@@ -167,14 +146,14 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
             <span className="text-p">Rs. {creditAmount * cashValuePerCredit}</span>
           </div>
           <div className="mt-2 text-xs text-grey">
-            Note: Cashout requests are typically processed within 2-3 business days.
+            Note: The amount will be instantly transferred to your Khalti wallet.
           </div>
         </div>
 
         <button
           type="submit"
           disabled={isLoading || creditAmount <= 0 || creditAmount > currentCredits}
-          className="w-full bg-p hover:bg-p/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 disabled:bg-grey"
+          className="w-full bg-[#5D2E8F] hover:bg-[#4c2273] text-white font-medium py-3 px-4 rounded-lg transition duration-200 disabled:bg-grey flex justify-center items-center"
         >
           {isLoading ? (
             <div className="flex justify-center items-center">
@@ -182,7 +161,14 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
               Processing...
             </div>
           ) : (
-            "Request Cashout"
+            <>
+              <img 
+                src="https://khalti.com/static/img/khalti-logo.svg" 
+                alt="Khalti Logo" 
+                className="h-5 w-5 mr-2" 
+              />
+              Cashout to Khalti
+            </>
           )}
         </button>
       </form>

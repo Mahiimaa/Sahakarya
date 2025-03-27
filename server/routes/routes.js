@@ -21,7 +21,11 @@ const {getNotifications,markAllAsRead, deleteNotification, deleteAllRead, readNo
 const {requestMediation, getMediationCases, getMediationCaseDetails, sendMediationMessage, resolveMediation, getMediationMessages, getResolvedMediationCases} = require("../controllers/mediationController");
 const {getTransactions, getTransactionById, getTransactionStats} = require('../controllers/transactionController');
 const {createServiceRequest, getAllServiceRequests } = require('../controllers/ServiceRequest');
-const { requestCashout, getCashoutHistory, updateCashoutStatus } = require('../controllers/cashout');
+const { 
+  requestKhaltiCashout, 
+  verifyKhaltiPayout, 
+  handleKhaltiPayoutWebhook 
+} = require('../controllers/cashout');
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -144,8 +148,9 @@ router.get('/mediation/resolved-cases', verifyToken, getResolvedMediationCases);
 router.post('/service-requests', verifyToken, createServiceRequest);
 router.get('/admin/service-requests', verifyToken, getAllServiceRequests);
 
-router.post('/request', verifyToken, requestCashout);
-router.get('/history', verifyToken, getCashoutHistory);
+router.post('/cashout/khalti', verifyToken, requestKhaltiCashout);
+router.post('/verify-payout', verifyToken, verifyKhaltiPayout);
 
-router.post('/update-status', [verifyToken, authorizeRoles], updateCashoutStatus);
+router.post('/webhook', handleKhaltiPayoutWebhook);
+// router.post('/update-status', [verifyToken, authorizeRoles], updateCashoutStatus);
 module.exports = router;

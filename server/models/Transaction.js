@@ -9,7 +9,7 @@ const transactionSchema = new mongoose.Schema({
   sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   recipient: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   amount: { type: Number, required: true },
-  type: { type: String, enum: ["service_payment", "purchase"], required: true },
+  type: { type: String, enum: ["service_payment", "purchase", "khalti-cashout"], required: true },
   status: {
     type: String,
     enum: ['pending', 'completed', 'failed', 'cancelled'],

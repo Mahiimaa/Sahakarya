@@ -1,5 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react'
 import KhaltiPayment from "../components/Khalti"
+import CashoutForm from "../components/CashoutForm"
+import CashoutHistory from "../pages/CashoutHistory"
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -10,7 +12,7 @@ function TimeCredit() {
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [recentTransaction, setRecentTransaction] = useState(null);
     const [cashoutOpen, setCashoutOpen] = useState(false);
-    const [historyOpen, setHistoryOpen] = useState(false);
+    const [recentCashout, setRecentCashout] = useState(null);
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const token = localStorage.getItem('token');
     const pricePerCredit = 1;
@@ -41,6 +43,16 @@ function TimeCredit() {
       if (Date.now() - txData.timestamp > 24 * 60 * 60 * 1000) {
         localStorage.removeItem('pendingTransaction');
         setRecentTransaction(null);
+      }
+    }
+    const pendingCashout = localStorage.getItem('pendingCashout');
+    if (pendingCashout) {
+      const cashoutData = JSON.parse(pendingCashout);
+      setRecentCashout(cashoutData);
+      
+      if (Date.now() - cashoutData.timestamp > 7 * 24 * 60 * 60 * 1000) { // 7 days expiry
+        localStorage.removeItem('pendingCashout');
+        setRecentCashout(null);
       }
     }
 
@@ -97,8 +109,66 @@ function TimeCredit() {
       setRecentTransaction(null);
   };
 
+  const handleCashoutSuccess = (data) => {
+    setCurrentCredits(data.remainingCredits);
+    setCashoutOpen(false);
+    if (data.transaction.status !== 'completed') {
+    const cashoutInfo = {
+      id: data.transaction.id,
+      amount: data.transaction.amount,
+      credits: data.transaction.credits,
+      timestamp: Date.now()
+    };
+    
+    localStorage.setItem('pendingCashout', JSON.stringify(cashoutInfo));
+    setRecentCashout(cashoutInfo);
+  }
+  if (data.transaction.status === 'completed') {
+    toast.success("Credits transferred to your Khalti wallet successfully!");
+  } else {
+    toast.success("Cashout request submitted successfully!");
+  }
+  };
+
+  const handleCheckCashoutStatus = async () => {
+    if (!recentCashout || !recentCashout.khaltiToken) return;
+    
+    try {
+      setIsLoading(true);
+      const { data } = await axios.post(`${apiUrl}/api/cashout/verify-payout`,
+        { token: recentCashout.khaltiToken }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const statusMessages = {
+        'pending': 'Your cashout is pending processing',
+        'processing': 'Your cashout is being processed',
+        'completed': 'Your cashout has been completed! Check your Khalti wallet',
+        'failed': 'Your cashout failed. Your credits have been refunded'
+      };
+      
+      toast.info(statusMessages[data.status] || `Cashout status: ${data.status}`);
+      
+      if (data.status === 'completed' || data.status === 'rejected') {
+        localStorage.removeItem('pendingCashout');
+        setRecentCashout(null);
+      }
+    } catch (error) {
+      console.error("Error checking cashout status:", error);
+      toast.error("Failed to check cashout status");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const toggleDetails = () => {
     setDetailsOpen(!detailsOpen);
+    setCashoutOpen(false);
+  };
+
+  const toggleCashout = () => {
+    setCashoutOpen(!cashoutOpen);
+    setDetailsOpen(false);
   };
 
   const handleManualVerify = () => {
@@ -165,7 +235,31 @@ function TimeCredit() {
           </div>
         )}
 
-        <div className="relative">
+        {recentCashout && (
+          <div className="mb-6 p-4 bg-emerald-100 rounded-lg border border-p shadow-sm">
+            <div className="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-p mt-0.5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <p className="font-semi-bold text-p text-sm">
+                  Pending Cashout
+                </p>
+                <p className="text-p text-body my-1">
+                  {recentCashout.credits} credits for Rs. {recentCashout.amount}
+                </p>
+                <button 
+                  onClick={handleCheckCashoutStatus}
+                  className="mt-2 text-body bg-p hover:bg-p/90 text-white py-1.5 px-3 rounded-md transition duration-200"
+                >
+                  Check Status
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4 mb-6">
           <button 
             className="w-full flex items-center justify-cente bg-p hover:bg-p/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 shadow-md"
             onClick={toggleDetails}
@@ -175,6 +269,18 @@ function TimeCredit() {
             </svg>
             Buy Time Credits
           </button>
+          <button 
+            className="flex items-center justify-center bg-p hover:bg-p/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 shadow-md"
+            onClick={toggleCashout}
+            disabled={currentCredits <= 0}
+          >
+            {/* Cash out button - NEW FEATURE */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            </svg>
+            Cash Out
+          </button>
+        </div>
           
           {detailsOpen && (
             <div className="absolute bg-white border border-dark-grey rounded-lg p-6 left-0 right-0 mt-3 shadow-xl z-10">
@@ -238,7 +344,15 @@ function TimeCredit() {
               />
             </div>
           )}
-        </div>
+          {cashoutOpen && (
+          <div className="absolute bg-white border border-dark-grey rounded-lg left-0 right-0 mt-3 shadow-xl z-10">
+            <CashoutForm 
+              currentCredits={currentCredits}
+              onSuccess={handleCashoutSuccess}
+              onClose={toggleCashout}
+            />
+          </div>
+        )}
         
         <div className="mt-6 text-center text-xs text-dark-grey">
           Need help? Contact our <a href="#" className="text-p hover:underline">support team</a>
