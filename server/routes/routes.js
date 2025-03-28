@@ -20,6 +20,7 @@ const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('.
 const {getNotifications,markAllAsRead, deleteNotification, deleteAllRead, readNotifications} = require('../controllers/notificationController');
 const {requestMediation, getMediationCases, getMediationCaseDetails, sendMediationMessage, resolveMediation, getMediationMessages, getResolvedMediationCases} = require("../controllers/mediationController");
 const {getTransactions, getTransactionById, getTransactionStats} = require('../controllers/transactionController');
+const {getAllTransactions, getTransactionsById} = require('../controllers/AdminTransactions');
 const {createServiceRequest, getAllServiceRequests } = require('../controllers/ServiceRequest');
 const { 
   requestKhaltiCashout, 
@@ -153,4 +154,10 @@ router.post('/verify-payout', verifyToken, verifyKhaltiPayout);
 
 router.post('/webhook', handleKhaltiPayoutWebhook);
 // router.post('/update-status', [verifyToken, authorizeRoles], updateCashoutStatus);
+
+router.get('/admin/Transactions',  verifyToken, getAllTransactions);
+
+router.get('/adminTransactionsById', 
+  verifyToken, getTransactionById);
+
 module.exports = router;
