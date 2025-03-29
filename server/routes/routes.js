@@ -27,6 +27,7 @@ const {
   verifyKhaltiPayout, 
   handleKhaltiPayoutWebhook 
 } = require('../controllers/cashout');
+const {getMonthlyTrends, getServiceCategories, getRecentTransactions} = require("../controllers/adminDashboard")
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -134,7 +135,7 @@ router.put("/read-all", verifyToken, markAllAsRead);
 router.delete("/:notificationId", verifyToken, deleteNotification);
 router.delete("/delete-read",verifyToken, deleteAllRead);
 router.get('/transactions', verifyToken, getTransactions);
-router.get('/:id', verifyToken, getTransactionById);
+router.get('/transactions/:id', verifyToken, getTransactionById);
 router.get('/stats', verifyToken, getTransactionStats);
 
 router.post('/bookings/:bookingId/mediation', verifyToken, requestMediation);
@@ -159,5 +160,9 @@ router.get('/admin/Transactions',  verifyToken, getAllTransactions);
 
 router.get('/adminTransactionsById', 
   verifyToken, getTransactionById);
+
+router.get('/monthly-trends', verifyToken, getMonthlyTrends);
+router.get('/service-categories', verifyToken, getServiceCategories);
+router.get('/recent-transactions', verifyToken, getRecentTransactions);
 
 module.exports = router;

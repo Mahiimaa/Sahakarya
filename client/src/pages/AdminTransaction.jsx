@@ -156,7 +156,7 @@ function AdminTransaction() {
                           <ArrowUpDown size={16} />
                         </div>
                       </th>
-                      <th className="p-3 text-left">Payment Method</th>
+                      {/* <th className="p-3 text-left">Payment Method</th> */}
                       <th 
                         className="p-3 text-left cursor-pointer hover:bg-dark-grey"
                         onClick={() => handleSort('createdAt')}
@@ -191,7 +191,7 @@ function AdminTransaction() {
                           {trans.creditAmount || 0} Credit(s)
                           </div>
                         </td>
-                        <td className="p-3">{trans.method || 'N/A'}</td>
+                        {/* <td className="p-3">{trans.method || 'N/A'}</td> */}
                         <td className="p-3">
                         {trans.createdAt 
                               ? new Date(trans.createdAt).toLocaleString('en-US', {
