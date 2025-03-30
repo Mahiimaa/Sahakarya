@@ -41,8 +41,9 @@ function Signup() {
       const response = await axios.post(`${apiUrl}/api/signup`, user);
       setMessage(response.data.message);
       
-      navigate("/", {
+      navigate("/verify-otp", {
         state: {
+          email: user.email,
           message: "Sign up successful! Please log in."
         }
       });

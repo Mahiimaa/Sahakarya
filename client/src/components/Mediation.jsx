@@ -88,7 +88,7 @@ const Mediation = ({ booking, currentUser }) => {
             <h4 className="font-semi-bold text-p mb-1">Mediator Decision</h4>
             <p className="whitespace-pre-line mb-2">{booking.mediationDecision}</p>
             <div className="flex flex-wrap gap-x-6 gap-y-1 text-small mt-3">
-              <p><span className="font-semi-bold">Final Credits:</span> {booking.finalCredits}</p>
+              <p><span className="font-semi-bold">Final Credits:</span> {booking.finaltimeCredits}</p>
               <p><span className="font-semi-bold">Resolved On:</span> {resolutionDate ? formatDate(resolutionDate) : "Unknown"}</p>
               <p><span className="font-semi-bold">Credits Transferred:</span> {booking.creditTransferred ? "Yes" : "Pending"}</p>
             </div>

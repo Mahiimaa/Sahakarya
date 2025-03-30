@@ -265,70 +265,74 @@ const resolveMediation = async (req, res) => {
   try {
     const userId = req.user.id;
     const { caseId } = req.params;
-    const { decision, finalCredits } = req.body;
+    const { decision, finaltimeCredits } = req.body;
     
     const user = await User.findById(userId);
     if (!user || user.role !== "admin") {
       return res.status(403).json({ error: "Unauthorized. Admin access required." });
     }
     
-    if (!decision || finalCredits  === undefined || finalCredits === "") {
-      return res.status(400).json({ error: "Decision and final credits are required" });
+    if (!decision || finaltimeCredits  === undefined || finaltimeCredits === "") {
+      return res.status(400).json({ error: "Decision and final timeCredits are required" });
     }
     
+    const timeCreditsToTransfer = Number(finaltimeCredits);
+    if (isNaN(timeCreditsToTransfer) || timeCreditsToTransfer <= 0) {
+      return res.status(400).json({ error: "Final timeCredits must be a positive number" });
+    }
+
     const booking = await Booking.findById(caseId)
-    .populate('requester', 'username email credits')
-    .populate('provider', 'username email credits')
+    .populate('requester', 'username email timeCredits')
+    .populate('provider', 'username email timeCredits')
     .populate('service', 'serviceName');
     if (!booking || booking.status !== "in mediation") {
       return res.status(404).json({ error: "Mediation case not found" });
     }
+
+    console.log("Before credit transfer - Requester timeCredits:", booking.requester.timeCredits);
+    console.log("Before credit transfer - Provider timeCredits:", booking.provider.timeCredits);
+
+    const requester = await User.findById(booking.requester._id);
+    const provider = await User.findById(booking.provider._id);
+    
+    if (!requester || !provider) {
+      return res.status(404).json({ error: "Requester or provider not found" });
+    }
+    
+    // Transfer timeCredits
+    requester.timeCredits -= timeCreditsToTransfer;
+    provider.timeCredits += timeCreditsToTransfer;
+    
+    await requester.save();
+    await provider.save();
+    
+    console.log("After credit transfer - Requester timeCredits:", requester.timeCredits);
+    console.log("After credit transfer - Provider timeCredits:", provider.timeCredits);
     
     booking.status = "mediation resolved";
     booking.mediationResolvedBy = userId;
     booking.mediationResolvedAt = new Date();
     booking.mediationDecision = decision;
-    booking.finalCredits = finalCredits;
+    booking.finaltimeCredits = finaltimeCredits;
+    booking.creditTransferred = true;
 
-    const creditsToTransfer = Number(finalCredits);
-    if (isNaN(creditsToTransfer) || creditsToTransfer <= 0) {
-      return res.status(400).json({ error: "Final credits must be a positive number" });
-    }
+    await booking.save();
 
     const mediationMessage = new Mediation({
       booking: caseId,
       sender: userId,
       senderName: "System",
-      message: `MEDIATION RESOLVED\n\nDecision: ${decision}\n\nFinal credits: ${finalCredits}`,
+      message: `MEDIATION RESOLVED\n\nDecision: ${decision}\n\nFinal timeCredits: ${finaltimeCredits}`,
       isFromMediator: true,
       isResolution: true, 
       timestamp: new Date()
     });
     
     await mediationMessage.save();
-    try {
-      const requester = await User.findById(booking.requester._id);
-      const provider = await User.findById(booking.provider._id);
-      
-      if (requester && provider) {
-        requester.credits -= creditsToTransfer;
-        
-        provider.credits += creditsToTransfer;
-
-        await requester.save();
-        await provider.save();
-  
-        booking.creditTransferred = true;
-      }
-    } catch (transferError) {
-      console.error("Error transferring credits:", transferError);
-    }
-    
-    await booking.save();
     try{
     await createNotification(
       booking.requester._id.toString(),
-      `Your mediation case for ${booking.service.serviceName} has been resolved. Final credits transferred: ${finalCredits}`,
+      `Your mediation case for ${booking.service.serviceName} has been resolved. Final timeCredits transferred: ${finaltimeCredits}`,
       'mediation',
       { 
         bookingId: booking._id,
@@ -339,7 +343,7 @@ const resolveMediation = async (req, res) => {
     
     await createNotification(
       booking.provider._id.toString(),
-      `Your mediation case has been resolved. Final credits: ${finalCredits}`,
+      `Your mediation case has been resolved. Final timeCredits: ${finaltimeCredits}`,
       'mediation_resolved',
       { 
         bookingId: booking._id,

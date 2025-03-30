@@ -103,7 +103,7 @@ const AdminMediation = () => {
         `${apiUrl}/api/mediation/${activeCase._id}/resolve`,
         { 
           decision: mediationDecision,
-          finalCredits: proposedCredits 
+          finaltimeCredits: proposedCredits 
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -218,7 +218,7 @@ const AdminMediation = () => {
                       <span className="text-grey">Resolved:</span> {formatDate(mCase.mediationResolvedAt)}
                     </div>
                     <div className="text-sm mt-1 text-p">
-                      Credits: {mCase.finalCredits}
+                      Credits: {mCase.finaltimeCredits}
                     </div>
                   </div>
                 ))}
@@ -271,7 +271,7 @@ const AdminMediation = () => {
                 {activeCase.status === "mediation resolved" && (
                     <div className="bg-p/20 p-4 rounded-md mb-6 border border-p">
                       <h3 className="text-h3 font-semi-bold mb-2 text-p">Resolution</h3>
-                      <p><span className="font-medium">Final Credits:</span> {activeCase.finalCredits}</p>
+                      <p><span className="font-medium">Final Credits:</span> {activeCase.finaltimeCredits}</p>
                       <p><span className="font-medium">Decision:</span> {activeCase.mediationDecision}</p>
                       <p><span className="font-medium">Resolved By:</span> Admin</p>
                       <p><span className="font-medium">Resolved On:</span> {formatDate(activeCase.mediationResolvedAt)}</p>

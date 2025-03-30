@@ -41,7 +41,7 @@ return (
         <Route path="/" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path ="/email" element={<Email />} />
-        <Route path="/verify/:token" element={<Verify />} />
+        <Route path="/verify-otp" element={<Verify />} />
         <Route path="/home" element={<Home />} />
         <Route path ="/explore" element={<Explore />} />
         <Route path="/services/:_id" element={<ServiceDetails />} />

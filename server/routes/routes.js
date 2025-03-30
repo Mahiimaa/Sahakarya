@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { login, signup,  logout } = require('../controllers/authController');
+const { login, signup, verifyEmail, resendVerification,  logout } = require('../controllers/authController');
 const{requestOTP, submitOTP, resetPassword} = require('../controllers/forgotPassword');
 const { addCategory, getCategories, deleteCategory } = require('../controllers/category');
 const {addService,editService,deleteService,getServices,selectService, addServiceOfferDetails, getPopularServices} = require('../controllers/service');
@@ -62,6 +62,8 @@ const storage = multer.diskStorage({
 
 router.post("/signup", signup);
 router.post("/login", login);
+router.post('/verify-email', verifyEmail);
+router.post('/resend-verification', resendVerification);
 
 router.post('/requestOTP', requestOTP);
 router.post('/submitOTP', submitOTP);

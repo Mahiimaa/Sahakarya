@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import Chat from "../components/Chat";
 import ScheduleModal from "../components/Schedule";
 import Mediation from "../components/Mediation";
+import ReactStars from "react-rating-stars-component";
 
 const Request = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -252,6 +253,32 @@ const Request = () => {
     setReviewBookingId(bookingId);
     setReviewProviderId(providerId);
     setShowReviewModal(true);
+  };
+
+  const submitReview = async () => {
+    try {
+      await axios.post(
+        `${apiUrl}/api/reviews`, 
+        {
+          bookingId: reviewBookingId,
+          providerId: reviewProviderId,
+          rating,
+          comment: reviewText
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Review submitted successfully!");
+      setShowReviewModal(false);
+      setOutgoingBookings((prevBookings) =>
+        prevBookings.map((b) =>
+          b._id === reviewBookingId ? { ...b, reviewed: true } : b
+        ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
+      );
+      setRating(5);
+      setReviewText("");
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Error submitting review.");
+    }
   };
 
   const requestMediation = async () => {
@@ -616,6 +643,49 @@ const Request = () => {
               onClick={requestMediation}
             >
               Request Mediation
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    {showReviewModal && (
+      <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 z-50">
+        <div className="bg-white p-6 rounded-lg shadow-md w-96">
+          <h2 className="text-h2 font-bold mb-4">Rate Your Experience</h2>
+          
+          <div className="mb-4">
+            <label className="font-semi-bold text-h3">Rating</label>
+            <div className="flex items-center gap-2 my-2">
+                <ReactStars
+                  count={5}
+                  onChange={setRating}
+                  size={36}
+                  value={rating}
+                  activeColor="#ffd700"
+                />
+              </div>
+          </div>
+          
+          <label className="font-semi-bold text-h3">Review</label>
+          <textarea
+            placeholder="Share your experience with this service"
+            className="w-full p-2 border rounded mb-2"
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+          />
+          
+          <div className="flex justify-between mt-4">
+            <button 
+              className="bg-white border text-error border-error hover:bg-error hover:text-white px-4 py-2 rounded" 
+              onClick={() => setShowReviewModal(false)}
+            >
+              Cancel
+            </button>
+            <button 
+              className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded" 
+              onClick={submitReview}
+            >
+              Submit Review
             </button>
           </div>
         </div>

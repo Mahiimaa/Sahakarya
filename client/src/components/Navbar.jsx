@@ -215,6 +215,12 @@ function Navbar() {
           </NavLink>
           </div>
           <div className="flex gap-8 justify-center items-center">
+          <div className=" flex items-center">
+        <span className=" text-p text-h3 font-semi-bold mr-1">Credits:</span>
+        <span className={`font-semi-bold ${userDetails?.timeCredits < 3 ? 'text-error' : 'text-p'}`}>
+          {userDetails?.timeCredits || 0}
+        </span>
+        </div>
             <div className="relative">
             <button 
             className="relative focus:outline-none" 
