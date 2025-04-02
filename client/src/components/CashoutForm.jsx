@@ -162,11 +162,11 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
             </div>
           ) : (
             <>
-              <img 
+              {/* <img 
                 src="https://khalti.com/static/img/khalti-logo.svg" 
                 alt="Khalti Logo" 
                 className="h-5 w-5 mr-2" 
-              />
+              /> */}
               Cashout to Khalti
             </>
           )}

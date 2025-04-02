@@ -6,6 +6,7 @@ import Chat from "../components/Chat";
 import ScheduleModal from "../components/Schedule";
 import Mediation from "../components/Mediation";
 import ReactStars from "react-rating-stars-component";
+import { Search, Filter, X } from "lucide-react" 
 
 const Request = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -34,6 +35,13 @@ const Request = () => {
   const [mediationMessages, setMediationMessages] = useState([]);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
+
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showFilters, setShowFilters] = useState(false)
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [sortBy, setSortBy] = useState("newest")
+  const [filteredIncomingBookings, setFilteredIncomingBookings] = useState([])
+  const [filteredOutgoingBookings, setFilteredOutgoingBookings] = useState([])
 
     const openChat = (requester, provider) => {
       if (!requester || !provider) {
@@ -96,6 +104,76 @@ const Request = () => {
 
     fetchRequests();
   }, [apiUrl, token]);
+
+  useEffect(() => {
+    let filtered = [...bookings]
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((booking) => booking.status === statusFilter)
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (booking) =>
+          (booking.service?.serviceName && booking.service.serviceName.toLowerCase().includes(query)) ||
+          (booking.requester?.username && booking.requester.username.toLowerCase().includes(query)) ||
+          (booking.status && booking.status.toLowerCase().includes(query)),
+      )
+    }
+    if (sortBy === "newest") {
+      filtered.sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
+    } else if (sortBy === "oldest") {
+      filtered.sort((a, b) => new Date(a.dateRequested) - new Date(b.dateRequested))
+    } else if (sortBy === "alphabetical") {
+      filtered.sort((a, b) => {
+        if (!a.service?.serviceName || !b.service?.serviceName) return 0
+        return a.service.serviceName.localeCompare(b.service.serviceName)
+      })
+    }
+
+    setFilteredIncomingBookings(filtered)
+  }, [bookings, searchQuery, statusFilter, sortBy])
+
+  useEffect(() => {
+    let filtered = [...outgoingBookings]
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((booking) => booking.status === statusFilter)
+    }
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (booking) =>
+          (booking.service?.serviceName && booking.service.serviceName.toLowerCase().includes(query)) ||
+          (booking.provider?.username && booking.provider.username.toLowerCase().includes(query)) ||
+          (booking.status && booking.status.toLowerCase().includes(query)),
+      )
+    }
+
+
+    if (sortBy === "newest") {
+      filtered.sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
+    } else if (sortBy === "oldest") {
+      filtered.sort((a, b) => new Date(a.dateRequested) - new Date(b.dateRequested))
+    } else if (sortBy === "alphabetical") {
+      filtered.sort((a, b) => {
+        if (!a.service?.serviceName || !b.service?.serviceName) return 0
+        return a.service.serviceName.localeCompare(b.service.serviceName)
+      })
+    }
+
+    setFilteredOutgoingBookings(filtered)
+  }, [outgoingBookings, searchQuery, statusFilter, sortBy])
+
+  const resetFilters = () => {
+    setSearchQuery("")
+    setStatusFilter("all")
+    setSortBy("newest")
+  }
+
+  const toggleFilters = () => {
+    setShowFilters(!showFilters)
+  }
   
 
   const handleOpenScheduleModal = (bookingId) => {
@@ -340,12 +418,87 @@ const Request = () => {
             My Requests
           </button>
         </div>
+        <div className="mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder={`Search ${activeTab === "incoming" ? "incoming" : "outgoing"} requests...`}
+                className="pl-10 p-2 w-full border rounded-lg"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            <button
+              className="flex items-center justify-center gap-2 p-2 border rounded-lg hover:bg-light-grey"
+              onClick={toggleFilters}
+            >
+              <Filter className="h-4 w-4" />
+              <span>Filter</span>
+            </button>
+
+            {searchQuery || statusFilter !== "all" || sortBy !== "newest" ? (
+              <button
+                className="flex items-center justify-center gap-1 p-2 text-error hover:bg-light-grey rounded-lg"
+                onClick={resetFilters}
+              >
+                <X className="h-4 w-4" />
+                <span>Clear</span>
+              </button>
+            ) : null}
+          </div>
+
+          {/* Filter Options - Added */}
+          {showFilters && (
+            <div className="mt-3 p-3 border rounded-lg bg-light-grey">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <select
+                    className="w-full p-2 border rounded-lg bg-white"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="completed">Completed</option>
+                    <option value="awaiting requester confirmation">Awaiting Confirmation</option>
+                    <option value="disputed">Disputed</option>
+                    <option value="in mediation">In Mediation</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Sort By</label>
+                  <select
+                    className="w-full p-2 border rounded-lg bg-white"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="alphabetical">Alphabetical (A-Z)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
         {activeTab === "incoming" && (
         <div className="flex flex-col w-full">
         <h1 className="text-h2 font-semi-bold mb-4">Incoming Service Requests</h1>
         <div className="text-center text-error">{error}</div>
-        {bookings.length > 0 ? (
-          bookings.map(booking => (
+        {filteredIncomingBookings.length !== bookings.length && (
+              <p className="text-sm text-grey mb-2">
+                Showing {filteredIncomingBookings.length} of {bookings.length} requests
+              </p>
+            )}
+        {filteredIncomingBookings.length > 0 ? (
+          filteredIncomingBookings.map(booking => (
             <div key={booking._id} className="p-4 border border-dark-grey rounded-lg shadow-md bg-white mb-4">
               <h2 className="text-h2  pb-2">Request For {booking?.service?.serviceName}</h2>
               <p><strong>Requester:</strong> {booking?.requester?.username}</p>
@@ -430,8 +583,13 @@ const Request = () => {
         {activeTab === "outgoing" && (
         <div className="flex flex-col w-full">
         <h1 className="text-h2 font-semi-bold mb-4">My Service Requests</h1>
-        {outgoingBookings.length > 0 ? (
-          outgoingBookings.map(booking => (
+        {filteredOutgoingBookings.length !== outgoingBookings.length && (
+              <p className="text-sm text-grey mb-2">
+                Showing {filteredOutgoingBookings.length} of {outgoingBookings.length} requests
+              </p>
+            )}
+        {filteredOutgoingBookings.length > 0 ? (
+          filteredOutgoingBookings.map(booking => (
             <div key={booking._id} className="p-4 border border-dark-grey rounded-lg shadow-md bg-white mb-4">
               <h2 className="text-h2  pb-2">Request Sent for {booking?.service?.serviceName}</h2>
               <p><strong>Provider:</strong> {booking?.provider?.username}</p>

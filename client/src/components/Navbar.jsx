@@ -31,14 +31,13 @@ function Navbar() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const setActiveClass = ({ isActive }) =>
-    {
-      return `flex items-center gap-6 pr-6 transition-all duration-200 ease-in-out ${isActive ? "bg-white text-p rounded-lg " : "hover:text-p hover:rounded-lg"}`;
-    }
+  const navClass = ({ isActive }) => `px-4 py-2 text-semi-bold font-medium ${isActive ? 'text-p' : ''} hover:text-p`;
 
     const openChangePassword = () => {
       navigate("/changePassword");
+      setIsMobileMenuOpen(false);
     };
 
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -132,6 +131,7 @@ function Navbar() {
           navigate(`/request`);
         }
         setShowDropdown(false);
+        setIsMobileMenuOpen(false);
       } catch (error) {
         console.error("Error handling notification:", error);
       }
@@ -165,6 +165,7 @@ function Navbar() {
     
     const UserProfile = () => {
       navigate("/userProfile");
+      setIsMobileMenuOpen(false);
     }
 
     const formatDate = (dateString) => {
@@ -195,146 +196,92 @@ function Navbar() {
     };
  
   return (
-        <div className=" flex justify-between p-2 px-28 bg-white">
-        <div className="flex gap-28 items-center">
-        <img className="w-24 h-24 py-4"  src={logo} alt="logo"></img>
-        <NavLink to ="/home" className ={setActiveClass}>
-          <p className=" font-semi-bold text-h3 p-2" >Home</p>
-          </NavLink>
-          <NavLink to ="/explore" className ={setActiveClass}>
-          <p className="font-semi-bold text-h3 p-2">Explore</p>
-          </NavLink>
-          <NavLink to ="/request" className ={setActiveClass}>
-          <p className=" font-semi-bold text-h3 p-2">Request</p>
-          </NavLink>
-          <NavLink to ="/chat" className ={setActiveClass}>
-          <p className=" font-semi-bold text-h3 p-2">Chat</p>
-          </NavLink>
-          <NavLink to ="/transactions" className ={setActiveClass}>
-          <p className="font-semi-bold text-h3 p-2">Transactions</p>
-          </NavLink>
-          </div>
-          <div className="flex gap-8 justify-center items-center">
-          <div className=" flex items-center">
-        <span className=" text-p text-h3 font-semi-bold mr-1">Credits:</span>
-        <span className={`font-semi-bold ${userDetails?.timeCredits < 3 ? 'text-error' : 'text-p'}`}>
-          {userDetails?.timeCredits || 0}
-        </span>
+    <nav className="bg-white border-b border-light-grey shadow-sm">
+    <div className="flex justify-between items-center px-4 py-2 md:px-12">
+      <div className="flex items-center gap-4">
+        <img className="h-12 w-12 md:h-16 md:w-20" src={logo} alt="logo" />
+        <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="hidden md:flex gap-6 items-center">
+        <NavLink to="/home" className={navClass}>Home</NavLink>
+        <NavLink to="/explore" className={navClass}>Explore</NavLink>
+        <NavLink to="/request" className={navClass}>Request</NavLink>
+        <NavLink to="/chat" className={navClass}>Chat</NavLink>
+        <NavLink to="/transactions" className={navClass}>Transactions</NavLink>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center text-sm text-p font-semibold">
+          Credits: <span className={userDetails?.timeCredits < 3 ? 'text-error ml-1' : 'ml-1'}>{userDetails?.timeCredits || 0}</span>
         </div>
-            <div className="relative">
-            <button 
-            className="relative focus:outline-none" 
-            onClick={() => setShowDropdown(prev => !prev)}
-          >
-            <img className="w-10 h-16 py-4 mt-2" src={notification} alt="notification"/>
-            {unreadCount > 0 && (
-              <span className="absolute top-4 left-4 bg-p/90 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
+
+        <div className="relative">
+          <button onClick={() => setShowDropdown(!showDropdown)}>
+            <img className="w-8 h-8 " src={notification} alt="notif" />
+            {unreadCount > 0 && <span className="absolute -top-1 -right-1 text-xs bg-p text-white rounded-full px-1">{unreadCount > 99 ? '99+' : unreadCount}</span>}
           </button>
-          
           {showDropdown && (
-            <div className="absolute right-4 bg-white w-80 border border-dark-grey rounded-lg shadow-lg z-50 top-3/4">
-              <div className="flex justify-between items-center p-3 border-b border-light-grey ">
-                <h3 className="font-medium">Notifications</h3>
-                <div className="flex items-center gap-2">
-                  <span className="bg-p/60 border border-p rounded-full w-6 h-6 text-sm text-center">
-                    {unreadCount}
-                  </span>
-                  {unreadCount > 0 && (
-                    <button 
-                      onClick={markAllAsRead}
-                      className="text-xs text-p hover:underline"
-                    >
-                      Mark all as read
-                    </button>
-                  )}
-                </div>
+            <div className="absolute right-0 mt-2 w-72 bg-white border border-dark-grey rounded-md shadow-md z-50">
+              <div className="p-3 border-b flex justify-between">
+                <span className="font-semi-bold">Notifications</span>
+                {unreadCount > 0 && <button onClick={markAllAsRead} className="text-xs text-p hover:underline">Mark all</button>}
               </div>
-              <div className="max-h-80 overflow-y-auto">
-                {!Array.isArray(notifications) ? (
-                  <p className="text-grey text-center p-4">Error loading notifications</p>
-                ) : notifications.length === 0 ? (
-                  <p className="text-grey text-center p-4">No notifications</p>
-                ) : (
-                  notifications.map((notif) => (
-                    <div 
-                      key={notif._id} 
-                      onClick={() => handleNotificationClick(notif)}
-                      className={`p-3 border-b border-dark-grey cursor-pointer hover:bg-light-grey transition-colors ${!notif.isRead ? 'bg-p/20' : ''}`}
-                    >
-                      <div className="flex items-start gap-2">
-                        <div className="text-lg mt-1">
-                          {getNotificationIcon(notif.type)}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm">{notif.message}</p>
-                          <p className="text-small text-grey mt-1">
-                            {formatDate(notif.createdAt)}
-                          </p>
-                        </div>
-                        {!notif.isRead && (
-                          <div className="h-2 w-2 bg-p rounded-full mt-1"></div>
-                        )}
+              <div className="max-h-64 overflow-y-auto max-w-80">
+                {notifications.map((notif) => (
+                  <div key={notif._id} onClick={() => handleNotificationClick(notif)} className={`p-2 cursor-pointer text-sm hover:bg-light-grey ${!notif.isRead ? 'bg-p/10' : ''}`}>
+                    <div className="flex items-start text-body gap-2">
+                     <p className="flex items-start text-body mt-2">{getNotificationIcon(notif.type)}</p> 
+                      <div>
+                        <p className='text-body'>{notif.message}</p>
+                        <p className="text-xs text-grey">{formatDate(notif.createdAt)}</p>
                       </div>
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
-          
-          <details className="relative">
-          <summary className="list-none cursor-pointer ">
-          <img className="w-10 h-16 py-4" src={profile} alt="profile"></img>
+
+        <details className="relative">
+          <summary className="cursor-pointer list-none">
+            <img className="w-8 h-8 rounded-full" src={profile} alt="profile" />
           </summary>
-          <ul className="absolute right-[50%] bg-white w-[16vw] border border-dark-grey rounded p-4 top-10 ">
-          {error ? (
-              <div className="text-error">{error}</div>
-            ) : userDetails ? (
-              <div>
-            <div className="flex gap-3 items-center ">
-              <div className="flex flex-col px-4">
-                <h1 className="font-poppins font-semi-bold text-s text-h3 ">{userDetails.username || 'N/A'}</h1>
-              </div>
-            </div>
-            <hr className="border-[1px] border-grey m-2"></hr>
-            <div className="flex flex-col px-4 ">
-              <div className="flex items-center gap-2">
-                <img className="w-6 h-6" src={email} alt="" />
-                <li className="py-2 ">{userDetails.email || 'N/A'}</li>
-              </div>
-              <div className="flex items-center gap-2">
-                <img className="w-6 h-6" src={phone} alt="" />
-                <li className="py-2 ">{userDetails.phone || 'N/A'} </li>
-              </div>
-              <div className="flex items-center gap-2">
-                <img className="w-6 h-6" src={profile}  alt="" /> 
-                <li className="py-2" onClick={UserProfile} >User Profile</li>
-              </div>
-              <div className="flex items-center gap-2">
-                <img className="w-6 h-6" src={logout} onClick={handleLogout} alt="" /> 
-                <li className="py-2">Logout</li>
-              </div>
-              <div className="flex justify-center">
-                <button
-                  className="w-[100%] bg-p hover:bg-p/90 rounded p-2 mt-2 text-white "
-                  onClick={openChangePassword}
-                >
-                  Change Password
-                </button>
-              </div>
-            </div>
-            </div>
-            ) : (
-              <div className="text-grey">Loading...</div>
-            )}
+          <ul className="absolute right-0 mt-2 w-64 bg-white border border-dark-grey rounded-md shadow-md z-50 p-4 md:w-80 ">
+            {userDetails ? (
+              <>
+                <li className="font-bold text-sm mb-2 md:text-h3">{userDetails.username}</li>
+                <hr className="border border-p mb-2"/>
+                <li className="text-sm md:text-h3 flex items-center gap-2 py-2"><img src={email} className="w-4 h-4 md:w-6 md:h-6" /> {userDetails.email}</li>
+                <li className="text-sm md:text-h3 flex items-center gap-2 py-2"><img src={phone} className="w-4 h-4 md:w-6 md:h-6" /> {userDetails.phone}</li>
+                <li className="text-sm md:text-h3 flex items-center gap-2 cursor-pointer py-2" onClick={UserProfile}><img src={profile} className="w-4 h-4 md:w-6 md:h-6" /> Profile</li>
+                <li className="text-sm md:text-h3 flex items-center gap-2 cursor-pointer py-2" onClick={handleLogout}><img src={logout} className="w-4 h-4 md:w-6 md:h-6" /> Logout</li>
+                <button className="w-full bg-p hover:bg-p/90 rounded p-2 mt-2 text-white md:text-h3 py-2" onClick={openChangePassword}>
+                    Change Password
+                  </button>
+              </>
+            ) : <li className="text-grey">Loading...</li>}
           </ul>
         </details>
-          </div>
+      </div>
     </div>
+
+    {/* Mobile Menu */}
+    {isMobileMenuOpen && (
+      <div className="md:hidden flex flex-col gap-2 px-4 pb-4">
+        <NavLink to="/home" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
+        <NavLink to="/explore" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Explore</NavLink>
+        <NavLink to="/request" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Request</NavLink>
+        <NavLink to="/chat" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Chat</NavLink>
+        <NavLink to="/transactions" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Transactions</NavLink>
+      </div>
+    )}
+  </nav>
   )
 }
 

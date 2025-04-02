@@ -4,7 +4,7 @@ module.exports = {
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
     colors: {
       'p': '#6C77EE',
       's': '#FF9800',
@@ -32,11 +32,16 @@ module.exports = {
       'semi-bold': '600',
       'regular': '400', 
     },
-    // screens: {
-    //   'mob': '0px',
-    //   'desk': '768px',
-    // },
+    screens: {
+      'xs': '480px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    }
   },
+},
   plugins: [],
 }
 

@@ -98,7 +98,7 @@ const Reset = () => {
         onSubmit={handleSubmit}
         className="flex flex-col gap-6 justify-center items-center p-4 w-full max-w-md"
       >
-        <p className="font-poppins font-bold text-main text-p text-xl">Set New Password</p>
+        <p className="font-poppins font-bold text-main text-p ">Set New Password</p>
 
         <div className="flex flex-col gap-2 w-full">
           <label className="font-poppins text-s">New Password:</label>

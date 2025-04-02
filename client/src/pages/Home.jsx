@@ -231,37 +231,26 @@ function Home() {
   return (
     <div className ="flex flex-col">
        <Navbar/>
-       <div className="px-6 py-8 flex flex-col ">
-        <div className="px-6  flex justify-center items-center">
-        <div className="bg-p/50 text-black w-3/4 rounded-lg p-6 flex justify-between items-center">
-          <div>
-            <h2 className="font-poppins text-2xl font-bold mb-2">Ready to get started?</h2>
-            <p className="max-w-md">Explore to find the perfect service provider for your needs.</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <button 
-              className="bg-white text-p py-2 px-6 rounded-md font-semibold border border-p hover:bg-p hover:text-white"
-              onClick={toExplore}
-            >
-              Explore Now
-            </button>
-            <button 
-              className="bg-white border hover:bg-p hover:text-white border-p text-p py-2 px-6 rounded-md font-semibold"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+      <div className="px-4 md:px-6 py-8 flex flex-col">
+        <div className="flex justify-center items-center">
+          <div className="bg-p/50 text-black w-full md:w-3/4 rounded-lg p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+              <h2 className="font-poppins text-2xl font-bold mb-2">Ready to get started?</h2>
+              <p className="max-w-md">Explore to find the perfect service provider for your needs.</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <button className="bg-white text-p py-2 px-6 rounded-md font-semibold border border-p hover:bg-p hover:text-white" onClick={toExplore}>Explore Now</button>
+              <button className="bg-white border hover:bg-p hover:text-white border-p text-p py-2 px-6 rounded-md font-semibold" onClick={handleLogout}>Logout</button>
+            </div>
           </div>
         </div>
-      </div>
-        <div className="flex flex-col items-center mb-12 gap-4">
-          <div className="flex flex-col gap-4 items-center w-3/4">
-            <h1 className="font-poppins text-h1 font-bold ">Welcome Back,</h1>
-            <h2 className="font-poppins text-h1 font-bold text-p">
-              {userDetails ? userDetails.username : 'Loading...'}
-            </h2>
-            {/* Search Bar */}
-            <div className="relative w-2/4">
+
+        <div className="flex flex-col items-center mb-12 gap-4 mt-8 px-2">
+          <div className="flex flex-col gap-4 items-center w-full md:w-3/4 text-center">
+            <h1 className="font-poppins text-h1 font-bold">Welcome Back,</h1>
+            <h2 className="font-poppins text-h1 font-bold text-p">{userDetails ? userDetails.username : 'Loading...'}</h2>
+
+            <div className="relative w-full md:w-2/4">
               <input
                 type="text"
                 placeholder="What service do you need today?"
@@ -270,93 +259,63 @@ function Home() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <Search className="absolute left-4 top-3.5 text-grey" size={20} />
-              <button className="absolute right-3 top-2 bg-p text-white py-1 px-4 rounded-full">
-                Search
-              </button>
+              <button className="absolute right-3 top-2 bg-p text-white py-1 px-4 rounded-full">Search</button>
             </div>
           </div>
-          
-          <div className=" relative flex justify-center items-center w-2/4 h-3/4 rounded-3xl bg-light-grey">
-          <div className="bg-white absolute left-12  rounded-lg p-4 h-3/4  ">
-            <p className='text-h2 font-bold py-6'>How it works?</p>
-            <p className='text-h3 font-poppins py-4'>~ Explore the services you want</p>
-            <p className='text-h3 font-poppins py-4'>~ View the task details</p>
-            <p className='text-h3 font-poppins py-4'>~ See if the provider is the right fit for you</p>
-            <p className='text-h3 font-poppins py-4'>~ Request service</p>
-            <p className='text-h3 font-poppins py-4'>~ Set schedule</p>
-            <p className='text-h3 font-poppins py-4'>~ Confirm task completion</p>
+
+          <div className="relative flex flex-col md:flex-row justify-center items-center w-full md:w-3/4 rounded-3xl bg-light-grey mt-8">
+            <div className="bg-white m-4 rounded-lg p-4 w-full md:w-1/2">
+              <p className="text-h2 font-bold py-6">How it works?</p>
+              <p className="text-h3 font-poppins py-2">~ Explore the services you want</p>
+              <p className="text-h3 font-poppins py-2">~ View the task details</p>
+              <p className="text-h3 font-poppins py-2">~ See if the provider is the right fit</p>
+              <p className="text-h3 font-poppins py-2">~ Request service</p>
+              <p className="text-h3 font-poppins py-2">~ Set schedule</p>
+              <p className="text-h3 font-poppins py-2">~ Confirm task completion</p>
             </div>
-            <img className="w-3/4 h-3/4 object-contain ml-auto" src={userhome} alt="Service illustration" />  
+            <img className="w-full md:w-1/2 h-auto object-contain p-4" src={userhome} alt="Service illustration" />
           </div>
         </div>
-        
       </div>
-      
-      {/* Popular Services */}
-      <div className="px-6 py-8 w-2/4 flex flex-col self-center ">
+      <div className="px-4 md:px-6 py-8 w-full md:w-3/4 self-center">
         <div className="flex justify-between mb-6">
           <h2 className="font-poppins text-2xl font-bold">Popular Services</h2>
-          <button 
-            className="flex items-center gap-2 text-p font-semibold"
-            onClick={toExplore}
-          >
+          <button className="flex items-center gap-2 text-p font-semibold" onClick={toExplore}>
             View All <ArrowRight size={16} />
           </button>
         </div>
-        
-        <div className="flex justify-between gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {popularServices.map((service) => (
-            <div 
-              key={service.id}
-              className="p-4 rounded-2xl shadow-2xl hover:shadow-s transition-shadow duration-200 cursor-pointer border border-light-grey"
-            >
+            <div key={service.id} className="p-4 rounded-2xl shadow-2xl hover:shadow-s transition-shadow duration-200 cursor-pointer border border-light-grey">
               <div className="flex items-center gap-4">
-                <span className="text-3xl">{service.icon}</span>
-                <h3 className="font-poppins font-semibold text-lg">{service.name}</h3>
+                {/* <span className="text-3xl">{service.icon}</span> */}
+                <h3 className="font-poppins font-semi-bold text-lg">{service.name}</h3>
               </div>
             </div>
           ))}
         </div>
       </div>
-      
+
       {/* Top Rated Providers */}
-      <div className="px-6 md:px-12 lg:px-24 py-8 bg-white">
+      <div className="px-4 md:px-12 lg:px-24 py-8 bg-white">
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-poppins text-2xl font-bold">Top Rated Providers</h2>
-          <button 
-            className="flex items-center gap-2 text-p font-semibold"
-            onClick={toExplore}
-          >
-            View All →
-          </button>
+          <button className="flex items-center gap-2 text-p font-semibold" onClick={toExplore}>View All →</button>
         </div>
-        
         {topRatedUsers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 m-auto ">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {topRatedUsers.map((user) => (
-              <div 
-                key={user._id}
-                className="bg-white p-6 rounded-lg border border-light-grey shadow-sm hover:shadow-lg transition-shadow hover:-translate-y-1.5 duration-200"
-              >
+              <div key={user._id} className="bg-white p-6 rounded-lg border border-light-grey shadow-sm hover:shadow-lg transition-shadow hover:-translate-y-1.5 duration-200">
                 <div className="flex flex-col items-center text-center">
-                  <img 
-                    src={getProfileImage(user.profilePicture)} 
-                    alt={`${user.username}'s avatar`}
-                    className="w-16 h-16 rounded-full mb-4 object-cover"
-                  />
+                  <img src={getProfileImage(user.profilePicture)} alt={`${user.username}'s avatar`} className="w-16 h-16 rounded-full mb-4 object-cover" />
                   <h3 className="font-poppins font-semibold text-lg mb-1">{user.username}</h3>
                   <p className="text-gray-600 mb-2">{user.category || "Service Provider"}</p>
                   <div className="flex items-center gap-1 mb-2">
-                    <span > <Star className="text-[yellow]"/></span>
+                    <Star className="text-[yellow]" />
                     <span className="font-medium">{user.rating ? user.rating.toFixed(1) : "New"}</span>
-                    <span className="text-grey text-sm">
-                      ({user.completedJobs || 0} {user.completedJobs === 1 ? "task" : "tasks"})
-                    </span>
+                    <span className="text-grey text-sm">({user.completedJobs || 0} {user.completedJobs === 1 ? "task" : "tasks"})</span>
                   </div>
-                  <button 
-                    className="mt-2 w-full py-2 px-4 rounded-md bg-p text-white font-medium hover:bg-opacity-90 transition-colors"
-                    onClick={() => navigate(`/provider-details/${user._id}`)}
-                  >
+                  <button className="mt-2 w-full py-2 px-4 rounded-md bg-p text-white font-medium hover:bg-opacity-90 transition-colors" onClick={() => navigate(`/provider-details/${user._id}`)}>
                     View Profile
                   </button>
                 </div>
@@ -370,77 +329,58 @@ function Home() {
           </div>
         )}
       </div>
-      
-      {/* Recent Bookings Section */}
-      <div className="px-6 md:px-12 lg:px-24 py-8">
+
+      {/* Recent Bookings */}
+      <div className="px-4 md:px-12 lg:px-24 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-poppins text-2xl font-bold">Your Recent Bookings</h2>
-          <button className="text-p font-semibold"
-          onClick={viewBookingDetails}
-          >See All</button>
+          <button className="text-p font-semibold" onClick={viewBookingDetails}>See All</button>
         </div>
         {recentBookings.length > 0 ? (
-          <div className="grid  grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {recentBookings.map((booking) => (
-              <div 
-                key={booking._id} 
-                className="bg-white p-6 rounded-lg shadow-sm border border-light-grey hover:shadow-md transition-shadow"
-              >
+              <div key={booking._id} className="bg-white p-6 rounded-lg shadow-sm border border-light-grey hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-poppins font-semi-bold text-body">{booking?.service?.serviceName}</h3>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColorClass(booking.status)}`}>
-                    {booking.status}
-                  </span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColorClass(booking.status)}`}>{booking.status}</span>
                 </div>
-                
                 <p className="text-grey mb-4">Provider: {booking?.provider?.username}</p>
-                
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                <div className="flex flex-col gap-2 text-sm text-gray-600 mb-3">
                   <div className="flex items-center gap-1">
                     <Calendar size={16} className='text-p' />
                     <span>Requested: {formatDate(booking.dateRequested)}</span>
                   </div>
-                  
                   {booking.scheduleDate && (
                     <div className="flex items-center gap-1">
-                      <Clock size={16} className='text-p'/>
+                      <Clock size={16} className='text-p' />
                       <span>Scheduled: {formatDate(booking.scheduleDate)}</span>
                     </div>
                   )}
-                  </div>
-                  {booking.status === "awaiting requester confirmation" && (
+                </div>
+                {booking.status === "awaiting requester confirmation" && (
                   <div className="mt-2 p-2 bg-s/10 rounded-md text-sm">
                     <p><strong>Duration:</strong> {booking.actualDuration} hour(s)</p>
                     <p><strong>Credits:</strong> {booking.proposedCredits}</p>
-                    {booking.completionNotes && (
-                      <p className="truncate"><strong>Notes:</strong> {booking.completionNotes}</p>
-                    )}
+                    {booking.completionNotes && <p className="truncate"><strong>Notes:</strong> {booking.completionNotes}</p>}
                   </div>
                 )}
-                
                 <div className="flex justify-end mt-3">
-                  <button 
-                    className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded-md"
-                    onClick={viewBookingDetails}
-                  >
+                  <button className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded-md" onClick={viewBookingDetails}>
                     View Details
                   </button>
                 </div>
               </div>
             ))}
           </div>
-           ) : (
-        <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+        ) : (
+          <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
             <p className="text-grey">You don't have any recent bookings.</p>
-            <button 
-              onClick={toExplore}
-              className="mt-4 py-2 px-6 bg-p text-white rounded-md font-semi-bold"
-            >
+            <button onClick={toExplore} className="mt-4 py-2 px-6 bg-p text-white rounded-md font-semi-bold">
               Explore Services
             </button>
           </div>
-           )}
-        </div>
+        )}
+      </div>
  </div>
   )
 }

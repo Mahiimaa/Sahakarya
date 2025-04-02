@@ -136,7 +136,7 @@ function Login() {
                   <Link to="/forgot" className="self-end text-p">Forgot password</Link>
                 </div>
               </div>
-              {error && <p className="text-error text-red-500">{error}</p>}
+              {error && <p className="text-error">{error}</p>}
               <div className="flex flex-col justify-center items-center mt-6">
                 <button className="bg-p hover:bg-p/90 text-h2 p-2 px-28 rounded-md text-white">Log in</button>
                 <div className="flex gap-2">

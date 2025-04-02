@@ -184,11 +184,11 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid username' });
     }
 
-    if (!userByEmail.isVerified) {
-      return res.status(401).json({ 
-        message: 'Please verify your email before logging in' 
-      });
-    }
+    // if (!userByEmail.isVerified) {
+    //   return res.status(401).json({ 
+    //     message: 'Please verify your email before logging in' 
+    //   });
+    // }
     const isPasswordCorrect = await bcrypt.compare(password, userByEmail.password);
     if (!isPasswordCorrect) {
       return res.status(401).json({ message: 'Invalid password' });

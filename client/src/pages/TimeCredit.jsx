@@ -167,8 +167,9 @@ function TimeCredit() {
   };
 
   const toggleCashout = () => {
-    setCashoutOpen(!cashoutOpen);
+    setCashoutOpen(true);
     setDetailsOpen(false);
+    console.log("Cashout popup");
   };
 
   const handleManualVerify = () => {
@@ -261,7 +262,7 @@ function TimeCredit() {
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <button 
-            className="w-full flex items-center justify-cente bg-p hover:bg-p/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 shadow-md"
+            className="w-full flex items-center justify-center bg-p hover:bg-p/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 shadow-md"
             onClick={toggleDetails}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -272,18 +273,21 @@ function TimeCredit() {
           <button 
             className="flex items-center justify-center bg-p hover:bg-p/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 shadow-md"
             onClick={toggleCashout}
-            disabled={currentCredits <= 0}
           >
-            {/* Cash out button - NEW FEATURE */}
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" />
             </svg>
             Cash Out
           </button>
         </div>
+        <div className="mt-6 text-center text-xs text-dark-grey">
+          Need help? Contact our <a href="#" className="text-p hover:underline">support team</a>
+        </div>
+        </div>
           
           {detailsOpen && (
-            <div className="absolute bg-white border border-dark-grey rounded-lg p-6 left-0 right-0 mt-3 shadow-xl z-10">
+            <div className="fixed inset-0 bg-grey bg-opacity-50 flex items-center justify-center z-50 p-4">
+               <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl  transition-all duration-300">
               <div className="flex justify-between items-center mb-4">
                 <p className="text-h3 font-semi-bold">
                   Purchase Credits
@@ -343,22 +347,20 @@ function TimeCredit() {
                 className="w-full bg-[purple] text-white font-medium py-3 px-4 rounded-lg transition duration-200"
               />
             </div>
+            </div>
           )}
           {cashoutOpen && (
-          <div className="absolute bg-white border border-dark-grey rounded-lg left-0 right-0 mt-3 shadow-xl z-10">
+        <div className="fixed inset-0 bg-grey bg-opacity-50 flex items-center justify-center z-50 p-4" style={{zIndex: 9999}}>
+          <div className="bg-white rounded-lg w-full max-w-md shadow-xl transition-all duration-300">
             <CashoutForm 
-              currentCredits={currentCredits}
+              currentCredits={currentCredits > 0 ? currentCredits : 10} 
               onSuccess={handleCashoutSuccess}
-              onClose={toggleCashout}
+              onClose={() => setCashoutOpen(false)}
             />
           </div>
-        )}
-        
-        <div className="mt-6 text-center text-xs text-dark-grey">
-          Need help? Contact our <a href="#" className="text-p hover:underline">support team</a>
         </div>
+      )}
       </div>
-    </div>
   );
 }
 
