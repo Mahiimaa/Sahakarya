@@ -129,16 +129,16 @@ const UserProfileInfoPage = () => {
   if (error) return <div className="text-center mt-8 text-red-500">{error}</div>;
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 flex flex-col bg-screen">
-      <div className="flex justify-start mb-4">
-        <button className="bg-p hover:bg-p/90 text-white rounded py-2 px-4 flex items-center">
-          <NavLink to="/home" className="flex items-center">
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            <span>Back</span>
-          </NavLink>
-        </button>
-      </div>
-      
+    <div className="min-h-screen p-4 sm:p-6 flex flex-col bg-screen font-poppins">
+      <div className="flex justify-start md:hidden">
+            <button 
+                onClick={() => navigate(-1)}
+                className="flex items-center text-gray-600 hover:text-p"
+              >
+                <ArrowLeft className="w-5 h-5 mr-1" />
+                <span>Back</span>
+              </button>
+            </div>
       <div className="flex-grow flex items-center justify-center">
         <div className="w-full sm:w-4/5 md:w-3/4 lg:w-3/5 xl:w-2/5 mx-auto bg-white shadow-lg rounded-lg p-4 sm:p-6">
           <p className="text-center text-p text-h2 font-semi-bold p-2 sm:p-4">User Profile</p>
@@ -153,21 +153,22 @@ const UserProfileInfoPage = () => {
               />
             </div>
             <h1 className="text-poppins text-s font-semi-bold mt-4">{user?.username}</h1>
-          </div>
-
-          {/* Personal Information */}
-          <div className="flex flex-col sm:flex-row justify-between border-t px-4 sm:px-8">
-            <div className="text-center my-4">
+            <div className="text-center ">
               <p
                 onClick={openTimeCredit}
-                className="text-h3 font-bold hover:text-p cursor-pointer"
+                className="text-h3 font-semi-bold hover:text-p hover:underline cursor-pointer"
               >
                 Time Credits: {user?.timeCredits || 0}
               </p>
             </div>
+          </div>
+
+          {/* Personal Information */}
+          <div className="flex flex-col sm:flex-row justify-between border-t px-4 sm:px-8">
+            
             
             <div className="pt-4">
-              <h2 className="text-h2 font-bold mb-3">Personal Information</h2>
+              <h2 className="text-h2 font-semi-bold mb-3">Personal Information</h2>
               <div className="flex flex-col gap-3">
                 <p>
                   <strong>Email:</strong> {user?.email}
@@ -183,7 +184,7 @@ const UserProfileInfoPage = () => {
 
             {/* Services Offered */}
             <div className="pt-4">
-              <NavLink to="/my-services" className="hover:text-p hover:underline text-h2 font-bold mb-3 block">
+              <NavLink to="/my-services" className="hover:text-p hover:underline text-h2 font-semi-bold mb-3 block">
                 Services Offered
               </NavLink>
               {selectedServices.length > 0 ? (

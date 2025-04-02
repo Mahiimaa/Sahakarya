@@ -17,7 +17,7 @@ function AdminTop() {
     }
   };
   return (
-    <div className="bg-white w-[88vw] h-20 flex justify-between items-center">
+    <div className="bg-white w-[88vw] h-20 flex justify-between items-center font-poppins">
         <p className="text-h1 text-s"> Welcome, Admin!</p>
         <button className="text-p bg-white p-2 px-6 mr-4 border-p border-2 rounded-md" onClick={handleLogout}> Logout</button>
     </div>

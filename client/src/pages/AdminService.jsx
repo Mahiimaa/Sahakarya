@@ -85,7 +85,7 @@ function AdminService() {
     setNewService({ serviceName: '', category: '' });
   };
   return (
-    <div className ="flex gap-4 ">
+    <div className ="flex gap-4 font-poppins">
        <Navbar/>
        <div className="flex flex-col gap-4">
        <Topbar/>

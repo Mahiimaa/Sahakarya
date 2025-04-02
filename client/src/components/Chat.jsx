@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {io} from 'socket.io-client';
 import axios from "axios";
-import { IoClose } from "react-icons/io5";
-import { X, Send, Loader2 } from "lucide-react" // Using Lucide icons for consistency
+import { X, Send, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 
 const socket = io("ws://localhost:5000", { transports: ["websocket", "polling"] , autoConnect: false,  withCredentials: true,});
@@ -72,6 +71,7 @@ const Chat = ({ onClose, provider, requester}) => {
       });
         scrollToBottom();
       };
+      socket.on("chatMessage", handleIncomingMessage);
   return () => {
     socket.off("chatMessage", handleIncomingMessage);
   };
@@ -94,25 +94,10 @@ const handleSendMessage = async (e) => {
       sender:userId,
     };
     setIsSending(true);
-    try {
-      const { data } = await axios.post(`${apiUrl}/api/sendMessage`, msg, {
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-      });    
-      if(data?.data) {
-        setMessages((prevMessages) => [...prevMessages, data.data]); 
-        socket.emit("chatMessage", data.data);
-        scrollToBottom();  
-      }
+   
+    socket.emit("chatMessage", msg);
       setNewMessage(""); 
-  }
-  catch (error) {
-    console.error("Error sending message:", error);
-  }
-  finally {
     setIsSending(false)
-  }
 };
 
 const formatMessageTime = (timestamp) => {
@@ -124,10 +109,10 @@ const getChatPartnerName = () => {
   return String(userId) === String(provider._id) ? requester.username : provider.username
 }
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4 font-poppins">
     <div className="bg-white w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl rounded-lg shadow-xl flex flex-col h-[80vh] max-h-[600px] overflow-hidden">
       <div className="p-3 sm:p-4 border-b flex items-center justify-between bg-p text-white">
-        <h2 className="text-lg sm:text-xl font-bold truncate">Chat with {getChatPartnerName()}</h2>
+        <h2 className="text-lg sm:text-xl font-semi-bold truncate">Chat with {getChatPartnerName()}</h2>
         <button
           className="p-1 rounded-full hover:bg-white/20 transition-colors"
           onClick={onClose}

@@ -6,7 +6,7 @@ const Khalti = ({ creditAmount, onSuccess, onError }) => {
   const [isLoading, setIsLoading] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const token = localStorage.getItem('token');
-  const pricePerCredit = 2; 
+  const pricePerCredit = 1; 
 
   const initiatePayment = async () => {
     if (creditAmount <= 0) {
@@ -53,7 +53,7 @@ const Khalti = ({ creditAmount, onSuccess, onError }) => {
 
   return (
     <button
-      className="bg-[#5D2E8F] text-white px-4 py-2 rounded-lg w-full"
+      className="bg-[#5D2E8F] text-white px-4 py-2 rounded-lg w-full font-poppins"
       onClick={initiatePayment}
       disabled={isLoading}
     >

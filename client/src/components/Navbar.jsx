@@ -196,7 +196,7 @@ function Navbar() {
     };
  
   return (
-    <nav className="bg-white border-b border-light-grey shadow-sm">
+    <nav className="bg-white border-b border-light-grey shadow-sm font-poppins">
     <div className="flex justify-between items-center px-4 py-2 md:px-12">
       <div className="flex items-center gap-4">
         <img className="h-12 w-12 md:h-16 md:w-20" src={logo} alt="logo" />
@@ -226,7 +226,7 @@ function Navbar() {
             {unreadCount > 0 && <span className="absolute -top-1 -right-1 text-xs bg-p text-white rounded-full px-1">{unreadCount > 99 ? '99+' : unreadCount}</span>}
           </button>
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-72 bg-white border border-dark-grey rounded-md shadow-md z-50">
+            <div className="absolute right-0 mt-2 w-72 bg-white border border-dark-grey rounded-md shadow-md z-50 max-w-80">
               <div className="p-3 border-b flex justify-between">
                 <span className="font-semi-bold">Notifications</span>
                 {unreadCount > 0 && <button onClick={markAllAsRead} className="text-xs text-p hover:underline">Mark all</button>}
@@ -259,9 +259,9 @@ function Navbar() {
                 <hr className="border border-p mb-2"/>
                 <li className="text-sm md:text-h3 flex items-center gap-2 py-2"><img src={email} className="w-4 h-4 md:w-6 md:h-6" /> {userDetails.email}</li>
                 <li className="text-sm md:text-h3 flex items-center gap-2 py-2"><img src={phone} className="w-4 h-4 md:w-6 md:h-6" /> {userDetails.phone}</li>
-                <li className="text-sm md:text-h3 flex items-center gap-2 cursor-pointer py-2" onClick={UserProfile}><img src={profile} className="w-4 h-4 md:w-6 md:h-6" /> Profile</li>
-                <li className="text-sm md:text-h3 flex items-center gap-2 cursor-pointer py-2" onClick={handleLogout}><img src={logout} className="w-4 h-4 md:w-6 md:h-6" /> Logout</li>
-                <button className="w-full bg-p hover:bg-p/90 rounded p-2 mt-2 text-white md:text-h3 py-2" onClick={openChangePassword}>
+                <li className="text-sm md:text-h3 flex items-center gap-2 cursor-pointer py-2 hover:text-p" onClick={UserProfile}><img src={profile} className="w-4 h-4 md:w-6 md:h-6" /> Profile</li>
+                <li className="text-sm md:text-h3 flex items-center gap-2 cursor-pointer py-2 hover:text-p" onClick={handleLogout}><img src={logout} className="w-4 h-4 md:w-6 md:h-6" /> Logout</li>
+                <button className="w-full bg-p hover:bg-p/85 rounded p-2 mt-2 text-white md:text-h3 py-2" onClick={openChangePassword}>
                     Change Password
                   </button>
               </>

@@ -1,9 +1,11 @@
 import React, {useState, useRef, useEffect} from 'react'
 import KhaltiPayment from "../components/Khalti"
 import CashoutForm from "../components/CashoutForm"
+import { NavLink } from "react-router-dom";
 import CashoutHistory from "../pages/CashoutHistory"
 import axios from "axios";
 import { toast } from "react-toastify";
+import { ArrowLeft } from 'lucide-react';
 
 function TimeCredit() {
     const [creditAmount, setCreditAmount] = useState(10); 
@@ -184,14 +186,13 @@ function TimeCredit() {
   };
     
   return (
-    <div className="flex items-center justify-center min-h-screen bg-light-grey">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <div className="flex items-center justify-center min-h-screen bg-light-grey font-poppins">
+      <div className="md:bg-white p-8 rounded-xl sm:hadow-lg w-full max-w-md">
         <div className="flex items-center justify-center mb-6">
-          <div className="bg-p/60 p-2 rounded-full">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
+        <NavLink to="/userProfile" className="flex items-center hover:text-p p-2 rounded-full hover:bg-light-grey md:hidden">
+            <ArrowLeft className="w-6 h-6" />
+            <span className="sr-only">Back to Profile</span>
+          </NavLink>
           <h1 className="text-h2 font-semi-bold ml-3">My Time Credits</h1>
         </div>
         
@@ -237,7 +238,7 @@ function TimeCredit() {
         )}
 
         {recentCashout && (
-          <div className="mb-6 p-4 bg-emerald-100 rounded-lg border border-p shadow-sm">
+          <div className="mb-6 p-4 bg-emerald-50 rounded-lg border border-p shadow-sm">
             <div className="flex items-start">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-p mt-0.5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />

@@ -9,7 +9,7 @@ const editProfile = async (req, res) => {
     console.log("Request body:", req.body);
     console.log("File:", req.file);
 
-    const { username, email, phone } = req.body;
+    const { username, email, phone, address } = req.body;
     const services = req.body.services || [];
     const userId = req.user.id;
     
@@ -44,6 +44,7 @@ const editProfile = async (req, res) => {
     user.username = username || user.username;
     if (email && email !== user.email) user.email = email;
     if (phone) user.phone = phone;
+    if (address) user.address = address;
     user.servicesOffered = selectedServices;
     
     const validServices = [];
@@ -77,6 +78,7 @@ const editProfile = async (req, res) => {
         email: user.email,
         username: user.username,
         phone: user.phone,
+        address:user.address,
         role: user.role,
         profilePicture: user.profilePicture,
         services: user.servicesOffered

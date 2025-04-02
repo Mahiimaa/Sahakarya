@@ -72,7 +72,7 @@ const Mediation = ({ booking, currentUser }) => {
     (resolutionMessage ? resolutionMessage.timestamp : null);
 
   return (
-    <div className={`mt-4 p-4 rounded-lg border ${
+    <div className={`mt-4 p-4 rounded-lg border font-poppins ${
       isResolved ? "bg-p/10 border-p" : "bg-light-grey/50 border-p/30"
     }`}>
       <h3 className={`text-h3 font-semi-bold mb-2 ${isResolved ? "text-p bg-p/20 p-2 rounded-md w-fit " : ""}`}>

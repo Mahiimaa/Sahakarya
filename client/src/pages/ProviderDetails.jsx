@@ -150,7 +150,7 @@ function ProviderDetails() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-screen">
+    <div className="flex flex-col min-h-screen bg-screen font-poppins">
       <Navbar />
       <div className="md:hidden px-4 py-2">
         <button 
@@ -202,20 +202,20 @@ function ProviderDetails() {
             <div className="flex whitespace-nowrap">
               {serviceId && (
                 <button 
-                  className={`px-3 sm:px-6 py-3 text-h3 font-semi-bold ${activeTab === 'details' ? 'border-b-2 border-p text-p' : 'text-grey'}`}
+                  className={`px-3 sm:px-6 py-3 text-h3 font-regular ${activeTab === 'details' ? 'border-b-2 border-p text-p' : ''}`}
                   onClick={() => setActiveTab('details')}
                 >
                   Service Details
                 </button>
               )}
               <button 
-                className={`px-3 sm:px-6 py-3 text-h3 font-semi-bold ${activeTab === 'previous' ? 'border-b-2 border-p text-p' : 'text-grey'}`}
+                className={`px-3 sm:px-6 py-3 text-h3 font-regular ${activeTab === 'previous' ? 'border-b-2 border-p text-p' : ''}`}
                 onClick={() => setActiveTab('previous')}
               >
                 Previous Work
               </button>
               <button 
-                className={`px-3 sm:px-6 py-3 text-h3 font-semi-bold ${activeTab === 'reviews' ? 'border-b-2 border-p text-p' : 'text-grey'}`}
+                className={`px-3 sm:px-6 py-3 text-h3 font-regular ${activeTab === 'reviews' ? 'border-b-2 border-p text-p' : ''}`}
                 onClick={() => setActiveTab('reviews')}
               >
                 Reviews
@@ -289,7 +289,7 @@ function ProviderDetails() {
               <div>
                 <div className="flex justify-between mb-4">
                   <h2 className="text-h2 font-semi-bold">Client Reviews</h2>
-                  <button 
+                  {/* <button 
                     onClick={() => {
                       setEditingReview(null);
                       setRating(0);
@@ -299,7 +299,7 @@ function ProviderDetails() {
                     className="bg-p hover:bg-p/90 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base"
                   >
                     Add Review
-                  </button>
+                  </button> */}
                 </div>
                 {reviews.length > 0 ? (
                   <div className="space-y-4">

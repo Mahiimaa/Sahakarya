@@ -41,6 +41,11 @@ const UserSchema = new mongoose.Schema({
     default: "" ,
     trim: true
   },
+  address: {
+    type: String,
+    default: "",
+    trim: true
+  },
   profilePicture: { 
     type: String, default: "" 
   },

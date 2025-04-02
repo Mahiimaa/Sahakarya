@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar"
 import { useNavigate } from 'react-router-dom';
 import userhome from "../assets/userhome.png"
 import axios from 'axios';
+import { toast } from "react-toastify";
 import { Star, CheckCircle, Search, ArrowRight, LogOut, Calendar, Clock } from 'lucide-react';
 import explore from "../assets/explore.png";
 
@@ -229,7 +230,7 @@ function Home() {
     navigate('/request' );
   };
   return (
-    <div className ="flex flex-col">
+    <div className ="flex flex-col font-poppins">
        <Navbar/>
       <div className="px-4 md:px-6 py-8 flex flex-col">
         <div className="flex justify-center items-center">
@@ -257,9 +258,38 @@ function Home() {
                 className="w-full py-3 px-12 rounded-full border border-dark-grey shadow-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    if (!searchTerm.trim()) return;
+              
+                    const match = popularServices.find((s) =>
+                      s.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
+                    );
+              
+                    if (match) {
+                      navigate(`/services/${match._id}`);
+                    } else {
+                      toast.error("No matching service found.");
+                    }
+                  }
+                }}
               />
               <Search className="absolute left-4 top-3.5 text-grey" size={20} />
-              <button className="absolute right-3 top-2 bg-p text-white py-1 px-4 rounded-full">Search</button>
+              <button className="absolute right-3 top-2 bg-p text-white py-1 px-4 rounded-full"
+              onClick={() => {
+                if (!searchTerm.trim()) return;
+            
+                const match = popularServices.find((s) =>
+                  s.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
+                );
+            
+                if (match) {
+                  navigate(`/services/${match._id}`);
+                } else {
+                  toast.error("No matching service found.");
+                }
+              }}
+              >Search</button>
             </div>
           </div>
 
@@ -286,7 +316,8 @@ function Home() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {popularServices.map((service) => (
-            <div key={service.id} className="p-4 rounded-2xl shadow-2xl hover:shadow-s transition-shadow duration-200 cursor-pointer border border-light-grey">
+            <div key={service.id} className="p-4 rounded-2xl shadow-2xl hover:shadow-s transition-shadow duration-200 cursor-pointer border border-light-grey"
+            onClick={() => navigate(`/services/${service._id}`)}>
               <div className="flex items-center gap-4">
                 {/* <span className="text-3xl">{service.icon}</span> */}
                 <h3 className="font-poppins font-semi-bold text-lg">{service.name}</h3>

@@ -52,11 +52,24 @@ const ChatList = () => {
     setFilteredChats(filtered)
   }, [searchQuery, chats])
 
-  const openChat = (chat) => {
-    if (!currentUser) {
-      console.error("Current user not set");
-      return;
-    }
+  const openChat = async (chat) => {
+    if (!currentUser) return;
+      try {
+        await axios.put(
+          `${apiUrl}/api/messages/${chat.user._id}/read`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setChats((prevChats) =>
+          prevChats.map((c) =>
+            c.user._id === chat.user._id ? { ...c, unreadCount: 0 } : c
+          )
+        );
+      } catch (err) {
+        console.error("Failed to mark messages as read", err);
+      }
     setSelectedChat({
       provider: chat.user,
       requester: currentUser
@@ -83,7 +96,7 @@ const ChatList = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50 font-poppins">
       <Navbar />
 
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 md:py-8">

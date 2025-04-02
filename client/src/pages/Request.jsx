@@ -397,7 +397,7 @@ const Request = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen font-poppins">
       <Navbar />
       <div className=" flex flex-col justify-between gap-6 shadow-md rounded-lg p-6 w-full max-w-4xl mx-auto">
       <div className="flex gap-4 justify-center items-center mb-6">
@@ -544,9 +544,8 @@ const Request = () => {
                   </button>
                   </>
                   )} 
-                  <div className="flex flex-col w-full justify-end">
                   {booking.status === "scheduled" && booking.scheduleDate && !isNaN(new Date(booking.scheduleDate)) && (
-                    
+                    <div className="flex flex-row gap-2 justify-end">
                       <button
                         className ="bg-p hover:bg-p/90 text-white px-4 py-2 rounded self-end" 
                         onClick={() => initiateCompletion(booking._id)}
@@ -557,13 +556,14 @@ const Request = () => {
                       ? "Completion Details Submitted"
                       : "Submit Completion Details"}
                       </button>
-                    )}
                     <button
                     className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 self-end"
                     onClick={() => openChat(booking.provider, booking.requester)}
                   >
                     Chat
                   </button>
+                  </div>
+                  )}
                   {booking.status === "in mediation" || booking.status === "mediation resolved" ? (
                     <Mediation 
                       booking={booking} 
@@ -573,7 +573,6 @@ const Request = () => {
                   ) : null}
                   </div>
                 </div>
-               </div>
           ))
         ) : (
           <p className="text-s">No pending service requests.</p>
@@ -657,10 +656,20 @@ const Request = () => {
           </button>
         )}
         
-        {booking.status === "completed" && !booking.reviewed && (
+        {(booking.status === "completed" || booking.status === "mediation resolved") && !booking.reviewed && (
           <button
             className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded ml-2"
-            onClick={() => handleOpenReviewModal(booking._id, booking.provider._id)}
+            onClick={() => {
+              const providerId = booking.provider && 
+                (typeof booking.provider === 'object' ? booking.provider._id : booking.provider);
+              
+              if (!providerId) {
+                toast.error("Cannot leave a review: Provider information is missing");
+                return;
+              }
+              
+              handleOpenReviewModal(booking._id, providerId);
+            }}
           >
             Leave Review
           </button>
@@ -696,9 +705,9 @@ const Request = () => {
     {showCompletionModal && (
       <div className="fixed inset-0 flex items-center justify-center bg-dark-grey bg-opacity-50 z-50">
         <div className="bg-white p-6 rounded-lg shadow-md w-96">
-          <h2 className="text-h2 font-bold mb-4">Service Completion Details</h2>
+          <h2 className="text-h2 font-semi-bold mb-4">Service Completion Details</h2>
           
-          <label className="font-semi-bold text-h3">Actual Service Duration (hours)</label>
+          <label className=" text-body">Actual Service Duration (hours)</label>
           <input 
             type="number" 
             placeholder="Hours spent on service" 
@@ -707,7 +716,7 @@ const Request = () => {
             onChange={(e) => setActualDuration(e.target.value)}
           />
           
-          <label className="font-semi-bold text-h3">Proposed Time Credits</label>
+          <label className=" text-body">Proposed Time Credits</label>
           <input 
             type="number" 
             placeholder="Credits to transfer" 
@@ -716,7 +725,7 @@ const Request = () => {
             onChange={(e) => setProposedCredits(e.target.value)}
           />
           
-          <label className="font-semi-bold text-h3">Notes (Optional)</label>
+          <label className="text-body">Notes (Optional)</label>
           <textarea
             placeholder="Any notes about the service completion"
             className="w-full p-2 border rounded mb-2"

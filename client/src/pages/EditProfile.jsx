@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
-import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
+import { ArrowLeft } from 'lucide-react'
 
 const EditProfile = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -11,9 +12,11 @@ const EditProfile = () => {
     username: "",
     email: "",
     phone: "",
+    address: "",
     profilePicture: null,
     selectedServices: [],
   });
+  const navigate = useNavigate();
   const [previewImage, setPreviewImage] = useState(null);
   const [services, setServices] = useState([]);
   const [error, setError] = useState("");
@@ -43,6 +46,7 @@ const EditProfile = () => {
         username: userData.username || "",
         email: userData.email || "",
         phone: userData.phone || "",
+        address: userData.address || "", 
         profilePicture: userData.profilePicture || null,
         selectedServices: serviceIds,
       });
@@ -220,7 +224,8 @@ const EditProfile = () => {
     formData.append("username", profileData.username.trim());
     formData.append("email", profileData.email);
     formData.append("phone", profileData.phone.trim());
-    
+    formData.append("address", profileData.address.trim());
+
     if (profileData.profilePicture instanceof File) {
       formData.append("profilePicture", profileData.profilePicture);
     }
@@ -290,31 +295,19 @@ const EditProfile = () => {
 
 
   return (
-    <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col">
-      <div className="flex justify-start">
-        <button className="bg-p hover:bg-p/90 text-white rounded py-2 px-4">
-          <NavLink to="/userProfile" className="flex items-center">
-            <svg
-              className="w-5 h-5 mr-2"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back
-          </NavLink>
+    <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col font-poppins">
+      <div className="flex justify-start md:hidden">
+      <button 
+          onClick={() => navigate(-1)}
+          className="flex items-center text-gray-600 hover:text-p"
+        >
+          <ArrowLeft className="w-5 h-5 mr-1" />
+          <span>Back</span>
         </button>
       </div>
       <div className="flex-grow flex items-center justify-center">
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-h2 font-bold text-center text-p mb-6">
+          <h1 className="text-h2 font-semi-bold text-center text-p mb-6">
             Edit Profile
           </h1>
 
@@ -379,7 +372,7 @@ const EditProfile = () => {
                 required
               />
             </div>
-            <div>
+            {/* <div>
               <label
                 htmlFor="email"
                 className="text-body font-regular mb-2"
@@ -395,7 +388,7 @@ const EditProfile = () => {
                 className="w-full border rounded border-grey p-3"
                 disabled
               />
-            </div>
+            </div> */}
 
             <div>
               <label
@@ -415,7 +408,20 @@ const EditProfile = () => {
                 required
               />
             </div>
-
+            <div>
+            <label htmlFor="address" className="text-body font-regular mb-2">
+              Address
+            </label>
+            <input
+              type="text"
+              id="address"
+              name="address"
+              value={profileData.address || ""}
+              onChange={handleChange}
+              placeholder="Enter your address"
+              className="w-full border rounded border-grey p-3"
+            />
+          </div>
             <div>
               <label
                 htmlFor="services"

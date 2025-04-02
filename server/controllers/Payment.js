@@ -146,7 +146,10 @@ const initiatePayment = async (req, res) => {
       if (!transaction) {
         return res.redirect(`${process.env.FRONTEND_URL}/payment/error?message=Transaction not found`);
       }
-      
+      const user = await User.findById(transaction.userId);
+      if (!user) {
+        return res.redirect(`${process.env.FRONTEND_URL}/payment/error?message=User not found`);
+      }
       if (status === 'Completed') {
         await verifyKhaltiPayment(pidx);
         
@@ -154,11 +157,6 @@ const initiatePayment = async (req, res) => {
           return res.redirect(`${process.env.FRONTEND_URL}/payment/success?credits=${user.timeCredits}`);
         }
         const creditsToAdd = transaction.creditAmount;
-        const user = await User.findById(transaction.userId);
-        if (!user) {
-          return res.redirect(`${process.env.FRONTEND_URL}/payment/error?message=User not found`);
-        }
-        
         const previousCredits = user.timeCredits || 0;
         user.timeCredits = previousCredits + creditsToAdd;
         await user.save();
@@ -169,7 +167,6 @@ const initiatePayment = async (req, res) => {
         
         return res.redirect(`${process.env.FRONTEND_URL}/payment/success?credits=${user.timeCredits}`);
       } else {
-
         transaction.status = 'failed';
         transaction.details = `Payment ${status.toLowerCase()}`;
         await transaction.save();

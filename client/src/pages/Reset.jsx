@@ -86,7 +86,7 @@ const Reset = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen justify-center items-center relative">
+    <div className="flex h-screen w-screen justify-center items-center relative font-poppins">
       <Link 
         to="/forgot"
         className="hidden desk:absolute desk:left-16 desk:top-16 bg-p text-white border-2 border-button desk:flex justify-center items-center px-6 py-2 text-xl font-medium text-button gap-2 hover:bg-p/90"

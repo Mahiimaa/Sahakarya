@@ -16,7 +16,7 @@ function AdminNav() {
     }
 
     return (
-        <div className="flex flex-col h-[100vh] justify-between items-center ">
+        <div className="flex flex-col h-[100vh] justify-between items-center font-poppins">
           <div className="flex flex-col left-0 self-start justify-center items-center pl-8 gap-6">
             <img className="w-24 h-20 mt-4" src={logo} alt="" />
             <div className="flex flex-col gap-4">

@@ -15,7 +15,7 @@ function Explore() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [allServiceDetails, setAllServiceDetails] = useState([]);
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState(false);
   
   useEffect(() => {
     const fetchServices = async () => {
@@ -65,7 +65,7 @@ function Explore() {
   }
 
   return (
-    <div className = "flex flex-col">
+    <div className = "flex flex-col font-poppins">
         <Navbar />
         <div className="flex flex-col md:flex-row p-4 mx-4 md:mx-8 lg:mx-16 xl:mx-28 gap-4">
         {/* Mobile Filter Toggle */}
@@ -111,8 +111,8 @@ function Explore() {
             />
           </div>
 
-          <h2 className="text-h2 font-semi-bold mb-2">Featured Services</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <h2 className="text-h2 font-semi-bold mb-2 font-poppins">Featured Services</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredServices.length > 0 ? (
               filteredServices.map((service) => (
                 <div
@@ -120,7 +120,7 @@ function Explore() {
                   className="p-4 border border-dark-grey rounded-lg shadow-lg bg-white hover:-translate-y-1.5 transition-transform flex flex-col h-full cursor-pointer"
                   onClick={() => navigate(`/services/${service._id}`)}
                 >
-                  <h3 className="font-bold text-lg">{service.serviceName}</h3>
+                  <h3 className="font-semi-bold text-lg font-poppins ">{service.serviceName}</h3>
                   <p className="text-dark-grey">{service.category.categoryName}</p>
                 </div>
               ))
@@ -129,8 +129,8 @@ function Explore() {
             )}
           </div>
 
-          <h2 className="text-h2 font-semi-bold mt-8 mb-2">All Services</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <h2 className="text-h2 font-semi-bold mt-8 mb-2 font-poppins">All Services</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {allServiceDetails.length > 0 ? (
               allServiceDetails.map((service) => (
                 <div

@@ -53,7 +53,7 @@ function CashoutHistory({ onClose }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg">
+    <div className="bg-white p-6 rounded-lg font-poppins">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-h3 font-semi-bold">Cashout History</h3>
         <button onClick={onClose} className="text-grey">

@@ -86,7 +86,7 @@ function Verify() {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center mt-20">
+    <div className="flex flex-col justify-center items-center mt-20 font-poppins">
       <div className="flex flex-col justify-center items-center">
         <img className="w-32 h-26 py-4" src={logo} alt="logo" />
         

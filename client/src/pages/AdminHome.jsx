@@ -116,7 +116,7 @@ function AdminHome() {
 
 
   return (
-    <div className ="flex gap-4">
+    <div className ="flex gap-4 font-poppins">
        <Navbar/>
        <div className="flex flex-col gap-4">
        <Topbar/>
@@ -142,7 +142,7 @@ function AdminHome() {
        </div>
        <div className="flex gap-4">
        <div className="h-[61vh] w-1/2 border-none rounded-2xl bg-white">
-       <h2 className="font-semibold text-lg mb-4">Monthly Trend Analysis</h2>
+       <h2 className="font-semi-bold text-h3 m-4">Monthly Trend Analysis</h2>
                 {loading.monthly ? (
                   <div className="flex justify-center items-center h-full">
                     <p>Loading chart data...</p>

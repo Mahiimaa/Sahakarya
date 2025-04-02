@@ -19,7 +19,7 @@ const Schedule = ({ isOpen, onClose, onSchedule }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex bg-dark-grey  bg-opacity-50 items-center justify-center">
+    <div className="fixed inset-0 flex bg-dark-grey  bg-opacity-50 items-center justify-center font-poppins">
       <div className="bg-white p-6 border border-dark-grey rounded-lg shadow-lg w-96 relative">
         <div className="flex justify-between items-center mb-4 ">
         <h2 className="text-h2 font-semi-bold ">Schedule Service</h2>

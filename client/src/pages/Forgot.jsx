@@ -203,7 +203,7 @@ const Forgot = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen justify-center items-center relative">
+    <div className="flex h-screen w-screen justify-center items-center relativ font-poppins">
       <button
         className="hidden desk:absolute desk:left-16 desk:top-16 bg-p hover:bg-p/90 text-white border-2 border-button desk:flex justify-center items-center px-6 py-2 text-xl font-medium text-button gap-2"
         onClick={handleBack}

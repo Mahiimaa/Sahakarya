@@ -42,8 +42,6 @@ function Transactions() {
         (t.details && t.details.toLowerCase().includes(term))
       );
     }
-
-    // Apply sorting
     if (sortConfig.key) {
       result.sort((a, b) => {
         let aValue, bValue;
@@ -137,7 +135,7 @@ function Transactions() {
     };
 
   return (
-    <div className ="flex flex-col min-h-screen">
+    <div className ="flex flex-col min-h-screen font-poppins">
        <Navbar/>
        <div className="max-w-6xl mx-auto p-4 sm:p-6 w-full">
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -183,7 +181,7 @@ function Transactions() {
               </select>
             </div>
 
-            <div className="flex gap-2 w-full sm:w-auto">
+            <div className="flex gap-2 w-full justify-between sm:w-auto">
               <button
                 onClick={fetchTransactions}
                 className="flex items-center gap-1 py-2 px-3 bg-white text-p rounded-md border border-p hover:bg-p/50 hover:text-white"
@@ -214,14 +212,14 @@ function Transactions() {
                 </button>
               </div>
             )}
-
             {isLoading ? (
               <div className="text-center p-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-p border-t-transparent"></div>
                 <p className="mt-2 text-dark-grey">Loading transactions...</p>
               </div>
             ) : filteredTransactions.length > 0 ? (
-              <table className="w-full border-collapse">
+              <>
+              <table className="w-full border-collapse hidden md:table">
                 <thead>
                   <tr className="bg-gray-100 text-left">
                     <th 
@@ -289,6 +287,26 @@ function Transactions() {
                   ))}
                 </tbody>
               </table>
+              <div className="md:hidden space-y-4 mt-4">
+              {filteredTransactions.map((transaction) => (
+                <div key={transaction._id} className="bg-white shadow-sm p-4 rounded-md border border-dark-grey">
+                  <div className="flex justify-between items-center text-small font-medium">
+                    <span>{new Date(transaction.createdAt).toLocaleDateString()}</span>
+                    <span className={`${transaction.type === "service_payment" ? "text-error" : "text-p"}`}>
+                      {transaction.type === "service_payment" ? "-" : "+"}
+                      {transaction.creditAmount || transaction.amount} Credits
+                    </span>
+                  </div>
+                  <div className="text-xs text-dark-grey mt-1">{new Date(transaction.createdAt).toLocaleTimeString()}</div>
+                  <div className="mt-2">
+                    <p className="font-bold">{transaction.bookingId?.service || "Credit Purchase"}</p>
+                    <p className="text-sm">To: {transaction.recipient?.username || "N/A"}</p>
+                    {transaction.details && <p className="text-xs text-grey mt-1">{transaction.details}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
             ) : (
               <div className="text-center p-8">
                 <p className="text-dark-grey">No transactions found.</p>
@@ -310,7 +328,7 @@ function Transactions() {
           {/* Pagination (if needed) */}
           {filteredTransactions.length > 0 && (
             <div className="bg-light-grey px-4 py-3 flex items-center justify-between border-t border-dark-grey sm:px-6">
-              <div className="flex-1 flex justify-between sm:hidden">
+              <div className="flex-1 flex justify-between md:hidden">
                 <button className="relative inline-flex items-center px-4 py-2 border border-dark-grey text-small font-medium rounded-md text-grey bg-white hover:bg-light-grey">
                   Previous
                 </button>

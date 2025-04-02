@@ -5,6 +5,7 @@ import {toast} from "react-toastify";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import { ArrowLeft, Search, SlidersHorizontal } from "lucide-react"
+import { useLocation } from 'react-router-dom';
 
 function ServiceDetails() {
   const { _id } = useParams();
@@ -19,6 +20,14 @@ function ServiceDetails() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState("default")
+  const location = useLocation();
+  const query = new URLSearchParams(location.search).get("search");
+
+  useEffect(() => {
+    if (query) {
+      setSearchQuery(query);
+    }
+  }, [query]);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -139,16 +148,16 @@ function ServiceDetails() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-screen">
+    <div className="flex flex-col min-h-screen bg-screen font-poppins">
       <Navbar />
       <div className="flex flex-col px-4 sm:px-6 md:px-8 lg:px-16 xl:px-28 py-4">
-        <div className="flex items-center mb-4">
-          <NavLink to="/explore" className="flex items-center hover:text-p p-2 rounded-full hover:bg-light-grey">
+        <div className="flex items-center">
+          <NavLink to="/explore" className="flex items-center hover:text-p p-2 rounded-full hover:bg-light-grey md:hidden">
             <ArrowLeft className="w-6 h-6" />
             <span className="sr-only">Back to Explore</span>
           </NavLink>
-          <div className="ml-2">
-            {service && <h1 className="text-h2 md:text-h1 font-bold">{service.serviceName}</h1>}
+          <div className="ml-2 md:ml-0">
+            {service && <h1 className="text-h2 md:text-h1 font-semi-bold">{service.serviceName}</h1>}
           </div>
         </div>
 

@@ -82,7 +82,7 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col">
+    <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col font-poppins">
       <div className="flex justify-start mb-8">
         <button className="bg-p hover:bg-p/90 text-white rounded py-2 px-4">
           <NavLink to="/home" className="flex items-center">

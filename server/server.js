@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
     console.log(`User ${userId} joined room`);
   });
 
-  socket.on("chatMessage", async ({ sender, receiver, content }) => {
+  socket.on("chatMessage", async ({ sender, receiver, content, providerId, requesterId }) => {
     if (!sender || !receiver || !content.trim()) {
       console.error("Invalid message data received:", { sender, receiver, content });
       return;
@@ -57,6 +57,8 @@ io.on('connection', (socket) => {
       const message = new Message({
         sender,
         receiver,
+        providerId,
+        requesterId,
         content: content.trim(),
         createdAt: new Date(),
       });
@@ -69,13 +71,9 @@ io.on('connection', (socket) => {
       const senderUser = await mongoose.model('User').findById(sender);
       const senderName = senderUser ? senderUser.username : 'Someone';
 
-      const truncatedContent = content.length > 30 
-        ? `${content.substring(0, 30)}...` 
-        : content;
-
         const notification = new Notification({
           userId: receiver,
-          message: `New message from ${senderName}: ${truncatedContent}`,
+          message: `New message from ${senderName}: ${content.substring(0, 30)}${content.length > 30 ? "..." : ""}`,
           type: 'chat',
           data: {
             senderId: sender
