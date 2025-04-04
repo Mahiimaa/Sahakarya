@@ -53,6 +53,7 @@ return (
         <Route path="/reset" element={<Reset />} />
         <Route path="/navbar" element={<Navbar />} />
         <Route path="/userProfile" element={<UserProfile />} />
+        <Route path="/user-profile/:userId" element={<UserProfile />} />
         <Route path ="/editProfile" element={<EditProfile />} />
         <Route path="/my-services" element={<UserServices />} />
         <Route path="/payment/success" element={<TimeCredit />} />

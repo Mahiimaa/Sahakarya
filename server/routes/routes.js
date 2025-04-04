@@ -5,7 +5,7 @@ const{requestOTP, submitOTP, resetPassword} = require('../controllers/forgotPass
 const { addCategory, getCategories, deleteCategory } = require('../controllers/category');
 const {addService,editService,deleteService,getServices,selectService, addServiceOfferDetails, getPopularServices} = require('../controllers/service');
 const { getStats } = require('../controllers/stats');
-const {getAllUsers, deleteUser, assignRole, getUserDetails} = require('../controllers/user');
+const {getAllUsers, deleteUser, assignRole, getUserDetails, getUserById} = require('../controllers/user');
 const {changePassword} = require('../controllers/changePassword');
 const {editProfile} = require('../controllers/profile');
 const {
@@ -89,6 +89,7 @@ router.delete('/deleteUser/:id', deleteUser);
 router.post('/assignRole', assignRole);
 
 router.get('/user/me', verifyToken,  getUserDetails);
+router.get("/users/:id", verifyToken, getUserById);
 router.put('/changePassword', verifyToken, changePassword);
 router.put('/editProfile', verifyToken, upload.single('profilePicture'), editProfile);
 router.get("/services/popular", verifyToken, getPopularServices);

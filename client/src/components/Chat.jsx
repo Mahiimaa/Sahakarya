@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {io} from 'socket.io-client';
 import axios from "axios";
 import { X, Send, Loader2 } from "lucide-react"
-import { format } from "date-fns"
+import { format, isToday, isYesterday } from "date-fns"
 
 const socket = io("ws://localhost:5000", { transports: ["websocket", "polling"] , autoConnect: false,  withCredentials: true,});
 const Chat = ({ onClose, provider, requester}) => {
@@ -108,6 +108,13 @@ const getChatPartnerName = () => {
   if (!userId) return "Loading..."
   return String(userId) === String(provider._id) ? requester.username : provider.username
 }
+
+const formatChatDate = (timestamp) => {
+  const date = new Date(timestamp);
+  if (isToday(date)) return "Today";
+  if (isYesterday(date)) return "Yesterday";
+  return format(date, "MMMM d, yyyy"); 
+};
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4 font-poppins">
     <div className="bg-white w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl rounded-lg shadow-xl flex flex-col h-[80vh] max-h-[600px] overflow-hidden">
@@ -132,7 +139,14 @@ const getChatPartnerName = () => {
             <p>No messages yet. Start the conversation!</p>
           </div>
         ) : (
-          messages.map((msg, index) => {
+          (() => {
+            let lastDate = null;
+          return messages.map((msg, index) => {
+            const messageDate = new Date(msg.createdAt);
+            const currentDate = format(messageDate, "yyyy-MM-dd");
+            const showDateSeparator = currentDate !== lastDate;
+            lastDate = currentDate;
+            
             const isSentByUser =
               userId &&
               msg.sender &&
@@ -140,8 +154,15 @@ const getChatPartnerName = () => {
                 (typeof msg.sender === "object" && msg.sender._id && String(msg.sender._id) === String(userId)))
 
             return (
+              <React.Fragment key={msg._id || index}>
+              {showDateSeparator && (
+                <div className="text-center text-gray-500 text-xs my-4">
+                  <span className="inline-block bg-gray-200 text-gray-700 px-3 py-1 rounded-full shadow-sm">
+                    {formatChatDate(msg.createdAt)}
+                  </span>
+                </div>
+              )}
               <div
-                key={msg._id || index}
                 className={`flex ${isSentByUser ? "justify-end" : "justify-start"} animate-fadeIn`}
               >
                 <div
@@ -157,8 +178,10 @@ const getChatPartnerName = () => {
                   </div>
                 </div>
               </div>
-            )
-          })
+              </React.Fragment>
+            );
+          });
+          }) ()
         )}
         <div ref={messagesEndRef} />
       </div>

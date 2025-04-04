@@ -15,6 +15,7 @@ const EditProfile = () => {
     address: "",
     profilePicture: null,
     selectedServices: [],
+    bio: "",
   });
   const navigate = useNavigate();
   const [previewImage, setPreviewImage] = useState(null);
@@ -27,6 +28,7 @@ const EditProfile = () => {
     description: ""
   });
   const [requestSubmitting, setRequestSubmitting] = useState(false);
+  const [bioModalOpen, setBioModalOpen] = useState(false);
 
   const fetchUserProfile = async () => {
     try {
@@ -49,6 +51,7 @@ const EditProfile = () => {
         address: userData.address || "", 
         profilePicture: userData.profilePicture || null,
         selectedServices: serviceIds,
+        bio: userData.bio || "",
       });
 
       if (userData.profilePicture && userData.profilePicture !== '') {
@@ -225,6 +228,7 @@ const EditProfile = () => {
     formData.append("email", profileData.email);
     formData.append("phone", profileData.phone.trim());
     formData.append("address", profileData.address.trim());
+    formData.append("bio", profileData.bio?.trim() || "");
 
     if (profileData.profilePicture instanceof File) {
       formData.append("profilePicture", profileData.profilePicture);
@@ -257,7 +261,8 @@ const EditProfile = () => {
           email: updatedUser.email || "",
           phone: updatedUser.phone || "",
           profilePicture: updatedUser.profilePicture || null,
-          selectedServices: updatedServices
+          selectedServices: updatedServices,
+          bio: updatedUser.bio || "",
         });
         
         if (updatedUser.profilePicture && updatedUser.profilePicture !== '') {
@@ -295,8 +300,10 @@ const EditProfile = () => {
 
 
   return (
-    <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col font-poppins">
-      <div className="flex justify-start md:hidden">
+    <div className="min-h-screen md:bg-neutral-100  flex flex-col font-poppins">
+      <div className="flex-grow flex items-center justify-center">
+        <div className="w-full max-w-md md:bg-white rounded-lg md:shadow-lg p-8">
+        <div className="flex justify-start md:hidden">
       <button 
           onClick={() => navigate(-1)}
           className="flex items-center text-gray-600 hover:text-p"
@@ -305,8 +312,6 @@ const EditProfile = () => {
           <span>Back</span>
         </button>
       </div>
-      <div className="flex-grow flex items-center justify-center">
-        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
           <h1 className="text-h2 font-semi-bold text-center text-p mb-6">
             Edit Profile
           </h1>
@@ -355,8 +360,14 @@ const EditProfile = () => {
                   <span className="text-s">Upload</span>
                 )}
               </div>
-            </div>
-
+              <button 
+              type="button" 
+              onClick={() => setBioModalOpen(true)} 
+              className="text-p hover:underline text-h3 font-semi-bold p-2 hover:text-p/80"
+            >
+              Add Bio
+            </button>
+            </div>  
             <div>
               <label htmlFor="username" className="text-body font-regular mb-2">
                 Username
@@ -549,6 +560,34 @@ const EditProfile = () => {
           </div>
         </div>
       )}
+      {bioModalOpen && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl relative">
+          <button 
+            onClick={() => setBioModalOpen(false)} 
+            className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+          >
+            ✕
+          </button>
+          <h3 className="text-lg font-semibold mb-4">Describe Yourself</h3>
+          <textarea 
+            className="w-full border border-gray-300 rounded-md p-3 mb-4" 
+            rows="4"
+            value={profileData.bio}
+            onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+          />
+          <p className="text-right text-xs text-gray-500 mb-4">
+            {profileData.bio.length}/300 characters
+          </p>
+          <button 
+            onClick={() => setBioModalOpen(false)} 
+            className="bg-p text-white px-4 py-2 rounded hover:bg-p/90 w-full"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    )}
     </div>
   );
 };

@@ -36,6 +36,7 @@ const UserSchema = new mongoose.Schema({
   otpExpiry: {
     type: Date
   },
+  bio: { type: String, default: "" },
   phone: { 
     type: String,
     default: "" ,

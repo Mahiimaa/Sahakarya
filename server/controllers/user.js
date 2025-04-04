@@ -86,6 +86,7 @@ const getUserDetails = async (req, res) => {
       timeCredits: user.timeCredits || "",
       profilePicture: user.profilePicture || "", 
       services: user.servicesOffered || [],
+      bio: user.bio || [],
     });
   } catch (error) {
     console.error(error);
@@ -93,4 +94,16 @@ const getUserDetails = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, deleteUser, assignRole, getUserDetails};
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate("servicesOffered");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+module.exports = { getAllUsers, deleteUser, assignRole, getUserDetails, getUserById};

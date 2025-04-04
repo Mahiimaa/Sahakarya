@@ -6,10 +6,11 @@ import { IoClose } from "react-icons/io5";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ArrowLeft } from 'lucide-react'
+import { useParams } from "react-router-dom";
 
 const UserProfileInfoPage = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
-
+  const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [selectedServices, setSelectedServices] = useState([]);
   const navigate = useNavigate();
@@ -23,9 +24,12 @@ const UserProfileInfoPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showFullBio, setShowFullBio] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
         const token = localStorage.getItem('token');
           console.log('Token:', token);
           if (!token) {
@@ -33,25 +37,31 @@ const UserProfileInfoPage = () => {
             return;
           }
           try{
-          const { data: userData } = await axios.get(`${apiUrl}/api/user/me`, {
+          const current = await axios.get(`${apiUrl}/api/user/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          setUser(userData);
-          console.log("User Data:", userData);
-          console.log("Services Offered (IDs):", userData.services);
-          if (Array.isArray(userData.services) && userData.services.length > 0) {
-            setSelectedServices(userData.services);
+          setCurrentUser(current.data);
+          const targetId = userId || current.data._id;
+          setIsOwner(targetId === current.data._id || targetId === current.data.id);
+
+          const { data } = await axios.get(`${apiUrl}/api/users/${targetId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          setUser(data);
+          if (Array.isArray(data.servicesOffered)) {
+            setSelectedServices(data.servicesOffered);
           }
         } catch (err) {
-          console.error("Error fetching user information:", err);
+          console.error("Error fetching data:", err);
           setError("Failed to load user information.");
         } finally {
           setLoading(false);
         }
       };
   
-      fetchUserData();
-    }, [navigate, apiUrl]);
+      fetchData();
+    }, [navigate, apiUrl, userId]);
 
   const openEditProfile = () => {
     navigate('/editProfile');
@@ -128,9 +138,10 @@ const UserProfileInfoPage = () => {
   if (loading) return <div className="text-center mt-8">Loading...</div>;
   if (error) return <div className="text-center mt-8 text-red-500">{error}</div>;
 
+
   return (
-    <div className="min-h-screen p-4 sm:p-6 flex flex-col bg-screen font-poppins">
-      <div className="flex justify-start md:hidden">
+    <div className="min-h-screen p-4 sm:p-6 flex flex-col md:bg-screen font-poppins">
+      <div className="flex justify-start md:hidden p-4">
             <button 
                 onClick={() => navigate(-1)}
                 className="flex items-center text-gray-600 hover:text-p"
@@ -140,7 +151,7 @@ const UserProfileInfoPage = () => {
               </button>
             </div>
       <div className="flex-grow flex items-center justify-center">
-        <div className="w-full sm:w-4/5 md:w-3/4 lg:w-3/5 xl:w-2/5 mx-auto bg-white shadow-lg rounded-lg p-4 sm:p-6">
+        <div className="w-full sm:w-4/5 md:w-3/4 lg:w-3/5 xl:w-2/5 mx-auto md:bg-white md:shadow-lg rounded-lg p-4 sm:p-6">
           <p className="text-center text-p text-h2 font-semi-bold p-2 sm:p-4">User Profile</p>
           
           {/* Profile Picture */}
@@ -155,8 +166,8 @@ const UserProfileInfoPage = () => {
             <h1 className="text-poppins text-s font-semi-bold mt-4">{user?.username}</h1>
             <div className="text-center ">
               <p
-                onClick={openTimeCredit}
-                className="text-h3 font-semi-bold hover:text-p hover:underline cursor-pointer"
+                onClick={isOwner ? openTimeCredit : undefined}
+                className={isOwner ? "text-h3 font-semi-bold hover:text-p hover:underline cursor-pointer" : ""}
               >
                 Time Credits: {user?.timeCredits || 0}
               </p>
@@ -165,11 +176,23 @@ const UserProfileInfoPage = () => {
 
           {/* Personal Information */}
           <div className="flex flex-col sm:flex-row justify-between border-t px-4 sm:px-8">
-            
-            
-            <div className="pt-4">
+            <div className="sm:w-1/2">
               <h2 className="text-h2 font-semi-bold mb-3">Personal Information</h2>
               <div className="flex flex-col gap-3">
+              <p>
+                <strong>Bio:</strong>{" "}
+                {user.bio.length > 150 && !showFullBio
+                  ? `${user.bio.slice(0, 150)}... `
+                  : user.bio}
+                {user.bio?.length > 150 && (
+                  <button
+                    onClick={() => setShowFullBio(!showFullBio)}
+                    className="text-p underline text-sm ml-1"
+                  >
+                    {showFullBio ? "Show less" : "Read more"}
+                  </button>
+                )}
+              </p>
                 <p>
                   <strong>Email:</strong> {user?.email}
                 </p>
@@ -183,7 +206,7 @@ const UserProfileInfoPage = () => {
             </div>
 
             {/* Services Offered */}
-            <div className="pt-4">
+            <div className="sm:w-1/3">
               <NavLink to="/my-services" className="hover:text-p hover:underline text-h2 font-semi-bold mb-3 block">
                 Services Offered
               </NavLink>
@@ -193,7 +216,7 @@ const UserProfileInfoPage = () => {
                     <li 
                       key={service._id || index} 
                       className="text-body hover:text-p cursor-pointer" 
-                      onClick={() => handleServiceClick(service)}
+                      onClick={() => isOwner && handleServiceClick(service)}
                     >
                       {service.serviceName}
                     </li>
@@ -204,7 +227,7 @@ const UserProfileInfoPage = () => {
               )}
             </div>
           </div>
-          
+          {isOwner && (
           <div className="flex justify-center mt-4">
             <button 
               className="bg-p hover:bg-p/90 p-2 text-white border rounded-md w-full sm:w-auto sm:px-4" 
@@ -213,6 +236,7 @@ const UserProfileInfoPage = () => {
               Edit Profile
             </button>
           </div>
+          )}
         </div>
       </div>
       

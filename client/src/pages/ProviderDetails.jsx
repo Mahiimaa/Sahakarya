@@ -194,6 +194,7 @@ function ProviderDetails() {
                   }
                   alt={`${provider.username}'s profile`}
                   className="w-full h-full object-cover"
+                  onClick={() => navigate(`/user-profile/${provider._id}`)}
                 />
               </div>
             </div>
@@ -367,10 +368,12 @@ function ProviderDetails() {
                               }
                               alt={`${review.user.username}'s profile`}
                               className="w-8 h-8 rounded-full object-cover"
+                              onClick={() => navigate(`/user-profile/${review.user._id}`)}
                             />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-800">{review.user.username}</p>
+                            <p onClick={() => navigate(`/user-profile/${review.user._id}`)}
+                            className="font-medium text-gray-800">{review.user.username}</p>
                             <p className="text-xs text-gray-500">{formatDate(review.createdAt || new Date())}</p>
                           </div>
                         </div>

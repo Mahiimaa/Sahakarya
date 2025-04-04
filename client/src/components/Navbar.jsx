@@ -57,7 +57,7 @@ function Navbar() {
             },
           });
           setUserDetails(response.data);
-
+          console.log("User response:", response.data);
           console.log("Joining room with userId:", response.data.id);
           socket.emit("joinRoom", { userId: response.data.id });
           try{
@@ -164,7 +164,11 @@ function Navbar() {
     };
     
     const UserProfile = () => {
-      navigate("/userProfile");
+      if (userDetails?.id) {
+        navigate(`/user-profile/${userDetails.id}`);
+      } else {
+        console.error("User ID not found");
+      }
       setIsMobileMenuOpen(false);
     }
 
