@@ -13,6 +13,7 @@ function Transactions() {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+  const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     fetchTransactions();
@@ -238,7 +239,7 @@ function Transactions() {
                       className="p-4 font-semi-bold text-h3 cursor-pointer hover:bg-light-grey"
                       onClick={() => handleSort('recipient')}
                     >
-                      Transferred To {getSortIndicator('recipient')}
+                      Counter Party {getSortIndicator('recipient')}
                     </th>
                     <th 
                       className="p-4 font-semi-bold text-h3 cursor-pointer hover:bg-light-grey text-right"
@@ -249,7 +250,38 @@ function Transactions() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => (
+                  {filteredTransactions.map((transaction) => {
+                   const isOutgoing =
+                   transaction.sender?._id?.toString() === userId && transaction.type !== "purchase";
+                    const amountPrefix = isOutgoing ? "-" : "+";
+                    const amountClass = isOutgoing ? "text-error" : "text-p";
+                    let counterparty;
+                    let transferredLabel = "N/A";
+                    if (transaction.type === "purchase") {
+                      transferredLabel = "Khalti";
+                    } else {
+                      const senderId = transaction.sender?._id;
+                      const recipientId = transaction.recipient?._id;
+                    
+                      if (userId === senderId?.toString() && userId !== recipientId?.toString()) {
+                        transferredLabel = transaction.recipient?.username || "N/A";
+                      } else if (userId === recipientId?.toString() && userId !== senderId?.toString()) {
+                        transferredLabel = transaction.sender?.username || "N/A";
+                      } else if (userId === senderId?.toString() && userId === recipientId?.toString()) {
+                        transferredLabel = "You";
+                      } else {
+                        transferredLabel = transaction.recipient?.username || transaction.sender?.username || "N/A";
+                      }
+                    }
+                    let serviceName = "Direct Transfer";
+                    if (transaction.type === "purchase") {
+                      serviceName = "Credit Purchase";
+                    } else if (transaction.type === "mediation_transfer") {
+                      serviceName = "Mediation Resolution";
+                    } else if (transaction.bookingId?.service) {
+                      serviceName = transaction.bookingId.service;
+                    }
+                    return (
                     <tr 
                       key={transaction._id} 
                       className="border-t border-dark-grey hover:bg-light-grey"
@@ -261,50 +293,68 @@ function Transactions() {
                         </div>
                       </td>
                       <td className="p-4 text-small">
-                        {transaction.bookingId?.service || transaction.type === "purchase" ? "Credit Purchase" : "Direct Transfer"}
+                        {serviceName}
                       </td>
-                      <td className="p-4 text-small ">
-                        {transaction.recipient?.username ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-p/70 rounded-full flex items-center justify-center text-p font-medium">
-                              {transaction.recipient.username.charAt(0).toUpperCase()}
-                            </div>
-                            <span>{transaction.recipient.username}</span>
-                          </div>
-                        ) : (
-                          "N/A"
-                        )}
-                      </td>
-                      <td className={`p-4 text-small font-h3 text-right ${
-                        transaction.type === "service_payment" 
-                          ? "text-error" 
-                          : "text-p"
-                      }`}>
-                        {transaction.type === "service_payment" ? "-" : "+"}
-                        {transaction.creditAmount || transaction.amount} Credits
+                      <td className="p-4 text-small">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-p/10 rounded-full flex items-center justify-center font-bold text-p uppercase">
+                        {transferredLabel.charAt(0)}
+                      </div>
+                      <span>{transferredLabel}</span>
+                      </div>
+                    </td>
+                      <td className={`p-4 text-small font-h3 text-right ${amountClass}`}>
+                      {amountPrefix}{transaction.creditAmount || transaction.amount} Credits
                       </td>
                     </tr>
-                  ))}
+                    );
+                    })}
                 </tbody>
               </table>
               <div className="md:hidden space-y-4 mt-4">
-              {filteredTransactions.map((transaction) => (
+              {filteredTransactions.map((transaction) => {
+              const isOutgoing =
+              transaction.sender?._id?.toString() === userId && transaction.type !== "purchase";
+              const amountPrefix = isOutgoing ? "-" : "+";
+              const amountClass = isOutgoing ? "text-error" : "text-p";
+              let transferredLabel = "N/A";
+              if (transaction.type === "purchase") {
+                transferredLabel = "Khalti";
+              } else {
+                const senderId = transaction.sender?._id;
+                const recipientId = transaction.recipient?._id;
+              
+                if (userId === senderId?.toString() && userId !== recipientId?.toString()) {
+                  transferredLabel = transaction.recipient?.username || "N/A";
+                } else if (userId === recipientId?.toString() && userId !== senderId?.toString()) {
+                  transferredLabel = transaction.sender?.username || "N/A";
+                } else if (userId === senderId?.toString() && userId === recipientId?.toString()) {
+                  transferredLabel = "You";
+                } else {
+                  transferredLabel = transaction.recipient?.username || transaction.sender?.username || "N/A";
+                }
+              }
+              return(
                 <div key={transaction._id} className="bg-white shadow-sm p-4 rounded-md border border-dark-grey">
                   <div className="flex justify-between items-center text-small font-medium">
                     <span>{new Date(transaction.createdAt).toLocaleDateString()}</span>
-                    <span className={`${transaction.type === "service_payment" ? "text-error" : "text-p"}`}>
-                      {transaction.type === "service_payment" ? "-" : "+"}
-                      {transaction.creditAmount || transaction.amount} Credits
+                    <span className={`${amountClass}`}>
+                      {amountPrefix}{transaction.creditAmount || transaction.amount} Credits
                     </span>
                   </div>
-                  <div className="text-xs text-dark-grey mt-1">{new Date(transaction.createdAt).toLocaleTimeString()}</div>
-                  <div className="mt-2">
-                    <p className="font-bold">{transaction.bookingId?.service || "Credit Purchase"}</p>
-                    <p className="text-sm">To: {transaction.recipient?.username || "N/A"}</p>
-                    {transaction.details && <p className="text-xs text-grey mt-1">{transaction.details}</p>}
-                  </div>
-                </div>
-              ))}
+                  <div className="text-xs text-dark-grey mt-1">
+              {new Date(transaction.createdAt).toLocaleTimeString()}
+            </div>
+            <div className="mt-2">
+              <p className="font-bold">{transaction.bookingId?.service || "Credit Purchase"}</p>
+              <p className="text-sm">
+              {isOutgoing ? "To" : "From"}: {transferredLabel}
+              </p>
+              {transaction.details && <p className="text-xs text-grey mt-1">{transaction.details}</p>}
+            </div>
+    </div>
+              );
+              })}
             </div>
           </>
             ) : (

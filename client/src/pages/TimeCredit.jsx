@@ -3,11 +3,13 @@ import KhaltiPayment from "../components/Khalti"
 import CashoutForm from "../components/CashoutForm"
 import { NavLink } from "react-router-dom";
 import CashoutHistory from "../pages/CashoutHistory"
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { ArrowLeft } from 'lucide-react';
 
 function TimeCredit() {
+    const navigate = useNavigate();
     const [creditAmount, setCreditAmount] = useState(10); 
     const [currentCredits, setCurrentCredits] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -202,10 +204,10 @@ function TimeCredit() {
     <div className="flex items-center justify-center min-h-screen bg-light-grey font-poppins">
       <div className="md:bg-white p-8 rounded-xl sm:hadow-lg w-full max-w-md">
         <div className="flex items-center justify-center mb-6">
-        <NavLink to="/userProfile" className="flex items-center hover:text-p p-2 rounded-full hover:bg-light-grey md:hidden">
+        <div onClick={() => navigate(-1)} className="flex items-center hover:text-p p-2 rounded-full hover:bg-light-grey md:hidden">
             <ArrowLeft className="w-6 h-6" />
             <span className="sr-only">Back to Profile</span>
-          </NavLink>
+          </div>
           <h1 className="text-h2 font-semi-bold ml-3">My Time Credits</h1>
         </div>
         
