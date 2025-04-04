@@ -2,6 +2,7 @@ const Booking = require('../models/Booking');
 const User = require('../models/User');
 const Mediation = require('../models/Mediation');
 const { createNotification } = require('./bookingController');
+const Transaction = require('../models/Transaction');
 
 const requestMediation = async (req, res) => {
   try {
@@ -305,6 +306,19 @@ const resolveMediation = async (req, res) => {
     
     await requester.save();
     await provider.save();
+
+    const mediationTransaction = new Transaction({
+      transactionId: `mediation-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      sender: requester._id,
+      recipient: provider._id,
+      amount: timeCreditsToTransfer,
+      type: 'service_payment',
+      status: 'completed',
+      details: `Mediation resolved: Transferred ${timeCreditsToTransfer} time credits from ${requester.username} to ${provider.username}`,
+      createdAt: new Date(),
+    });
+    
+    await mediationTransaction.save();
     
     console.log("After credit transfer - Requester timeCredits:", requester.timeCredits);
     console.log("After credit transfer - Provider timeCredits:", provider.timeCredits);

@@ -44,7 +44,8 @@ const getTransactions = async (req, res) => {
         recipient: transaction.recipient,
         sender: transaction.sender,
         details: transaction.details,
-        paymentId: transaction.paymentId
+        paymentId: transaction.paymentId,
+        currentUserId: userId
       };
     });
 
