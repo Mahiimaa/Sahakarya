@@ -94,7 +94,7 @@ function AdminTransaction() {
     <Topbar/>
     <div className="bg-screen p-4  border-none rounded-2xl">
      <div className="flex justify-between items-center mb-6">
-     <h1 className="font-bold text-h1 ">Transactions</h1>
+     <h1 className="font-semi-bold text-h1 ">Transactions</h1>
             <div className="flex items-center gap-4">
               <div className="relative">
                 <input 

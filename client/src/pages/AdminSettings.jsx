@@ -25,7 +25,7 @@ function AdminSettings() {
        <div className="flex flex-col gap-4">
        <Topbar/>
        <div className="bg-screen p-4  border-none rounded-2xl">
-       <h1 className="font-bold text-h1 mb-6">Platform Settings</h1>
+       <h1 className="font-semi-bold text-h1 mb-6">Platform Settings</h1>
        <div className="bg-white rounded-lg shadow-lg overflow-hidden p-4">
           {/* Settings Navigation Tabs */}
           <div className="flex flex-wrap gap-2 mb-6 border-b">

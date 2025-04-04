@@ -69,7 +69,7 @@ const AdminServiceRequests = () => {
        <div className="flex flex-col gap-4">
        <Topbar/>
     <div className="bg-screen p-4  border-none rounded-2xl">
-      <h1 className=" text-h1 font-bold mb-6">Service Requests</h1>
+      <h1 className=" text-h1 font-semi-bold mb-6">Service Requests</h1>
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="text-h2 font-semi-bold">User Requested Services</h2>

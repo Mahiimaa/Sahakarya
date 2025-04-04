@@ -129,7 +129,7 @@ const AdminMediation = () => {
        <div className="flex flex-col gap-4">
        <Topbar/>
       <div className="bg-screen p-4  border-none rounded-2xl">
-        <h1 className="text-h1 font-bold mb-6">Mediation Dashboard</h1>
+        <h1 className="text-h1 font-semi-bold mb-6">Mediation Dashboard</h1>
         <div className="flex mb-6">
             <button
               className={`py-2 px-4 font-medium ${

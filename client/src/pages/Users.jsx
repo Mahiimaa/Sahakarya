@@ -37,7 +37,7 @@ function Users() {
        <Topbar/>
        <div className="bg-screen p-4 border-none rounded-2xl">
        <div className="flex justify-between items-center ">
-                   <h1 className="font-bold text-h1"> User Management</h1> 
+                   <h1 className="font-semi-bold text-h1"> User Management</h1> 
                    </div>
                    <div className="p-4 bg-white rounded-lg shadow mt-4">
                     {error && <div className=" text-error p-2 rounded">{error}</div>}

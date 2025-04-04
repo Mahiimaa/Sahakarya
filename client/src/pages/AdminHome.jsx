@@ -121,7 +121,7 @@ function AdminHome() {
        <div className="flex flex-col gap-4">
        <Topbar/>
        <div className="bg-screen p-4  border-none rounded-2xl">
-        <h1 className="font-bold text-h1"> Overview</h1>
+        <h1 className="font-semi-bold text-h1"> Overview</h1>
       <div className=" flex flex-col gap-4 mt-4">
         <div className="flex justify-around py-10 bg-white border-none rounded-2xl ">
           <div className="flex flex-col justify-center items-center">

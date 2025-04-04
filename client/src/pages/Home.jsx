@@ -310,13 +310,13 @@ function Home() {
       <div className="px-4 md:px-6 py-8 w-full md:w-3/4 self-center">
         <div className="flex justify-between mb-6">
           <h2 className="font-poppins text-2xl font-bold">Popular Services</h2>
-          <button className="flex items-center gap-2 text-p font-semibold" onClick={toExplore}>
+          <button className="flex items-center gap-2 text-p font-semi-bold" onClick={toExplore}>
             View All <ArrowRight size={16} />
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {popularServices.map((service) => (
-            <div key={service.id} className="p-4 rounded-2xl shadow-2xl hover:shadow-s transition-shadow duration-200 cursor-pointer border border-light-grey"
+            <div key={service.id} className="p-4 rounded-2xl shadow-md duration-200 cursor-pointer border border-light-grey hover:-translate-y-1.5 transition-transform" 
             onClick={() => navigate(`/services/${service._id}`)}>
               <div className="flex items-center gap-4">
                 {/* <span className="text-3xl">{service.icon}</span> */}
@@ -331,7 +331,7 @@ function Home() {
       <div className="px-4 md:px-12 lg:px-24 py-8 bg-white">
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-poppins text-2xl font-bold">Top Rated Providers</h2>
-          <button className="flex items-center gap-2 text-p font-semibold" onClick={toExplore}>View All →</button>
+          <button className="flex items-center gap-2 text-p font-semi-bold" onClick={toExplore}>View All →</button>
         </div>
         {topRatedUsers.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -395,7 +395,7 @@ function Home() {
                     {booking.completionNotes && <p className="truncate"><strong>Notes:</strong> {booking.completionNotes}</p>}
                   </div>
                 )}
-                <div className="flex justify-end mt-3">
+                <div className="flex justify-end mt-auto items-end">
                   <button className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded-md" onClick={viewBookingDetails}>
                     View Details
                   </button>
