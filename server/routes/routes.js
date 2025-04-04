@@ -22,6 +22,7 @@ const {requestMediation, getMediationCases, getMediationCaseDetails, sendMediati
 const {getTransactions, getTransactionById, getTransactionStats} = require('../controllers/transactionController');
 const {getAllTransactions, getTransactionsById} = require('../controllers/AdminTransactions');
 const {createServiceRequest, getAllServiceRequests } = require('../controllers/ServiceRequest');
+const {getSettings, updateSettings} = require("../controllers/settingsController");
 const { 
   requestKhaltiCashout, 
   verifyKhaltiPayout, 
@@ -166,5 +167,8 @@ router.get('/adminTransactionsById',
 router.get('/monthly-trends', verifyToken, getMonthlyTrends);
 router.get('/service-categories', verifyToken, getServiceCategories);
 router.get('/recent-transactions', verifyToken, getRecentTransactions);
+
+router.get("/settings", verifyToken, getSettings);
+router.put("/admin/settings", [verifyToken, authorizeRoles("admin")], updateSettings);
 
 module.exports = router;

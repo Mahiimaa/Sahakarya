@@ -169,6 +169,16 @@ function ProviderDetails() {
     )
   }
 
+  const openGmailCompose = () => {
+    const email = provider.email;
+    const subject = encodeURIComponent("Service Inquiry from Sahakarya");
+    const body = encodeURIComponent(`Hi ${provider.username},\n\nI'm interested in your services listed on Sahakarya.\nPlease let me know your availability.`);
+  
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`;
+  
+    window.open(gmailUrl, "_blank");
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white font-poppins">
       <Navbar />
@@ -209,7 +219,8 @@ function ProviderDetails() {
               </div>
 
               <div className="mt-4 sm:mt-0 ">
-                <button className="bg-[#7B7FEF] hover:bg-[#6A6EE0] text-white font-medium px-4 py-2 rounded-md shadow-sm transition-colors flex items-center">
+                <button onClick={openGmailCompose}
+                className="bg-[#7B7FEF] hover:bg-[#6A6EE0] text-white font-medium px-4 py-2 rounded-md shadow-sm transition-colors flex items-center">
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Contact Provider
                 </button>
@@ -223,20 +234,20 @@ function ProviderDetails() {
           <div className="flex">
             {serviceId && (
               <button
-                className={`px-5 py-3 text-sm font-medium transition-colors ${activeTab === "details" ? "border-b-2 border-[#7B7FEF] text-[#7B7FEF]" : "text-gray-500 hover:text-gray-700"}`}
+                className={`px-5 py-3 text-sm font-medium transition-colors ${activeTab === "details" ? "border-b-2 border-[#7B7FEF] text-[#7B7FEF]" : "text-gray-900 hover:text-p"}`}
                 onClick={() => setActiveTab("details")}
               >
                 Service Details
               </button>
             )}
             <button
-              className={`px-5 py-3 text-sm font-medium transition-colors ${activeTab === "previous" ? "border-b-2 border-[#7B7FEF] text-[#7B7FEF]" : "text-gray-500 hover:text-gray-700"}`}
+              className={`px-5 py-3 text-sm font-medium transition-colors ${activeTab === "previous" ? "border-b-2 border-[#7B7FEF] text-[#7B7FEF]" : "text-gray-900 hover:text-p "}`}
               onClick={() => setActiveTab("previous")}
             >
               Previous Work
             </button>
             <button
-              className={`px-5 py-3 text-sm font-medium transition-colors ${activeTab === "reviews" ? "border-b-2 border-[#7B7FEF] text-[#7B7FEF]" : "text-gray-500 hover:text-gray-700"}`}
+              className={`px-5 py-3 text-sm font-medium transition-colors ${activeTab === "reviews" ? "border-b-2 border-[#7B7FEF] text-[#7B7FEF]" : "text-gray-900 hover:text-p"}`}
               onClick={() => setActiveTab("reviews")}
             >
               Reviews
@@ -251,7 +262,7 @@ function ProviderDetails() {
             <div className="w-full">
               <div className="flex items-center mb-6">
                 <Award className="mr-2 h-5 w-5 text-[#7B7FEF]" />
-                <h2 className="text-lg font-medium text-gray-800">Service Details</h2>
+                <h2 className="text-lg font-medium">Service Details</h2>
               </div>
 
               {provider.serviceDetails?.length > 0 ? (

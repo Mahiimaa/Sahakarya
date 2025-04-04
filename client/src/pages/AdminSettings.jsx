@@ -1,22 +1,78 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import Navbar from "../components/AdminNav";
 import Topbar from "../components/AdminTop";
+import axios from "axios"
+import {toast} from "react-toastify"
 import { Save, AlertCircle, Bell, Shield, Database, Users, Clock, Mail } from 'lucide-react';
 
 function AdminSettings() {
   const [activeTab, setActiveTab] = useState('general');
-  const [siteName, setSiteName] = useState('Time Banking Platform');
+  const [siteName, setSiteName] = useState('Time Banking Platform(Community based service exchange)');
   const [siteDescription, setSiteDescription] = useState('A platform for exchanging services using time credits');
-  const [adminEmail, setAdminEmail] = useState('admin@timebanking.com');
+  const [adminEmail, setAdminEmail] = useState('Sahakarya@gmail.com');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [systemNotifications, setSystemNotifications] = useState(true);
   const [defaultTimeCredits, setDefaultTimeCredits] = useState(5);
   const [requireEmailVerification, setRequireEmailVerification] = useState(true);
   const [sessionTimeout, setSessionTimeout] = useState(60);
+  const [pricePerCredit, setPricePerCredit] = useState("");
   const [maxLoginAttempts, setMaxLoginAttempts] = useState(5);
-  
-  const handleSaveSettings = () => {
-    alert('Settings saved successfully!');
+  const [isDirty, setIsDirty] = useState(false);
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data } = await axios.get(`${apiUrl}/api/settings`, {
+          headers: { Authorization: `Bearer ${token}` }, });
+        setSiteName(data.siteName);
+        setSiteDescription(data.siteDescription);
+        setAdminEmail(data.adminEmail);
+        setEmailNotifications(data.emailNotifications);
+        setSystemNotifications(data.systemNotifications);
+        setDefaultTimeCredits(data.defaultTimeCredits);
+        setRequireEmailVerification(data.requireEmailVerification);
+        setSessionTimeout(data.sessionTimeout);
+        setMaxLoginAttempts(data.maxLoginAttempts);
+        setPricePerCredit(data.pricePerCredit);
+      } catch (error) {
+        toast.error("Failed to load platform settings");
+        console.error("Settings fetch error:", error);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleSaveSettings = async(e) => {
+    e.preventDefault();
+    try {
+      await axios.put(
+        `${apiUrl}/api/admin/settings`,
+        {
+          siteName,
+          siteDescription,
+          adminEmail,
+          emailNotifications,
+          systemNotifications,
+          defaultTimeCredits,
+          requireEmailVerification,
+          sessionTimeout,
+          maxLoginAttempts,
+          pricePerCredit,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }, });
+      toast.success("Settings saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save settings.");
+      console.error(error);
+    }
+  };
+
+  const handleChange = (setter) => (e) => {
+    setter(e.target.value);
+    setIsDirty(true);
   };
 
   return (
@@ -68,7 +124,7 @@ function AdminSettings() {
                 <h2 className="text-h2 font-semibold mb-4 flex items-center">
                   <Database className="mr-2 h-5 w-5" /> General Platform Settings
                 </h2>
-                <p className="text-gray-500 mb-6">Configure the basic information for your time banking platform.</p>
+                <p className="text-gray-500 mb-6">Configure the basic information for your service exchange platform.</p>
                 
                 <div className="space-y-4">
                   <div>
@@ -331,13 +387,14 @@ function AdminSettings() {
           {/* System Settings */}
           {activeTab === 'system' && (
             <div className="space-y-6">
-              <div className="max-w-2xl">
+              <div className="max-w-3xl">
                 <h2 className="text-h2 font-semibold mb-4 flex items-center">
                   <Clock className="mr-2 h-5 w-5" /> System Settings
                 </h2>
                 <p className="text-gray-500 mb-6">Configure system-level settings for your platform.</p>
                 
                 <div className="space-y-2">
+                  <div className="flex justify-between w-full">
                   <div>
                     <h3 className="font-medium mb-2">Maintenance Mode</h3>
                     <div className="flex items-center justify-between p-3 border rounded-md">
@@ -356,7 +413,20 @@ function AdminSettings() {
                       placeholder="Maintenance message to display to users"
                     ></textarea>
                   </div>
-                  
+                  <div>
+                    <label className="block font-medium mb-2">Price per Time Credit (in NPR)</label>
+                    <input 
+                      type="number" 
+                      className="w-full p-2 py-4 border rounded-md" 
+                      value={pricePerCredit}
+                      onChange={(e) => setPricePerCredit(e.target.value)}
+                      min="1"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Users will be charged this amount per time credit during payment
+                    </p>
+                  </div>
+                  </div>                 
                   <div>
                     <h3 className="font-medium mb-2">System Logs</h3>
                     <div className="flex items-center gap-2">

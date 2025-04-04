@@ -4,9 +4,21 @@ import {toast} from "react-toastify";
 
 const Khalti = ({ creditAmount, onSuccess, onError }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [pricePerCredit, setPricePerCredit] = useState(1);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const token = localStorage.getItem('token');
-  const pricePerCredit = 1; 
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        const { data } = await axios.get(`${apiUrl}/api/settings`);
+        setPricePerCredit(data.pricePerCredit);
+      } catch (error) {
+        console.error("Failed to fetch credit price");
+      }
+    };
+    fetchPrice();
+  }, [])
 
   const initiatePayment = async () => {
     if (creditAmount <= 0) {

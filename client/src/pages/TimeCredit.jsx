@@ -15,9 +15,9 @@ function TimeCredit() {
     const [recentTransaction, setRecentTransaction] = useState(null);
     const [cashoutOpen, setCashoutOpen] = useState(false);
     const [recentCashout, setRecentCashout] = useState(null);
+    const [pricePerCredit, setPricePerCredit] = useState(1); 
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const token = localStorage.getItem('token');
-    const pricePerCredit = 1;
 
     useEffect(() => {
     const fetchUserData = async () => {
@@ -36,6 +36,19 @@ function TimeCredit() {
     };
 
     fetchUserData();
+
+    const fetchPricePerCredit = async () => {
+      try {
+        const { data } = await axios.get(`${apiUrl}/api/settings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPricePerCredit(data.pricePerCredit || 1);
+      } catch (err) {
+        console.error("Failed to fetch price per credit");
+      }
+    };
+  
+    fetchPricePerCredit();
 
     const pendingTransaction = localStorage.getItem('pendingTransaction');
     if (pendingTransaction) {
