@@ -29,6 +29,7 @@ const {
   handleKhaltiPayoutWebhook 
 } = require('../controllers/cashout');
 const {getMonthlyTrends, getServiceCategories, getRecentTransactions} = require("../controllers/adminDashboard")
+const {getSuggestions} = require("./address");
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -171,5 +172,7 @@ router.get('/recent-transactions', verifyToken, getRecentTransactions);
 
 router.get("/settings", verifyToken, getSettings);
 router.put("/admin/settings", [verifyToken, authorizeRoles("admin")], updateSettings);
+
+router.get('/address/suggestions', getSuggestions);
 
 module.exports = router;

@@ -105,5 +105,20 @@ const getUserById = async (req, res) => {
   }
 };
 
+const fetchNearbyProviders = async () => {
+  if (!currentUserLocation) return;
 
-module.exports = { getAllUsers, deleteUser, assignRole, getUserDetails, getUserById};
+  try {
+    const { lat, lng } = currentUserLocation;
+    const { data } = await axios.get(`${apiUrl}/api/providers/nearby`, {
+      params: { lat, lng, radius: 10 },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log("Nearby Providers:", data.providers);
+  } catch (err) {
+    console.error("Failed to fetch nearby providers:", err);
+  }
+};
+
+module.exports = { getAllUsers, deleteUser, assignRole, getUserDetails, getUserById, fetchNearbyProviders};

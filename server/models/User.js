@@ -47,6 +47,18 @@ const UserSchema = new mongoose.Schema({
     default: "",
     trim: true
   },
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],
+      default: [0, 0]
+    }
+  },
+  
   profilePicture: { 
     type: String, default: "" 
   },
@@ -78,6 +90,7 @@ const UserSchema = new mongoose.Schema({
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+UserSchema.index({ location: '2dsphere' });
 
 
 module.exports = mongoose.model('User', UserSchema); 

@@ -16,25 +16,31 @@ const getServiceDetails = async (req, res) => {
     const providers = await User.find({
       servicesOffered: id,
       _id: { $ne: currentUserId } 
-    }).select("username email serviceDetails profilePicture");
+    }).select("username email serviceDetails profilePicture location address");
     
     const providersWithDetails = providers.map(user => {
-      const serviceDetail = user.serviceDetails.find(detail => detail.serviceId.toString() === id);
+      const serviceDetail = user.serviceDetails.find(d => d?.serviceId?.toString() === id);
+      if (!serviceDetail || !serviceDetail.title || !serviceDetail.description || !serviceDetail.duration || !serviceDetail.timeCredits) {
+        return null;
+      }
       return {
         _id: user._id,
         username: user.username,
         email: user.email,
         profilePicture: user.profilePicture,
-        serviceDetail: serviceDetail  ? {
+        location: user.location,
+        address: user.address,
+        serviceDetail: {
           title: serviceDetail.title || "N/A",
           description: serviceDetail.description || "N/A",
           image: serviceDetail.image || null,
           duration: serviceDetail.duration || "N/A",
-          timeCredits: serviceDetail.timeCredits || "N/A",
-        } : null,
+          timeCredits: serviceDetail.timeCredits,
+        }
       };
-    });
-    
+    })
+    .filter(Boolean);
+
     res.status(200).json({
       service,
       providers: providersWithDetails,

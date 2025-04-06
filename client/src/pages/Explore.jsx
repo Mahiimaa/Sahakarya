@@ -44,6 +44,7 @@ function Explore() {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log("All services from backend:", data.services);
         setAllServiceDetails(data.services);
       } catch (error) {
         console.error("Error fetching all service details:", error);
@@ -63,6 +64,16 @@ function Explore() {
   const toggleFilters = () => {
     setShowFilters(!showFilters)
   }
+
+  const validServices = allServiceDetails.filter(service =>
+    service.serviceName &&
+    service.description &&
+    service.duration &&
+    service.timeCredits &&
+    Array.isArray(service.providers) &&
+    service.providers.length > 0
+  );
+  
 
   return (
     <div className = "flex flex-col font-poppins">
@@ -131,8 +142,8 @@ function Explore() {
 
           <h2 className="text-h2 font-semi-bold mt-8 mb-2 font-poppins">All Services</h2>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {allServiceDetails.length > 0 ? (
-              allServiceDetails.map((service) => (
+            {validServices.length > 0 ? (
+              validServices.map((service) => (
                 <div
                   key={service.serviceId || service._id}
                   className="p-4 border border-dark-grey rounded-lg shadow-lg bg-white hover:-translate-y-1.5 transition-transform flex flex-col h-full cursor-pointer"

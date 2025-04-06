@@ -22,6 +22,67 @@ function ServiceDetails() {
   const [sortBy, setSortBy] = useState("default")
   const location = useLocation();
   const query = new URLSearchParams(location.search).get("search");
+  const [currentUserLocation, setCurrentUserLocation] = useState(null);
+  const [distanceRadius, setDistanceRadius] = useState(0);
+  const [onlyNearby, setOnlyNearby] = useState(false);
+  const [cityFilter, setCityFilter] = useState("");
+  const [cityOptions, setCityOptions] = useState([]);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (err) => {
+          console.error("Failed to get location:", err);
+          toast.error("Please enable location access.");
+        }
+      );
+    }
+  }, []);
+
+  function getDistanceInKm(lat1, lon1, lat2, lon2) {
+    const toRad = (val) => (val * Math.PI) / 180;
+    const R = 6371;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+  
+  useEffect(() => {
+    if (!onlyNearby || !currentUserLocation) return;
+
+    const fetchNearbyProviders = async () => {
+      try {
+        const { lat, lng } = currentUserLocation;
+        const { data } = await axios.get(`${apiUrl}/api/providers/nearby`, {
+          params: { lat, lng, radius: 10 },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const matched = data.providers.filter((prov) =>
+          prov.servicesOffered?.includes(_id)
+        );
+        setFilteredProviders(matched);
+        setSearchQuery("");
+        setDistanceRadius(0);
+        setSortBy("default");
+      } catch (err) {
+        console.error("Error fetching nearby providers:", err);
+      }
+    };
+
+    fetchNearbyProviders();
+  }, [onlyNearby, currentUserLocation]);
+
 
   useEffect(() => {
     if (query) {
@@ -65,9 +126,17 @@ function ServiceDetails() {
               Authorization: `Bearer ${token}`,
             },
           });
+          const validProviders = (data.providers || []).filter(
+            (prov) =>
+              prov.serviceDetail &&
+              prov.serviceDetail.title &&
+              prov.serviceDetail.description &&
+              prov.serviceDetail.duration &&
+              prov.serviceDetail.timeCredits
+          );          
         setService(data.service);
-        setProviders(data.providers);
-        setFilteredProviders(data.providers)
+        setProviders(validProviders);
+        setFilteredProviders(validProviders);
       } catch (error) {
         console.error("Error fetching service details:", error);
       }
@@ -77,17 +146,60 @@ function ServiceDetails() {
 
   useEffect(() => {
     if (!providers.length) return
-    let filtered = providers.filter(
-      (provider) =>
-        currentUser?._id !== provider._id &&
-        provider.serviceDetail &&
-        provider.serviceDetail.description &&
-        (provider.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (provider.serviceDetail.title &&
-            provider.serviceDetail.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (provider.serviceDetail.description &&
-            provider.serviceDetail.description.toLowerCase().includes(searchQuery.toLowerCase()))),
-    )
+    let filtered = providers
+      .map((provider) => {
+        if (
+          currentUserLocation &&
+          provider.location?.coordinates?.length === 2
+        ) {
+          const [providerLng, providerLat] = provider.location.coordinates;
+          const distance = getDistanceInKm(
+            currentUserLocation.lat,
+            currentUserLocation.lng,
+            providerLat,
+            providerLng
+          );
+          provider.distanceKm = distance;
+        }
+        return provider;
+      })
+      .filter((provider) => {
+        console.log("Provider Address:", provider.address);
+        if (
+          currentUser?._id === provider._id ||
+          !provider.serviceDetail ||
+          !provider.serviceDetail.title ||
+          !provider.serviceDetail.description ||
+          !provider.serviceDetail.duration ||
+          !provider.serviceDetail.timeCredits
+        ) {
+          return false;
+        }
+
+        const matchesSearch =
+          provider.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          provider.serviceDetail.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          provider.serviceDetail.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+          const normalize = (str) => str.toLowerCase().trim();
+          const matchesCity =
+          !cityFilter ||
+          (provider.address &&
+            normalize(provider.address).includes(normalize(cityFilter)));
+
+
+        if (
+          distanceRadius > 0 &&
+          provider.distanceKm !== undefined &&
+          provider.distanceKm > distanceRadius
+        ) {console.log(
+          `${provider.username} excluded: ${provider.distanceKm.toFixed(2)}km > ${distanceRadius}km`
+        );
+          return false;
+        }
+
+        return matchesSearch && matchesCity;
+      });
     if (sortBy === "creditsLow") {
       filtered = [...filtered].sort((a, b) => (a.serviceDetail?.timeCredits || 0) - (b.serviceDetail?.timeCredits || 0))
     } else if (sortBy === "creditsHigh") {
@@ -97,9 +209,13 @@ function ServiceDetails() {
     } else if (sortBy === "durationHigh") {
       filtered = [...filtered].sort((a, b) => (b.serviceDetail?.duration || 0) - (a.serviceDetail?.duration || 0))
     }
+    else if (sortBy === "distance") {
+      filtered = [...filtered].sort((a, b) => (a.distanceKm || Infinity) - (b.distanceKm || Infinity));
+    }
+    
 
     setFilteredProviders(filtered)
-  }, [providers, searchQuery, sortBy, currentUser])
+  }, [providers, searchQuery, sortBy, currentUser,  distanceRadius, currentUserLocation, cityFilter])
 
   const handleRequestService = async (provider) => {
     if (!currentUser) {
@@ -147,6 +263,21 @@ function ServiceDetails() {
     setShowFilters(!showFilters)
   }
 
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await fetch("/nepal-cities.json");
+        const data = await response.json();
+        setCityOptions(data.sort((a, b) => a.name.localeCompare(b.name)));
+      } catch (err) {
+        console.error("Failed to load cities:", err);
+      }
+    };
+  
+    fetchCities();
+  }, []);
+  
+
   return (
     <div className="flex flex-col min-h-screen bg-screen font-poppins">
       <Navbar />
@@ -165,8 +296,8 @@ function ServiceDetails() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <h2 className="text-h3 font-body">Available Providers</h2>
 
-            <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
-              <div className="relative flex-grow">
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+              <div className="relative flex-grow sm:flex-grow-0 sm:w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <input
                   type="text"
@@ -177,16 +308,49 @@ function ServiceDetails() {
                 />
               </div>
 
-              <button
-                className="flex items-center justify-center gap-2 p-2 border rounded-lg sm:ml-2 hover:bg-light-grey"
-                onClick={toggleFilters}
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                <span>Sort</span>
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className="flex items-center justify-center gap-2 p-2 border rounded-lg hover:bg-light-grey"
+                  onClick={toggleFilters}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  <span>Sort</span>
+                </button>
+
+                {currentUserLocation && (
+                  <div className="flex items-center gap-2">
+                    <select
+                      className="border rounded-lg p-2 text-sm"
+                      value={distanceRadius}
+                      onChange={(e) => setDistanceRadius(Number.parseFloat(e.target.value))}
+                      aria-label="Filter by distance"
+                    >
+                      <option value={0}>All distances</option>
+                      <option value={5}>Within 5km</option>
+                      <option value={10}>Within 10km</option>
+                      <option value={20}>Within 20km</option>
+                    </select>
+                  </div>
+                )}
+                  <div className="flex items-center gap-2">
+                  <select
+                    className="border rounded-lg p-2 text-sm max-h-60 overflow-y-auto"
+                    value={cityFilter}
+                    onChange={(e) => setCityFilter(e.target.value)}
+                    aria-label="Filter by city"
+                    style={{ maxHeight: "38px" }}
+                  >
+                    <option value="">All cities</option>
+                    {cityOptions.map((city, index) => (
+                      <option key={index} value={city.name}>
+                        {city.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
-
           {showFilters && (
             <div className="bg-white p-4 rounded-lg shadow-md mb-4 border border-dark-grey">
               <h3 className="font-semi-bold mb-2">Sort by:</h3>
@@ -221,10 +385,15 @@ function ServiceDetails() {
                 >
                   Duration: High to Low
                 </button>
+                <button
+                  className={`p-2 rounded-lg border ${sortBy === "distance" ? "bg-p text-white" : "bg-white"}`}
+                  onClick={() => setSortBy("distance")}
+                >
+                  Distance: Near to Far
+                </button>
               </div>
             </div>
           )}
-
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-4 mt-4">
             {filteredProviders.length > 0 ? (
               filteredProviders.map((provider) => (
@@ -258,6 +427,9 @@ function ServiceDetails() {
                           />
                         )}
                         <h3 className="font-bold text-sm sm:text-base">{provider.username}</h3>
+                        {provider.distanceKm !== undefined && (
+                          <p className="text-xs text-gray-500 mt-1">{provider.distanceKm.toFixed(1)} km away</p>
+                        )}
                       </div>
 
                       <h4 className="font-semi-bold text-h3">{provider.serviceDetail.title}</h4>

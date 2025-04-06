@@ -25,9 +25,15 @@ const editProfile = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    // Handle profile picture if provided
+    if (req.body.latitude && req.body.longitude) {
+      user.location = {
+        type: 'Point',
+        coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.latitude)]
+      };
+    }
+    console.log("Latitude:", req.body.latitude, "Longitude:", req.body.longitude);
+
     if (req.file) {
-      // Delete old picture if it exists
       if (user.profilePicture && user.profilePicture.startsWith('/uploads/')) {
         try {
           const oldFilePath = path.join(__dirname, '..', user.profilePicture);
@@ -36,11 +42,8 @@ const editProfile = async (req, res) => {
           console.log('Failed to delete old profile picture:', err);
         }
       }
-      // Set new profile picture
       user.profilePicture = `/uploads/${req.file.filename}`;
     }
-    
-    // Update user fields
     user.username = username || user.username;
     if (email && email !== user.email) user.email = email;
     if (phone) user.phone = phone;
@@ -65,12 +68,25 @@ const editProfile = async (req, res) => {
         console.log(`User added to selectedBy for service: ${service.serviceName}`);
       }
       validServices.push(serviceId);
+      const existingDetailIndex = user.serviceDetails.findIndex(detail =>
+        detail.serviceId?.toString() === serviceId.toString()
+      );
+    
+      if (existingDetailIndex === -1) {
+        user.serviceDetails.push({
+          serviceId: serviceId,
+          title: service.serviceName,
+          description: "",
+          image: "",
+          duration: 1,
+          timeCredits: 1,
+        });
+      }
     }
     user.servicesOffered = validServices;
 
     await user.save();
     console.log('User saved successfully!');
-    // Return updated user data
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully!',

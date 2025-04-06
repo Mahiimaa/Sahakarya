@@ -1,0 +1,102 @@
+[
+    {
+      "name": "Kathmandu",
+      "lat": 27.7172,
+      "lng": 85.324
+    },
+    {
+      "name": "Pokhara",
+      "lat": 28.2096,
+      "lng": 83.9856
+    },
+    {
+      "name": "Lalitpur",
+      "lat": 27.6644,
+      "lng": 85.3188
+    },
+    {
+      "name": "Biratnagar",
+      "lat": 26.4525,
+      "lng": 87.2718
+    },
+    {
+      "name": "Birgunj",
+      "lat": 27.0,
+      "lng": 84.8667
+    },
+    {
+      "name": "Dharan",
+      "lat": 26.8126,
+      "lng": 87.2833
+    },
+    {
+      "name": "Bharatpur",
+      "lat": 27.6761,
+      "lng": 84.4356
+    },
+    {
+      "name": "Butwal",
+      "lat": 27.7,
+      "lng": 83.45
+    },
+    {
+      "name": "Hetauda",
+      "lat": 27.426,
+      "lng": 85.0322
+    },
+    {
+      "name": "Janakpur",
+      "lat": 26.728,
+      "lng": 85.9361
+    },
+    {
+      "name": "Itahari",
+      "lat": 26.6667,
+      "lng": 87.2833
+    },
+    {
+      "name": "Nepalgunj",
+      "lat": 28.05,
+      "lng": 81.6167
+    },
+    {
+      "name": "Dhangadhi",
+      "lat": 28.7,
+      "lng": 80.6
+    },
+    {
+      "name": "Tulsipur",
+      "lat": 28.1308,
+      "lng": 82.2973
+    },
+    {
+      "name": "Inaruwa",
+      "lat": 26.6167,
+      "lng": 87.15
+    },
+    {
+      "name": "Urlabari",
+      "lat": 26.6609,
+      "lng": 87.6286
+    },
+    {
+      "name": "Gaur",
+      "lat": 26.7667,
+      "lng": 85.2833
+    },
+    {
+      "name": "Tikapur",
+      "lat": 28.5,
+      "lng": 81.1333
+    },
+    {
+      "name": "Rajbiraj",
+      "lat": 26.5333,
+      "lng": 86.75
+    },
+    {
+      "name": "Bhadrapur",
+      "lat": 26.545,
+      "lng": 88.0831
+    }
+  ]

@@ -16,6 +16,8 @@ const EditProfile = () => {
     profilePicture: null,
     selectedServices: [],
     bio: "",
+    latitude: null,
+    longitude: null,
   });
   const navigate = useNavigate();
   const [previewImage, setPreviewImage] = useState(null);
@@ -29,6 +31,9 @@ const EditProfile = () => {
   });
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [bioModalOpen, setBioModalOpen] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [typingTimeout, setTypingTimeout] = useState(null);
+  const [cityOptions, setCityOptions] = useState([]);
 
   const fetchUserProfile = async () => {
     try {
@@ -125,6 +130,18 @@ const EditProfile = () => {
       [name]: value,
     }));
     setError("");
+
+    if (name === "address") {
+      if (typingTimeout) clearTimeout(typingTimeout);
+      setTypingTimeout(
+        setTimeout(() => {
+          const matches = cityOptions.filter((city) =>
+            city.name.toLowerCase().includes(value.toLowerCase())
+          );
+          setAddressSuggestions(matches);
+        }, 200)
+      );
+    }
   };
 
   const handleFileChange = (e) => {
@@ -223,25 +240,45 @@ const EditProfile = () => {
     setError("");
     setLoading(true);
 
+    const trimmedAddress = profileData.address.trim();
+    const matchedCity = cityOptions.find(
+      (city) => city.name.toLowerCase() === trimmedAddress.toLowerCase()
+    );
+
+    if (!matchedCity) {
+      toast.error("Please select a valid city from suggestions.");
+      setLoading(false);
+      return;
+    }
+    profileData.latitude = matchedCity.lat;
+    profileData.longitude = matchedCity.lng;
+
+  if (matchedCity) {
+    profileData.latitude = matchedCity.lat;
+    profileData.longitude = matchedCity.lng;
+  } else {
+    const coordinates = await getCoordinatesFromAddress(trimmedAddress);
+    if (coordinates) {
+      profileData.latitude = coordinates.latitude;
+      profileData.longitude = coordinates.longitude;
+    }
+  }
     const formData = new FormData();
     formData.append("username", profileData.username.trim());
     formData.append("email", profileData.email);
     formData.append("phone", profileData.phone.trim());
     formData.append("address", profileData.address.trim());
-    formData.append("bio", profileData.bio?.trim() || "");
+    formData.append("bio", String(profileData.bio || "").trim());
+    formData.append("latitude", profileData.latitude);
+    formData.append("longitude", profileData.longitude);
 
     if (profileData.profilePicture instanceof File) {
       formData.append("profilePicture", profileData.profilePicture);
     }
-    formData.delete("services");
     profileData.selectedServices.forEach((serviceId) => {
       formData.append("services[]", serviceId);
     });
-    
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-
+  
     try {
       const updateResponse = await axios.put(`${apiUrl}/api/editProfile`, formData, {
         headers: {
@@ -263,6 +300,9 @@ const EditProfile = () => {
           profilePicture: updatedUser.profilePicture || null,
           selectedServices: updatedServices,
           bio: updatedUser.bio || "",
+          address: updatedUser.name || "",
+          latitude: updatedUser.lat || "",
+          longitude: updatedUser.lng || "",
         });
         
         if (updatedUser.profilePicture && updatedUser.profilePicture !== '') {
@@ -298,6 +338,46 @@ const EditProfile = () => {
     };
   }, [ServiceRequestForm]);
 
+  const getCoordinatesFromAddress = async (address) => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/address/suggestions`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          q: address,
+        },
+      });
+      
+      if (!response.data || response.data.length === 0) return null;
+
+      const { lat, lon } = response.data[0];
+      return {
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lon),
+      };
+
+    } catch (error) {
+      console.error("Error getting coordinates:", error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await fetch("/nepal-cities.json");
+        const data = await response.json();
+        setCityOptions(data);
+      } catch (err) {
+        console.error("Failed to load cities:", err);
+      }
+    };
+  
+    fetchCities();
+  }, []);
+  
+  
 
   return (
     <div className="min-h-screen md:bg-neutral-100  flex flex-col font-poppins">
@@ -419,19 +499,52 @@ const EditProfile = () => {
                 required
               />
             </div>
-            <div>
+            <div className="relative">
             <label htmlFor="address" className="text-body font-regular mb-2">
               Address
             </label>
             <input
-              type="text"
-              id="address"
-              name="address"
-              value={profileData.address || ""}
-              onChange={handleChange}
-              placeholder="Enter your address"
-              className="w-full border rounded border-grey p-3"
-            />
+            type="text"
+            id="address"
+            name="address"
+            value={profileData.address || ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              setProfileData((prev) => ({ ...prev, address: value }));
+              if (typingTimeout) clearTimeout(typingTimeout);
+              setTypingTimeout(
+                setTimeout(() => {
+                  const matches = cityOptions.filter((city) =>
+                    city.name.toLowerCase().includes(value.toLowerCase())
+                  );
+                  setAddressSuggestions(matches);
+                }, 200)
+              );
+            }}
+            placeholder="Type city name (e.g. Kathmandu)"
+            className="w-full border rounded border-grey p-3"
+          />
+          {addressSuggestions.length > 0 && (
+            <ul className="border border-gray-300 rounded-md mt-1 bg-white shadow-md absolute z-10 max-h-48 overflow-auto w-full">
+              {addressSuggestions.map((suggestion, index) => (
+                <li
+                  key={index}
+                  className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                  onClick={() => {
+                    setProfileData((prev) => ({
+                      ...prev,
+                      address: suggestion.name,
+                      latitude: suggestion.lat,
+                      longitude: suggestion.lng,
+                    }));
+                    setAddressSuggestions([]);
+                  }}
+                >
+                  {suggestion.name}
+                </li>
+              ))}
+            </ul>
+          )}
           </div>
             <div>
               <label
@@ -574,7 +687,10 @@ const EditProfile = () => {
             className="w-full border border-gray-300 rounded-md p-3 mb-4" 
             rows="4"
             value={profileData.bio}
-            onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+            onChange={(e) => setProfileData((prev) => ({
+              ...prev,
+              bio: String(e.target.value)
+            }))}
           />
           <p className="text-right text-xs text-gray-500 mb-4">
             {profileData.bio.length}/300 characters
