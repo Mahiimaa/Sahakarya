@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react'
 import Navbar from "../components/Navbar";
 import axios from "axios";
 import { FiDownload, FiFilter, FiRefreshCw } from 'react-icons/fi';
+import SpecificTransaction from "../components/SpecificTransaction";
 
 function Transactions() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -13,7 +14,33 @@ function Transactions() {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
-  const userId = localStorage.getItem("userId");
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const handleTransactionClick = (transaction) => {
+    const outgoing = determineIsOutgoing(transaction);
+    const counterparty = determineCounterparty(transaction);
+    setSelectedTransaction({
+      ...transaction,
+      _isOutgoing: outgoing,
+      _counterparty: counterparty,
+    });
+  };
+
+    useEffect(() => {
+      const getCurrentUser = async () => {
+        try {
+          const { data } = await axios.get(`${apiUrl}/api/user/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setCurrentUser(data);
+        } catch (err) {
+          console.error("Error fetching current user:", err);
+        }
+      };
+  
+      getCurrentUser();
+    }, [apiUrl, token]);
 
   useEffect(() => {
     fetchTransactions();
@@ -24,11 +51,11 @@ function Transactions() {
     
     if (filter === "incoming") {
       result = result.filter(t => 
-        (t.recipient?._id && t.recipient._id === localStorage.getItem("userId"))
+        (t.recipient?._id && t.recipient._id === currentUser?._id)
       );
     } else if (filter === "outgoing") {
       result = result.filter(t => 
-        (t.sender?._id && t.sender._id === localStorage.getItem("userId")) || 
+        (t.sender?._id && t.sender._id === currentUser?._id) || 
         t.type === "service_payment"
       );
     } else if (filter === "purchase") {
@@ -72,7 +99,7 @@ function Transactions() {
     }
 
     setFilteredTransactions(result);
-  }, [transactions, filter, searchTerm, sortConfig]);
+  }, [transactions, filter, searchTerm, sortConfig,  currentUser]);
 
     const fetchTransactions = async () => {
       setIsLoading(true);
@@ -134,6 +161,63 @@ function Transactions() {
       link.click();
       document.body.removeChild(link);
     };
+
+    // Determine if transaction is outgoing
+const determineIsOutgoing = (transaction) => {
+  if (!currentUser) return false;
+  
+  // For purchases
+  if (transaction.type === "purchase") {
+    return false;
+  }
+  if (transaction.type === "service_payment" && 
+    transaction.details?.includes("Mediation resolved")) {
+  
+  const detailsText = transaction.details || "";
+  if (detailsText.includes("from") && detailsText.includes("to")) {
+    const fromUser = detailsText.split("from ")[1]?.split(" to ")[0]?.trim();
+    
+    if (fromUser === "user" && 
+        transaction.sender?._id?.toString() === currentUser._id?.toString()) {
+      return true;
+    }
+    if (fromUser === currentUser.username) {
+      return true;
+    }
+  }
+  return transaction.sender?._id?.toString() === currentUser._id?.toString();
+}
+  return transaction.sender?._id?.toString() === currentUser._id?.toString();
+};
+
+const determineCounterparty = (transaction) => {
+  if (!currentUser) return "N/A";
+  
+  if (transaction.type === "purchase") {
+    return "Khalti";
+  }
+
+  if (transaction.type === "service_payment" && transaction.details?.includes("Mediation resolved")) {
+    const detailsText = transaction.details || "";
+    if (detailsText.includes("from") && detailsText.includes("to")) {
+      const fromUser = detailsText.split("from ")[1]?.split(" to ")[0]?.trim();
+      const toUser = detailsText.split(" to ")[1]?.trim();
+      if (fromUser === currentUser.username || 
+          transaction.sender?._id?.toString() === currentUser._id?.toString()) {
+        return toUser;
+      }
+      if (toUser === currentUser.username || 
+          transaction.recipient?._id?.toString() === currentUser._id?.toString()) {
+        return fromUser;
+      }
+    }
+  }
+  if (transaction.sender?._id?.toString() === currentUser._id?.toString()) {
+    return transaction.recipient?.username || "N/A";
+  } else {
+    return transaction.sender?.username || "N/A";
+  }
+};
 
   return (
     <div className ="flex flex-col min-h-screen font-poppins">
@@ -251,40 +335,34 @@ function Transactions() {
                 </thead>
                 <tbody>
                   {filteredTransactions.map((transaction) => {
-                   const isOutgoing =
-                   transaction.sender?._id?.toString() === userId && transaction.type !== "purchase";
+                   const isOutgoing = determineIsOutgoing(transaction);
                     const amountPrefix = isOutgoing ? "-" : "+";
                     const amountClass = isOutgoing ? "text-error" : "text-p";
-                    let counterparty;
-                    let transferredLabel = "N/A";
-                    if (transaction.type === "purchase") {
-                      transferredLabel = "Khalti";
-                    } else {
-                      const senderId = transaction.sender?._id;
-                      const recipientId = transaction.recipient?._id;
-                    
-                      if (userId === senderId?.toString() && userId !== recipientId?.toString()) {
-                        transferredLabel = transaction.recipient?.username || "N/A";
-                      } else if (userId === recipientId?.toString() && userId !== senderId?.toString()) {
-                        transferredLabel = transaction.sender?.username || "N/A";
-                      } else if (userId === senderId?.toString() && userId === recipientId?.toString()) {
-                        transferredLabel = "You";
-                      } else {
-                        transferredLabel = transaction.recipient?.username || transaction.sender?.username || "N/A";
-                      }
-                    }
+                    const transferredLabel = determineCounterparty(transaction);
                     let serviceName = "Direct Transfer";
                     if (transaction.type === "purchase") {
                       serviceName = "Credit Purchase";
-                    } else if (transaction.type === "mediation_transfer") {
+                    } else if (transaction.type === "mediation_transfer"|| 
+                      (transaction.type === "service_payment" && transaction.details?.includes("Mediation resolved"))) { 
                       serviceName = "Mediation Resolution";
                     } else if (transaction.bookingId?.service) {
                       serviceName = transaction.bookingId.service;
                     }
+                    console.log({
+                      transactionId: transaction._id,
+                      transactionType: transaction.type,
+                      details: transaction.details,
+                      senderId: transaction.sender?._id,
+                      userId: currentUser?._id,
+                      isSender: transaction.sender?._id?.toString() === currentUser?._id?.toString(),
+                      hasFromUser: transaction.details?.includes("from user"),
+                      isOutgoing: isOutgoing
+                    });
                     return (
                     <tr 
                       key={transaction._id} 
                       className="border-t border-dark-grey hover:bg-light-grey"
+                      onClick={() => handleTransactionClick(transaction)}
                     >
                       <td className="p-4 text-small ">
                         <div>{new Date(transaction.createdAt).toLocaleDateString()}</div>
@@ -313,29 +391,13 @@ function Transactions() {
               </table>
               <div className="md:hidden space-y-4 mt-4">
               {filteredTransactions.map((transaction) => {
-              const isOutgoing =
-              transaction.sender?._id?.toString() === userId && transaction.type !== "purchase";
+              const isOutgoing = determineIsOutgoing(transaction);
               const amountPrefix = isOutgoing ? "-" : "+";
               const amountClass = isOutgoing ? "text-error" : "text-p";
-              let transferredLabel = "N/A";
-              if (transaction.type === "purchase") {
-                transferredLabel = "Khalti";
-              } else {
-                const senderId = transaction.sender?._id;
-                const recipientId = transaction.recipient?._id;
-              
-                if (userId === senderId?.toString() && userId !== recipientId?.toString()) {
-                  transferredLabel = transaction.recipient?.username || "N/A";
-                } else if (userId === recipientId?.toString() && userId !== senderId?.toString()) {
-                  transferredLabel = transaction.sender?.username || "N/A";
-                } else if (userId === senderId?.toString() && userId === recipientId?.toString()) {
-                  transferredLabel = "You";
-                } else {
-                  transferredLabel = transaction.recipient?.username || transaction.sender?.username || "N/A";
-                }
-              }
+              const transferredLabel = determineCounterparty(transaction);
               return(
-                <div key={transaction._id} className="bg-white shadow-sm p-4 rounded-md border border-dark-grey">
+                <div key={transaction._id} className="bg-white shadow-sm p-4 rounded-md border border-dark-grey"
+                onClick={() => handleTransactionClick(transaction)}>
                   <div className="flex justify-between items-center text-small font-medium">
                     <span>{new Date(transaction.createdAt).toLocaleDateString()}</span>
                     <span className={`${amountClass}`}>
@@ -346,7 +408,12 @@ function Transactions() {
               {new Date(transaction.createdAt).toLocaleTimeString()}
             </div>
             <div className="mt-2">
-              <p className="font-bold">{transaction.bookingId?.service || "Credit Purchase"}</p>
+              <p className="font-bold">{transaction.type === "purchase" 
+              ? "Credit Purchase" 
+              : transaction.type === "mediation_transfer" || 
+                (transaction.type === "service_payment" && transaction.details?.includes("Mediation resolved"))
+                ? "Mediation Resolution"
+                : transaction.bookingId?.service || "Direct Transfer"}</p>
               <p className="text-sm">
               {isOutgoing ? "To" : "From"}: {transferredLabel}
               </p>
@@ -356,6 +423,7 @@ function Transactions() {
               );
               })}
             </div>
+            
           </>
             ) : (
               <div className="text-center p-8">
@@ -409,6 +477,14 @@ function Transactions() {
               </div>
             </div>
           )}
+          {selectedTransaction && (
+          <SpecificTransaction
+            transaction={selectedTransaction}
+            isOutgoing={selectedTransaction._isOutgoing}
+            counterparty={selectedTransaction._counterparty}
+            onClose={() => setSelectedTransaction(null)}
+          />
+        )}
         </div>
       </div>
        </div>
