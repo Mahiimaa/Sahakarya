@@ -12,7 +12,7 @@ const transactionSchema = new mongoose.Schema({
   type: { type: String, enum: ["service_payment", "purchase", "khalti-cashout",  "mediation_resolution"], required: true },
   status: {
     type: String,
-    enum: ['pending', 'completed', 'failed', 'cancelled'],
+    enum: ['pending', 'completed', 'failed', 'cancelled', 'rejected'],
     default: 'pending'
   },
   details: {

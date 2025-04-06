@@ -1,5 +1,52 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 const SpecificTransaction = ({ transaction, onClose, isOutgoing, counterparty }) => {
-    if (!transaction) return null;
+    const [status, setStatus] = useState(transaction.status);
+    const [checking, setChecking] = useState(false);
+    const token = localStorage.getItem('token');
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
+    const isCashoutPending = transaction.type === 'cashout' && transaction.status === 'pending';
+
+    useEffect(() => {
+        const checkCashoutStatus = async () => {
+        if (!isCashoutPending) return;
+
+        setChecking(true);
+        try {
+            const { data } = await axios.get(`${apiUrl}/api/status/${transaction._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (data.status && data.status !== status) {
+            setStatus(data.status);
+            toast.info(`Cashout updated: ${data.status}`);
+            }
+        } catch (err) {
+            console.error("Failed to update cashout status", err);
+            toast.error("Failed to check cashout status.");
+        } finally {
+            setChecking(false);
+        }
+        };
+
+        checkCashoutStatus();
+    }, [transaction, apiUrl, token, isCashoutPending, status]);
+
+    const getStatusBadge = (status) => {
+        const base = "capitalize font-medium text-sm rounded-full px-3 py-1";
+        if (checking) return `${base} bg-yellow-100 text-yellow-800 animate-pulse`;
+
+        switch (status) {
+        case 'pending': return `${base} bg-yellow-100 text-yellow-800`;
+        case 'processing': return `${base} bg-blue-100 text-blue-800`;
+        case 'completed': return `${base} bg-green-100 text-green-800`;
+        case 'failed': return `${base} bg-red-100 text-red-800`;
+        case 'rejected': return `${base}'bg-error/10 text-error'`;
+        default: return `${base} bg-gray-100 text-gray-800`;
+        }
+    };
     
     const amountPrefix = isOutgoing ? "-" : "+";
     const amountClass = isOutgoing ? "text-error" : "text-p";

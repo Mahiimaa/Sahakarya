@@ -40,7 +40,7 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
 
     try {
       const response = await axios.post(
-        `${apiUrl}/api/cashout/khalti`,
+        `${apiUrl}/api/cashout/request`,
         {
           creditAmount,
           phoneNumber,
@@ -53,8 +53,6 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
           }
         }
       );
-
-      toast.success("Cashout request submitted successfully!");
       
       if (onSuccess) {
         onSuccess(response.data);
@@ -146,7 +144,7 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
             <span className="text-p">Rs. {creditAmount * cashValuePerCredit}</span>
           </div>
           <div className="mt-2 text-xs text-grey">
-            Note: The amount will be instantly transferred to your Khalti wallet.
+          The request will be reviewed by an admin, and the amount will be transferred to your Khalti wallet.
           </div>
         </div>
 
@@ -167,7 +165,7 @@ function CashoutForm({ currentCredits, onSuccess, onClose }) {
                 alt="Khalti Logo" 
                 className="h-5 w-5 mr-2" 
               /> */}
-              Cashout to Khalti
+              Submit Cashout Request
             </>
           )}
         </button>

@@ -11,7 +11,12 @@ const Khalti = ({ creditAmount, onSuccess, onError }) => {
   useEffect(() => {
     const fetchPrice = async () => {
       try {
-        const { data } = await axios.get(`${apiUrl}/api/settings`);
+        const { data } = await axios.get(`${apiUrl}/api/settings`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }}
+        );
         setPricePerCredit(data.pricePerCredit);
       } catch (error) {
         console.error("Failed to fetch credit price");

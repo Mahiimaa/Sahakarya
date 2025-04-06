@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { ArrowLeft } from 'lucide-react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function TimeCredit() {
     const navigate = useNavigate();
@@ -129,52 +131,23 @@ function TimeCredit() {
   const handleCashoutSuccess = (data) => {
     setCurrentCredits(data.remainingCredits);
     setCashoutOpen(false);
-    if (data.transaction.status !== 'completed') {
     const cashoutInfo = {
       id: data.transaction.id,
       amount: data.transaction.amount,
       credits: data.transaction.credits,
+      khaltiToken: data.transaction.khaltiToken || '',
+      status: data.transaction.status || 'pending',
       timestamp: Date.now()
     };
-    
-    localStorage.setItem('pendingCashout', JSON.stringify(cashoutInfo));
-    setRecentCashout(cashoutInfo);
-  }
-  if (data.transaction.status === 'completed') {
-    toast.success("Credits transferred to your Khalti wallet successfully!");
-  } else {
-    toast.success("Cashout request submitted successfully!");
-  }
-  };
-
-  const handleCheckCashoutStatus = async () => {
-    if (!recentCashout || !recentCashout.khaltiToken) return;
-    
-    try {
-      setIsLoading(true);
-      const { data } = await axios.post(`${apiUrl}/api/cashout/verify-payout`,
-        { token: recentCashout.khaltiToken }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const statusMessages = {
-        'pending': 'Your cashout is pending processing',
-        'processing': 'Your cashout is being processed',
-        'completed': 'Your cashout has been completed! Check your Khalti wallet',
-        'failed': 'Your cashout failed. Your credits have been refunded'
-      };
-      
-      toast.info(statusMessages[data.status] || `Cashout status: ${data.status}`);
-      
-      if (data.status === 'completed' || data.status === 'rejected') {
-        localStorage.removeItem('pendingCashout');
-        setRecentCashout(null);
-      }
-    } catch (error) {
-      console.error("Error checking cashout status:", error);
-      toast.error("Failed to check cashout status");
-    } finally {
-      setIsLoading(false);
+  
+    if (data.transaction.status === 'completed') {
+      toast.success("Credits transferred to your Khalti wallet successfully!");
+    } else if (data.transaction.status === 'pending') {
+      toast.success("Cashout request submitted successfully!");
+      localStorage.setItem('pendingCashout', JSON.stringify(cashoutInfo));
+      setRecentCashout(cashoutInfo);
+    } else {
+      toast.warn(`Cashout status: ${data.transaction.status}`);
     }
   };
 
@@ -251,31 +224,6 @@ function TimeCredit() {
             </div>
           </div>
         )}
-
-        {recentCashout && (
-          <div className="mb-6 p-4 bg-emerald-50 rounded-lg border border-p shadow-sm">
-            <div className="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-p mt-0.5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-              <div>
-                <p className="font-semi-bold text-p text-sm">
-                  Pending Cashout
-                </p>
-                <p className="text-p text-body my-1">
-                  {recentCashout.credits} credits for Rs. {recentCashout.amount}
-                </p>
-                <button 
-                  onClick={handleCheckCashoutStatus}
-                  className="mt-2 text-body bg-p hover:bg-p/90 text-white py-1.5 px-3 rounded-md transition duration-200"
-                >
-                  Check Status
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="grid grid-cols-2 gap-4 mb-6">
           <button 
             className="w-full flex items-center justify-center bg-p hover:bg-p/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 shadow-md"
@@ -376,6 +324,7 @@ function TimeCredit() {
           </div>
         </div>
       )}
+      <ToastContainer position="top-right" autoClose={3000} />
       </div>
   );
 }

@@ -23,11 +23,7 @@ const {getTransactions, getTransactionById, getTransactionStats} = require('../c
 const {getAllTransactions, getTransactionsById} = require('../controllers/AdminTransactions');
 const {createServiceRequest, getAllServiceRequests } = require('../controllers/ServiceRequest');
 const {getSettings, updateSettings} = require("../controllers/settingsController");
-const { 
-  requestKhaltiCashout, 
-  verifyKhaltiPayout, 
-  handleKhaltiPayoutWebhook 
-} = require('../controllers/cashout');
+const { requestCashout, updateTransactionStatus, getCashoutStatus} = require('../controllers/cashout');
 const {getMonthlyTrends, getServiceCategories, getRecentTransactions} = require("../controllers/adminDashboard")
 const {getSuggestions} = require("./address");
 const multer = require('multer');
@@ -155,13 +151,10 @@ router.get('/mediation/resolved-cases', verifyToken, getResolvedMediationCases);
 router.post('/service-requests', verifyToken, createServiceRequest);
 router.get('/admin/service-requests', verifyToken, getAllServiceRequests);
 
-router.post('/cashout/khalti', verifyToken, requestKhaltiCashout);
-router.post('/verify-payout', verifyToken, verifyKhaltiPayout);
-
-router.post('/webhook', handleKhaltiPayoutWebhook);
-// router.post('/update-status', [verifyToken, authorizeRoles], updateCashoutStatus);
-
+router.post('/cashout/request', verifyToken, requestCashout);
 router.get('/admin/Transactions',  verifyToken, getAllTransactions);
+router.patch('/transactions/:id/status', verifyToken, updateTransactionStatus);
+router.get('/status/:id', verifyToken, getCashoutStatus);
 
 router.get('/adminTransactionsById', 
   verifyToken, getTransactionById);

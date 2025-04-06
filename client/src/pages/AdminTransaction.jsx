@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import Navbar from "../components/AdminNav";
 import Topbar from "../components/AdminTop";
 import axios from 'axios';
+import { toast } from "react-toastify";
 import {ArrowUpDown, Search, CreditCard, Clock} from 'lucide-react';
 
 function AdminTransaction() {
@@ -19,7 +20,7 @@ function AdminTransaction() {
 
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const token = localStorage.getItem('token');
-
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
   const fetchTransactions = async () => {
     setIsLoading(true);
     try {
@@ -59,7 +60,8 @@ function AdminTransaction() {
     const statusStyles = {
       'completed': 'bg-p/10 text-p',
       'pending': 'bg-s/10 text-s',
-      'failed': 'bg-error/10 text-error'
+      'failed': 'bg-error/10 text-error',
+      'rejected': 'bg-error/10 text-error'
     };
     const lowercaseStatus = status.toLowerCase();
     return (
@@ -76,6 +78,25 @@ function AdminTransaction() {
     }));
   };
 
+  const handleUpdateStatus = async (id, status) => {
+    try {
+      const res = await axios.patch(`${apiUrl}/api/transactions/${id}/status`, {
+        status
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+  
+      toast.success(`Transaction marked as ${status}`);
+      fetchTransactions();
+      setSelectedTransaction(null);
+    } catch (err) {
+      console.error('Error updating status:', err);
+      toast.error('Failed to update status');
+    }
+  };
+  
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-screen">
@@ -171,7 +192,7 @@ function AdminTransaction() {
                   </thead>
                   <tbody>
                     {transactions.map((trans) => (
-                      <tr key={trans._id} className="border-b hover:bg-light-grey">
+                      <tr key={trans._id} className="border-b hover:bg-light-grey" onClick={() => setSelectedTransaction(trans)}>
                         <td className="p-3 font-medium">{trans.transactionId}</td>
                         <td className="p-3">{trans.sender?.username || 
                           trans.sender?.name || 
@@ -245,6 +266,47 @@ function AdminTransaction() {
           )}
     </div>
     </div>
+        {selectedTransaction && (
+      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-h3 font-semibold">Transaction Details</h2>
+            <button onClick={() => setSelectedTransaction(null)} className="text-grey">
+              ✖
+            </button>
+          </div>
+
+          <div className="space-y-2 text-sm">
+            <p><strong>ID:</strong> {selectedTransaction.transactionId}</p>
+            <p><strong>User:</strong> {selectedTransaction.sender?.username || 'N/A'}</p>
+            <p><strong>Amount:</strong> Rs. {selectedTransaction.amount}</p>
+            <p><strong>Credits:</strong> {selectedTransaction.creditAmount}</p>
+            <p><strong>Status:</strong> <StatusBadge status={selectedTransaction.status} /></p>
+            <p><strong>Type:</strong> {selectedTransaction.type}</p>
+            <p><strong>Created At:</strong> {new Date(selectedTransaction.createdAt).toLocaleString()}</p>
+            {selectedTransaction.remarks && <p><strong>Remarks:</strong> {selectedTransaction.remarks}</p>}
+            {selectedTransaction.phoneNumber && <p><strong>Phone:</strong> {selectedTransaction.phoneNumber}</p>}
+          </div>
+
+          {selectedTransaction.type === 'khalti-cashout' && selectedTransaction.status === 'pending' && (
+            <div className="mt-4 flex gap-2 justify-end">
+              <button 
+                onClick={() => handleUpdateStatus(selectedTransaction._id, 'completed')}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+              >
+                Mark as Completed
+              </button>
+              <button 
+                onClick={() => handleUpdateStatus(selectedTransaction._id, 'rejected')}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+              >
+                Reject
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
     </div>
 )
 }

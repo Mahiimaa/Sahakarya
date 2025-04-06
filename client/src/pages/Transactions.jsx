@@ -219,6 +219,23 @@ const determineCounterparty = (transaction) => {
   }
 };
 
+const getStatusBadge = (status) => {
+  const statusStyles = {
+    'completed': 'bg-p/10 text-p',
+    'pending': 'bg-yellow-200 text-yellow-800',
+    'failed': 'bg-error/10 text-error',
+    'rejected': 'bg-error/10 text-error'
+  };
+
+  const style = statusStyles[status?.toLowerCase()] || 'bg-grey text-white';
+  return (
+    <span className={`text-xs px-2 py-1 rounded-md ${style}`}>
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </span>
+  );
+};
+
+
   return (
     <div className ="flex flex-col min-h-screen font-poppins">
        <Navbar/>
@@ -342,7 +359,10 @@ const determineCounterparty = (transaction) => {
                     let serviceName = "Direct Transfer";
                     if (transaction.type === "purchase") {
                       serviceName = "Credit Purchase";
-                    } else if (transaction.type === "mediation_transfer"|| 
+                    }else if (transaction.type === "khalti-cashout") {
+                      serviceName = "Cashout";
+                     }
+                      else if (transaction.type === "mediation_transfer"|| 
                       (transaction.type === "service_payment" && transaction.details?.includes("Mediation resolved"))) { 
                       serviceName = "Mediation Resolution";
                     } else if (transaction.bookingId?.service) {
@@ -382,7 +402,12 @@ const determineCounterparty = (transaction) => {
                       </div>
                     </td>
                       <td className={`p-4 text-small font-h3 text-right ${amountClass}`}>
+                      <div className="flex items-center justify-end gap-2">
+                      <span className={`${amountClass}`}>
                       {amountPrefix}{transaction.creditAmount || transaction.amount} Credits
+                      </span>
+                      {getStatusBadge(transaction.status)}
+                      </div>
                       </td>
                     </tr>
                     );
@@ -402,6 +427,9 @@ const determineCounterparty = (transaction) => {
                     <span>{new Date(transaction.createdAt).toLocaleDateString()}</span>
                     <span className={`${amountClass}`}>
                       {amountPrefix}{transaction.creditAmount || transaction.amount} Credits
+                      <div className="mt-1">
+                        {getStatusBadge(transaction.status)}
+                      </div>
                     </span>
                   </div>
                   <div className="text-xs text-dark-grey mt-1">
