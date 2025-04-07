@@ -200,8 +200,8 @@ function Navbar() {
     };
  
   return (
-    <nav className="bg-white border-b border-light-grey shadow-sm font-poppins">
-    <div className="flex justify-between items-center px-4 py-2 md:px-12">
+    <nav className="bg-white border-b border-light-grey shadow-md font-poppins sticky top-0 z-50 ">
+    <div className="flex justify-between items-center px-4 py-2 md:px-12 ">
       <div className="flex items-center gap-4">
         <img className="h-12 w-12 md:h-16 md:w-20" src={logo} alt="logo" />
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>

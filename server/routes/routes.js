@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { login, signup, verifyEmail, resendVerification,  logout } = require('../controllers/authController');
 const{requestOTP, submitOTP, resetPassword} = require('../controllers/forgotPassword');
-const { addCategory, getCategories, deleteCategory } = require('../controllers/category');
+const { addCategory, getCategories, deleteCategory, editCategory } = require('../controllers/category');
 const {addService,editService,deleteService,getServices,selectService, addServiceOfferDetails, getPopularServices} = require('../controllers/service');
 const { getStats } = require('../controllers/stats');
 const {getAllUsers, deleteUser, assignRole, getUserDetails, getUserById} = require('../controllers/user');
@@ -71,6 +71,7 @@ router.post('/logout', logout);
 router.post('/admin/category', addCategory);
 router.get('/category', getCategories);
 router.delete('/admin/category/:id', deleteCategory);
+router.put('/admin/category/:id', editCategory )
 
 router.post('/admin/service', addService); 
 router.put('/admin/service/:id', editService); 

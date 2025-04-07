@@ -52,6 +52,17 @@ const createNotification = async (userId, message, type, data = {}, actorId = nu
 
 const requestService = async (req, res) => {
   try {
+    const hasPendingTransfer = await Booking.exists({
+      requester: req.user._id,
+      status: "mediation resolved",
+      creditTransferred: false
+    });
+    
+    if (hasPendingTransfer) {
+      return res.status(403).json({
+        error: "You have unresolved mediation transfers. Please top up your account to proceed."
+      });
+    }
     const { serviceId, providerId } = req.body;
 
     const user = await User.findById(req.user.id);

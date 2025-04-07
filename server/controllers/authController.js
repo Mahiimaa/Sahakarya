@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { transporter } = require('../config/nodeMailerConfig');
+const { transporter } = require('../config/nodemailer');
 
 require('dotenv').config();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';

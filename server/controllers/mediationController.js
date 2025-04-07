@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Mediation = require('../models/Mediation');
 const { createNotification } = require('./bookingController');
 const Transaction = require('../models/Transaction');
+const { sendEmail } = require("../email");
 
 const requestMediation = async (req, res) => {
   try {
@@ -299,13 +300,15 @@ const resolveMediation = async (req, res) => {
     if (!requester || !provider) {
       return res.status(404).json({ error: "Requester or provider not found" });
     }
-    
-    // Transfer timeCredits
+    let creditTransferred = false;
+    if (requester.timeCredits >= timeCreditsToTransfer) {
     requester.timeCredits -= timeCreditsToTransfer;
     provider.timeCredits += timeCreditsToTransfer;
     
     await requester.save();
     await provider.save();
+    
+    creditTransferred = true;
 
     const mediationTransaction = new Transaction({
       transactionId: `mediation-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -322,6 +325,21 @@ const resolveMediation = async (req, res) => {
     
     console.log("After credit transfer - Requester timeCredits:", requester.timeCredits);
     console.log("After credit transfer - Provider timeCredits:", provider.timeCredits);
+
+    await sendEmail(
+      requester.email,
+      "Mediation Resolved - Credits Transferred",
+      `Hi ${requester.username},\n\nThe mediation for "${booking.service.serviceName}" has been resolved and ${timeCreditsToTransfer} credits have been successfully transferred to ${provider.username}.\n\nThank you for using Sahakarya.`
+    );
+  } else {
+    creditTransferred = false;
+
+    await sendEmail(
+      requester.email,
+      "Top Up Required to Complete Mediation",
+      `Hi ${requester.username},\n\nThe mediation for "${booking.service.serviceName}" has been resolved, but you don't have enough time credits.\n\nPlease top up at least ${timeCreditsToTransfer - requester.timeCredits} credits to allow the system to complete the transfer. Until this is done, you won't be able to request new services.\n\nThanks,\nSahakarya Team`
+    );
+  }
     
     booking.status = "mediation resolved";
     booking.mediationResolvedBy = userId;

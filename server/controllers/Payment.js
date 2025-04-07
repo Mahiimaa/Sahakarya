@@ -2,6 +2,7 @@ const { initializeKhaltiPayment, verifyKhaltiPayment } = require('../services/kh
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 require("dotenv").config();
+const { sendEmail } = require("../email");
 
 const initiatePayment = async (req, res) => {
     const { amount, creditAmount } = req.body;
@@ -118,7 +119,41 @@ const initiatePayment = async (req, res) => {
       const previousCredits = user.timeCredits || 0;
       user.timeCredits = previousCredits + creditsToAdd;
       await user.save();
-      
+
+        const pendingBookings = await Booking.find({
+          requester: user._id,
+          status: "mediation resolved",
+          creditTransferred: false
+        }).populate("provider service");
+
+        for (const booking of pendingBookings) {
+          if (user.timeCredits >= booking.finaltimeCredits) {
+            const provider = await User.findById(booking.provider._id);
+
+            user.timeCredits -= booking.finaltimeCredits;
+            provider.timeCredits += booking.finaltimeCredits;
+
+            booking.creditTransferred = true;
+
+            await Promise.all([user.save(), provider.save(), booking.save()]);
+            const mediationTransaction = new Transaction({
+              transactionId: `auto-mediation-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+              sender: user._id,
+              recipient: provider._id,
+              amount: booking.finaltimeCredits,
+              type: 'service_payment',
+              status: 'completed',
+              details: `Auto-cleared mediation transfer for "${booking.service?.serviceName || "a service"}"`,
+              createdAt: new Date(),
+            });
+            await mediationTransaction.save();
+            await sendEmail(
+              user.email,
+              "Mediation Transfer Completed",
+              `Hi ${user.username},\n\nYour recent top-up has cleared the pending mediation transfer for "${booking.service?.serviceName}". The time credits have now been successfully transferred to ${provider.username}.\n\nThanks,\nSahakarya Team`
+            );
+          }
+        }
       transaction.status = 'completed';
       transaction.details = `Purchased ${creditsToAdd} time credits via Khalti`;
       await transaction.save();

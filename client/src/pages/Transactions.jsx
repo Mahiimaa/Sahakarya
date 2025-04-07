@@ -16,6 +16,9 @@ function Transactions() {
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7;
+
 
   const handleTransactionClick = (transaction) => {
     const outgoing = determineIsOutgoing(transaction);
@@ -235,6 +238,14 @@ const getStatusBadge = (status) => {
   );
 };
 
+const paginatedTransactions = filteredTransactions.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage
+);
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [filter, searchTerm]);
 
   return (
     <div className ="flex flex-col min-h-screen font-poppins">
@@ -351,7 +362,7 @@ const getStatusBadge = (status) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => {
+                  {paginatedTransactions.map((transaction) => {
                    const isOutgoing = determineIsOutgoing(transaction);
                     const amountPrefix = isOutgoing ? "-" : "+";
                     const amountClass = isOutgoing ? "text-error" : "text-p";
@@ -415,7 +426,7 @@ const getStatusBadge = (status) => {
                 </tbody>
               </table>
               <div className="md:hidden space-y-4 mt-4">
-              {filteredTransactions.map((transaction) => {
+              {paginatedTransactions.map((transaction) => {
               const isOutgoing = determineIsOutgoing(transaction);
               const amountPrefix = isOutgoing ? "-" : "+";
               const amountClass = isOutgoing ? "text-error" : "text-p";
@@ -474,30 +485,44 @@ const getStatusBadge = (status) => {
           {/* Pagination (if needed) */}
           {filteredTransactions.length > 0 && (
             <div className="bg-light-grey px-4 py-3 flex items-center justify-between border-t border-dark-grey sm:px-6">
-              <div className="flex-1 flex justify-between md:hidden">
-                <button className="relative inline-flex items-center px-4 py-2 border border-dark-grey text-small font-medium rounded-md text-grey bg-white hover:bg-light-grey">
-                  Previous
-                </button>
-                <button className="ml-3 relative inline-flex items-center px-4 py-2 border border-dark-grey text-small font-medium rounded-md text-grey bg-white hover:bg-light-grey">
-                  Next
-                </button>
-              </div>
               <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
                   <p className="text-small text-grey">
-                    Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredTransactions.length}</span> of{" "}
+                    Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredTransactions.length)}</span> of
                     <span className="font-medium">{filteredTransactions.length}</span> results
                   </p>
                 </div>
                 <div>
                   <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-dark-grey bg-white text-small font-medium text-dark-grey hover:bg-light-grey">
+                    <button 
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-dark-grey bg-white text-small font-medium text-dark-grey hover:bg-light-grey">
                       Previous
                     </button>
-                    <button className="bg-p/30 border-p text-p relative inline-flex items-center px-4 py-2 border text-small font-medium">
-                      1
-                    </button>
-                    <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-dark-grey bg-white text-small font-medium text-dark-grey hover:bg-light-grey">
+                    {[...Array(Math.ceil(filteredTransactions.length / itemsPerPage))].map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-small font-medium ${
+                          currentPage === i + 1
+                            ? "bg-p/30 border-p text-p"
+                            : "bg-white text-dark-grey border border-dark-grey hover:bg-light-grey"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button 
+                    onClick={() =>
+                      setCurrentPage((prev) =>
+                        prev < Math.ceil(filteredTransactions.length / itemsPerPage)
+                          ? prev + 1
+                          : prev
+                      )
+                    }
+                    disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-dark-grey bg-white text-small font-medium text-dark-grey hover:bg-light-grey">
                       Next
                     </button>
                   </nav>

@@ -16,7 +16,6 @@ const addService = async (req, res) => {
   }
 };
 
-// Admin: Edit an existing service
 const editService = async (req, res) => {
   try {
     const { id } = req.params;
