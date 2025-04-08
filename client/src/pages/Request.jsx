@@ -500,7 +500,7 @@ const Request = () => {
         {filteredIncomingBookings.length > 0 ? (
           filteredIncomingBookings.map(booking => (
             <div key={booking._id} className="p-4 border border-dark-grey rounded-lg shadow-md bg-white mb-4">
-              <h2 className="text-h2  pb-2">Request For {booking?.service?.serviceName}</h2>
+              <h2 className="text-h2  pb-2">Request For {booking?.serviceDetailSnapshot?.title || booking?.service?.serviceName}</h2>
               <p><strong>Requester:</strong> {booking?.requester?.username}</p>
               <p><strong>Status:</strong> <span
             className={`px-2 py-1 rounded-md font-semibold ${
@@ -590,7 +590,7 @@ const Request = () => {
         {filteredOutgoingBookings.length > 0 ? (
           filteredOutgoingBookings.map(booking => (
             <div key={booking._id} className="p-4 border border-dark-grey rounded-lg shadow-md bg-white mb-4">
-              <h2 className="text-h2  pb-2">Request Sent for {booking?.service?.serviceName}</h2>
+              <h2 className="text-h2  pb-2">Request Sent for {booking?.serviceDetailSnapshot?.title || booking?.service?.serviceName}</h2>
               <p><strong>Provider:</strong> {booking?.provider?.username}</p>
               <p><strong>Status:</strong> <span className={`px-2 py-1 rounded-md font-semi-bold 
                 ${booking.status === "pending" ? "text-s" : 

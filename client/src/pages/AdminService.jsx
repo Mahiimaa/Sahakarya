@@ -29,6 +29,7 @@ function AdminService() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     fetchCategories();
@@ -37,7 +38,9 @@ function AdminService() {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/api/category`);
+      const response = await axios.get(`${apiUrl}/api/category`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setCategories(response.data.categories);
     } catch (error) {
       setError('Error fetching categories');
@@ -46,7 +49,9 @@ function AdminService() {
 
   const fetchServices = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/api/services`);
+      const response = await axios.get(`${apiUrl}/api/services`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setServices(response.data.services);
     } catch (error) {
       setError('Error fetching services');
@@ -73,7 +78,9 @@ function AdminService() {
     console.log(newService);
     e.preventDefault();
     try {
-      const response = await axios.post(`${apiUrl}/api/admin/service`, newService);
+      const response = await axios.post(`${apiUrl}/api/admin/service`, newService, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       console.log(response);
       setSuccess('Service added successfully');
       setNewService({ serviceName: '', category: '' });
@@ -90,6 +97,9 @@ function AdminService() {
       await axios.put(`${apiUrl}/api/admin/service/${editService._id}`, {
         serviceName: editService.serviceName,
         category: editService.category
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess('Service updated successfully');
       setEditServiceForm(false);
@@ -103,7 +113,9 @@ function AdminService() {
   const handleDeleteService = async (id) => {
     if (window.confirm('Are you sure you want to delete this service?')) {
       try {
-        await axios.delete(`${apiUrl}/api/admin/service/${id}`);
+        await axios.delete(`${apiUrl}/api/admin/service/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setSuccess('Service deleted successfully');
         fetchServices();
       } catch (error) {

@@ -58,7 +58,15 @@ const bookingSchema = new mongoose.Schema({
   creditTransferred: {
     type: Boolean,
     default: false
-  }
+  },
+  serviceDetailSnapshot: {
+    title: { type: String },
+    description: { type: String },
+    duration: { type: Number },
+    timeCredits: { type: Number },
+    image: { type: String }
+  },
+  
 }, { timestamps: true });
 
 module.exports = mongoose.model("Booking", bookingSchema);

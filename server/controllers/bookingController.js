@@ -106,6 +106,13 @@ const requestService = async (req, res) => {
       requester: req.user.id,
       status: "pending",
       serviceDuration: serviceDetail.duration,
+      serviceDetailSnapshot: {
+        title: serviceDetail.title,
+        description: serviceDetail.description,
+        duration: serviceDetail.duration,
+        timeCredits: serviceDetail.timeCredits,
+        image: serviceDetail.image
+      }
     });
     await booking.save();
     await createNotification(

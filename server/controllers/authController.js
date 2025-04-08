@@ -12,7 +12,7 @@ const generateOTP = () => {
 };
 
 const signup = async (req, res) => {
-  const { email, username, password, confirmPassword, role } = req.body;
+  const { email, username, password, confirmPassword } = req.body;
 
   if (!email || !username || !password || !confirmPassword) {
     return res.status(400).json({ message: "All fields are required" });
@@ -38,9 +38,10 @@ const signup = async (req, res) => {
         return res.status(400).json({ message: "Username already exists" });
       }
     }
+    const isAdmin = req.body.adminKey === process.env.ADMIN_SIGNUP_SECRET;
+    const userRole = isAdmin ? 'admin' : 'user';
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const userRole = role || 'user';
 
     const verificationOTP = generateOTP();
     const tokenExpiry = new Date();
@@ -168,38 +169,31 @@ const resendVerification = async (req, res) => {
 
 
 const login = async (req, res) => {
-  const { email, username, password } = req.body;
+  const { identifier, password } = req.body;
 
-  if (!email || !username || !password) {
+  if (!identifier || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
-    const userByEmail = await User.findOne({ email: email });
-    
-    if (!userByEmail) {
-      return res.status(401).json({ message: 'Invalid email' });
-    }
-    if (userByEmail.username !== username) {
-      return res.status(401).json({ message: 'Invalid username' });
-    }
+    let user = identifier.includes('@')
+      ? await User.findOne({ email: identifier })
+      : await User.findOne({ username: identifier });
 
-    // if (!userByEmail.isVerified) {
-    //   return res.status(401).json({ 
-    //     message: 'Please verify your email before logging in' 
-    //   });
-    // }
-    const isPasswordCorrect = await bcrypt.compare(password, userByEmail.password);
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or username" });
+    }
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
       return res.status(401).json({ message: 'Invalid password' });
     }
 
     const token = jwt.sign(
       { 
-        id: userByEmail._id,
-        email: userByEmail.email,
-        username: userByEmail.username,
-        role: userByEmail.role 
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role 
       }, 
       JWT_SECRET, 
       { expiresIn: '1h' }
@@ -207,10 +201,10 @@ const login = async (req, res) => {
 
     res.status(200).json({ 
       token,
-      role: userByEmail.role, 
-      userId: userByEmail._id,
-      email: userByEmail.email,
-      username: userByEmail.username 
+      role: user.role, 
+      userId: user._id,
+      email: user.email,
+      username: user.username 
     });
   } catch (error) {
     console.error('Login error:', error);

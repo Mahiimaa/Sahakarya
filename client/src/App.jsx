@@ -31,6 +31,9 @@ import TimeCredit from "./pages/TimeCredit";
 import "./index.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ProtectedRoute from './components/ProtectedRoute';
+import Unauthorized from './pages/UnauthorizedPage';
+
 
  function App() {
 return (
@@ -51,13 +54,17 @@ return (
         <Route path="/signup" element={<Signup />} />
         <Route path ="/email" element={<Email />} />
         <Route path="/verify-otp" element={<Verify />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="/home" element={ <ProtectedRoute allowedRoles={['user', 'admin']}>
+          <Home />
+         </ProtectedRoute>
+        } 
+          />
         <Route path ="/explore" element={<Explore />} />
         <Route path="/services/:_id" element={<ServiceDetails />} />
         <Route path="/provider-details/:providerId" element={<ProviderDetails />} />
         <Route path ="/chat" element={<ChatHistory />} />
         <Route path="/forgot" element={<Forgot />} />
-        <Route path ="/adminhome" element={<AdminHome/>} />
+        <Route path ="/adminhome" element={<ProtectedRoute allowedRoles={['admin']}><AdminHome/></ProtectedRoute>} />
         <Route path="/changePassword" element={<ChangePassword />} />
         <Route path="/reset" element={<Reset />} />
         <Route path="/navbar" element={<Navbar />} />
@@ -68,15 +75,15 @@ return (
         <Route path="/payment/success" element={<TimeCredit />} />
         <Route path="/payment/error" element={<TimeCredit />} />
         <Route path="/timeCredit" element={<TimeCredit/>} />
-        <Route path="/services" element={<AdminService />} />
+        <Route path="/services" element={<ProtectedRoute allowedRoles={['admin']}><AdminService /></ProtectedRoute>} />
         <Route path="/request" element={<Request />} />
         <Route path="/users" element={<Users />} />
         <Route path="/transactions" element={<Transactions />} />
-        <Route path="/adminTransactions" element={<AdminTransaction/>} />
-        <Route path="/category" element={<Category />} />
-        <Route path="/adminsettings" element={<AdminSettings />} />
-        <Route path="/adminMediation" element={<AdminMediation />} />
-        <Route path="/adminrequest" element={<AdminRequest/>} />
+        <Route path="/adminTransactions" element={<ProtectedRoute allowedRoles={['admin']}><AdminTransaction/></ProtectedRoute>} />
+        <Route path="/category" element={<ProtectedRoute allowedRoles={['admin']}><Category /></ProtectedRoute>} />
+        <Route path="/adminsettings" element={<ProtectedRoute allowedRoles={['admin']}><AdminSettings /></ProtectedRoute>} />
+        <Route path="/adminMediation" element={<ProtectedRoute allowedRoles={['admin']}><AdminMediation /></ProtectedRoute>} />
+        <Route path="/adminrequest" element={<ProtectedRoute allowedRoles={['admin']}><AdminRequest/></ProtectedRoute>} />
         </Routes>
         </BrowserRouter>
         </div>

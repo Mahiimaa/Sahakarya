@@ -20,6 +20,7 @@ function Category() {
     const [searchTerm, setSearchTerm] = useState('');
     
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    const token = localStorage.getItem("token");
     
     useEffect(() => {
       fetchCategories();
@@ -27,7 +28,9 @@ function Category() {
 
   const fetchCategories = async () => {
       try {
-          const response = await axios.get(`${apiUrl}/api/category`);
+          const response = await axios.get(`${apiUrl}/api/category`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           setCategories(response.data.categories);
       } catch (error) {
           setError('Error fetching categories');
@@ -37,7 +40,9 @@ function Category() {
   const handleSubmit = async (e) => {
       e.preventDefault();
       try {
-          await axios.post(`${apiUrl}/api/admin/category`,  {categoryName} );
+          await axios.post(`${apiUrl}/api/admin/category`,  {categoryName}, {
+            headers: { Authorization: `Bearer ${token}` },
+          } );
           setSuccess('Category added successfully');
           setCategoryName('');
           setAddServiceForm(false);
@@ -52,6 +57,8 @@ function Category() {
     try {
         await axios.put(`${apiUrl}/api/admin/category/${editCategoryId}`, {
             categoryName: editCategoryName
+        }, {
+          headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess('Category updated successfully');
         setEditCategoryName('');
@@ -67,7 +74,9 @@ function Category() {
   const handleDelete = async (id) => {
       if (window.confirm('Are you sure you want to delete this category?')) {
           try {
-              const response = await axios.delete(`${apiUrl}/api/admin/category/${id}`);
+              const response = await axios.delete(`${apiUrl}/api/admin/category/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
               console.log('delete response : ', response.data)
               setSuccess('Category deleted successfully');
               fetchCategories();

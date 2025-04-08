@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useRef} from 'react'
 import logo from "../assets/logo.png"
 import profile from "../assets/profile.png"
 import {NavLink, useNavigate} from "react-router-dom"
@@ -32,6 +32,10 @@ function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const notifRef = useRef(null);
+  const profileRef = useRef(null);
+  const mobileMenuRef = useRef(null);
   const navigate = useNavigate();
   const navClass = ({ isActive }) => `px-4 py-2 text-semi-bold font-medium ${isActive ? 'text-p' : ''} hover:text-p`;
 
@@ -198,6 +202,25 @@ function Navbar() {
           return <TfiAnnouncement className="text-p"/>;
       }
     };
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (
+          notifRef.current && !notifRef.current.contains(event.target) &&
+          profileRef.current && !profileRef.current.contains(event.target) &&
+          mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)
+        ) {
+          setShowDropdown(false);
+          setShowProfileMenu(false);
+          setIsMobileMenuOpen(false);
+        }
+      };
+    
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, []);
+    
  
   return (
     <nav className="bg-white border-b border-light-grey shadow-md font-poppins sticky top-0 z-50 ">
@@ -220,12 +243,15 @@ function Navbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="hidden md:flex items-center text-sm text-p font-semibold">
+        <div className=" md:flex items-center text-sm text-p font-semibold" onClick={() => navigate("/transactions")}>
           Credits: <span className={userDetails?.timeCredits < 3 ? 'text-error ml-1' : 'ml-1'}>{userDetails?.timeCredits || 0}</span>
         </div>
 
-        <div className="relative">
-          <button onClick={() => setShowDropdown(!showDropdown)}>
+        <div className="relative" ref={notifRef}>
+          <button onClick={(e) =>{e.stopPropagation(); 
+            setShowDropdown(!showDropdown);
+            setShowProfileMenu(false);
+            }}>
             <img className="w-8 h-8 " src={notification} alt="notif" />
             {unreadCount > 0 && <span className="absolute -top-1 -right-1 text-xs bg-p text-white rounded-full px-1">{unreadCount > 99 ? '99+' : unreadCount}</span>}
           </button>
@@ -233,7 +259,7 @@ function Navbar() {
             <div className="absolute right-0 mt-2 w-72 bg-white border border-dark-grey rounded-md shadow-md z-50 max-w-80">
               <div className="p-3 border-b flex justify-between">
                 <span className="font-semi-bold">Notifications</span>
-                {unreadCount > 0 && <button onClick={markAllAsRead} className="text-xs text-p hover:underline">Mark all</button>}
+                {unreadCount > 0 && <button onClick={markAllAsRead} className="text-xs text-p hover:underline">Mark all as read</button>}
               </div>
               <div className="max-h-64 overflow-y-auto max-w-80">
                 {notifications.map((notif) => (
@@ -252,10 +278,14 @@ function Navbar() {
           )}
         </div>
 
-        <details className="relative">
-          <summary className="cursor-pointer list-none">
+        <div className="relative" ref={profileRef}>
+        <button onClick={(e) =>{ e.stopPropagation(); 
+          setShowProfileMenu(!showProfileMenu);
+          setShowDropdown(false);
+          }}>
             <img className="w-8 h-8 rounded-full" src={profile} alt="profile" />
-          </summary>
+          </button>
+          {showProfileMenu && (
           <ul className="absolute right-0 mt-2 w-64 bg-white border border-dark-grey rounded-md shadow-md z-50 p-4 md:w-80 ">
             {userDetails ? (
               <>
@@ -269,15 +299,16 @@ function Navbar() {
                     Change Password
                   </button>
               </>
-            ) : <li className="text-grey">Loading...</li>}
+            ) : ( <li className="text-grey">Loading...</li>
+            )}
           </ul>
-        </details>
-      </div>
+          )}
+    </div>
     </div>
 
     {/* Mobile Menu */}
     {isMobileMenuOpen && (
-      <div className="md:hidden flex flex-col gap-2 px-4 pb-4">
+      <div ref={mobileMenuRef} className="md:hidden flex flex-col gap-2 px-4 pb-4">
         <NavLink to="/home" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
         <NavLink to="/explore" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Explore</NavLink>
         <NavLink to="/request" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Request</NavLink>
@@ -285,8 +316,9 @@ function Navbar() {
         <NavLink to="/transactions" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Transactions</NavLink>
       </div>
     )}
+    </div>
   </nav>
-  )
+  );
 }
 
 export default Navbar

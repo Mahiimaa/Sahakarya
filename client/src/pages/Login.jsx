@@ -9,8 +9,7 @@ function Login() {
   const message = location.state?.message || '';
   const navigate = useNavigate();
   const [user, setUser] = useState({
-    email: '',
-    username: '',
+    identifier:'',
     password: '',
   });
 
@@ -90,34 +89,22 @@ function Login() {
   };
 
   return (
-    <div className='flex flex-col justify-center items-center mt-20 font-poppins'>
+    <div className='bg-white flex flex-col justify-center items-center mt-20 font-poppins'>
       {message && <div className="text-p font-poppins mb-4">{message}</div>}
-        <div className="flex flex-col justify-center items-center ">
+        <div className="flex flex-col justify-center items-center md:bg-white md:p-12 md:shadow-md md:border md:rounded-md ">
           <img className="w-32 h-26 py-4" src={logo} alt="logo" />
           <div className="flex flex-col justify-center items-center">
             <p className='text-p font-bold font-poppins text-main'>Log in</p>
             <form className='flex flex-col justify-center items-center mt-8 gap-8' onSubmit={handleSubmit}>
               <div className="flex flex-col gap-2">
-                <label className="flex font-poppins text-h3">Email address:</label>
+                <label className="flex font-poppins text-h3">Email or Username:</label>
                 <input
-                  className="px-2 w-72 h-12 py-2 border border-iborder rounded-md"
-                  placeholder='Enter your email address'
-                  type="email"
-                  name="email"
-                  value={user.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="flex font-poppins text-h3">Username:</label>
-                <input
-                  className="px-2 w-72 py-2 h-12 border border-iborder rounded-md"
-                  placeholder="Enter your username"
+                  className="px-2 md:w-96 w-72 h-12 py-2 border border-iborder rounded-md"
+                  placeholder='Enter your email or username'
                   type="text"
-                  name="username"
-                  value={user.username}
-                  onChange={handleChange}
+                  name="identifier"
+                  value={user.identifier}
+                  onChange={(e) => setUser({ ...user, identifier: e.target.value })}
                   required
                 />
               </div>
@@ -125,7 +112,7 @@ function Login() {
                 <label className="flex font-poppins text-h3">Password:</label>
                 <div className="flex flex-col">
                   <input
-                    className="px-2 w-72 py-2 h-12 border border-iborder rounded-md"
+                    className="px-2 md:w-96 w-72 py-2 h-12 border border-iborder rounded-md"
                     placeholder="Enter your password"
                     type="password"
                     name="password"
@@ -138,7 +125,7 @@ function Login() {
               </div>
               {error && <p className="text-error">{error}</p>}
               <div className="flex flex-col justify-center items-center mt-6">
-                <button className="bg-p hover:bg-p/90 text-h2 p-2 px-28 rounded-md text-white">Log in</button>
+                <button className="bg-p hover:bg-p/90 text-h2 p-2 px-28 md:w-96 rounded-md text-white ">Log in</button>
                 <div className="flex gap-2">
                   <p>Do not have an account?</p>
                   <Link to="/Signup" className='text-p'>Sign up</Link>

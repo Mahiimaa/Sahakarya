@@ -345,8 +345,8 @@ const resolveMediation = async (req, res) => {
     booking.mediationResolvedBy = userId;
     booking.mediationResolvedAt = new Date();
     booking.mediationDecision = decision;
-    booking.finaltimeCredits = finaltimeCredits;
-    booking.creditTransferred = true;
+    booking.finaltimeCredits = Number(finaltimeCredits);
+    booking.creditTransferred = creditTransferred;
 
     await booking.save();
 

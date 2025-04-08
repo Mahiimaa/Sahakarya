@@ -63,27 +63,27 @@ router.post("/login", login);
 router.post('/verify-email', verifyEmail);
 router.post('/resend-verification', resendVerification);
 
-router.post('/requestOTP', requestOTP);
-router.post('/submitOTP', submitOTP);
-router.post('/resetPassword', resetPassword);
-router.post('/logout', logout);
+router.post('/requestOTP',verifyToken, requestOTP);
+router.post('/submitOTP',verifyToken, submitOTP);
+router.post('/resetPassword',verifyToken, resetPassword);
+router.post('/logout',verifyToken, logout);
 
-router.post('/admin/category', addCategory);
-router.get('/category', getCategories);
-router.delete('/admin/category/:id', deleteCategory);
-router.put('/admin/category/:id', editCategory )
+router.post('/admin/category',[verifyToken, authorizeRoles("admin")], addCategory);
+router.get('/category',verifyToken, getCategories);
+router.delete('/admin/category/:id',[verifyToken, authorizeRoles("admin")], deleteCategory);
+router.put('/admin/category/:id',[verifyToken, authorizeRoles("admin")], editCategory )
 
-router.post('/admin/service', addService); 
-router.put('/admin/service/:id', editService); 
-router.delete('/admin/service/:id', deleteService);
+router.post('/admin/service', [verifyToken, authorizeRoles("admin")], addService); 
+router.put('/admin/service/:id',[verifyToken, authorizeRoles("admin")], editService); 
+router.delete('/admin/service/:id',[verifyToken, authorizeRoles("admin")], deleteService);
 
 // User Routes
-router.get('/services', getServices); 
-router.post('/services/select', selectService);
+router.get('/services',verifyToken, getServices); 
+router.post('/services/select',verifyToken, selectService);
 
-router.get('/stats', getStats);
-router.get('/users', getAllUsers);
-router.delete('/deleteUser/:id', deleteUser);
+router.get('/stats',verifyToken, getStats);
+router.get('/users',verifyToken, getAllUsers);
+router.delete('/deleteUser/:id',[verifyToken, authorizeRoles("admin")], deleteUser);
 router.post('/assignRole', assignRole);
 
 router.get('/user/me', verifyToken,  getUserDetails);
@@ -141,11 +141,11 @@ router.get('/transactions/:id', verifyToken, getTransactionById);
 router.get('/stats', verifyToken, getTransactionStats);
 
 router.post('/bookings/:bookingId/mediation', verifyToken, requestMediation);
-router.get('/mediation/cases', verifyToken, getMediationCases);
-router.get('/mediation/cases/:caseId', verifyToken, getMediationCaseDetails);
+router.get('/mediation/cases', [verifyToken, authorizeRoles("admin")], getMediationCases);
+router.get('/mediation/cases/:caseId', [verifyToken, authorizeRoles("admin")], getMediationCaseDetails);
 router.post('/bookings/:bookingId/mediation-messages', verifyToken, sendMediationMessage);
 router.get('/bookings/:bookingId/mediation-messages', verifyToken, getMediationMessages);
-router.post('/mediation/:caseId/resolve',verifyToken, resolveMediation);
+router.post('/mediation/:caseId/resolve',[verifyToken, authorizeRoles("admin")], resolveMediation);
 router.get('/mediation/resolved-cases', verifyToken, getResolvedMediationCases);
 
 
@@ -154,7 +154,7 @@ router.get('/admin/service-requests', verifyToken, getAllServiceRequests);
 
 router.post('/cashout/request', verifyToken, requestCashout);
 router.get('/admin/Transactions',  verifyToken, getAllTransactions);
-router.patch('/transactions/:id/status', verifyToken, updateTransactionStatus);
+router.patch('/transactions/:id/status', [verifyToken, authorizeRoles("admin")], updateTransactionStatus);
 router.get('/status/:id', verifyToken, getCashoutStatus);
 
 router.get('/adminTransactionsById', 
@@ -167,6 +167,6 @@ router.get('/recent-transactions', verifyToken, getRecentTransactions);
 router.get("/settings", verifyToken, getSettings);
 router.put("/admin/settings", [verifyToken, authorizeRoles("admin")], updateSettings);
 
-router.get('/address/suggestions', getSuggestions);
+router.get('/address/suggestions',verifyToken, getSuggestions);
 
 module.exports = router;
