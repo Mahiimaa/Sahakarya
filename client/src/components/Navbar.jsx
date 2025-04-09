@@ -158,12 +158,18 @@ function Navbar() {
 
     const handleLogout = async () => {
       try {
-        await axios.post(`${apiUrl}/api/logout`);
+        const token = localStorage.getItem("token");
+        await axios.post(`${apiUrl}/api/logout` , {}, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (error) {
+        console.warn("Logout error:", error.response?.data?.message || error.message);
+      } finally {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        navigate('/', { state: { message: 'You have successfully logged out!' } });
-      } catch (error) {
-        alert(error.response?.data?.message || 'Something went wrong!');
+        navigate("/", { state: { message: "You have successfully logged out!" } });
       }
     };
     
@@ -223,7 +229,7 @@ function Navbar() {
     
  
   return (
-    <nav className="bg-white border-b border-light-grey shadow-md font-poppins sticky top-0 z-50 ">
+    <nav className="bg-white border-b border-light-grey shadow-sm font-poppins sticky top-0 z-50 ">
     <div className="flex justify-between items-center px-4 py-2 md:px-12 ">
       <div className="flex items-center gap-4">
         <img className="h-12 w-12 md:h-16 md:w-20" src={logo} alt="logo" />
@@ -308,7 +314,7 @@ function Navbar() {
 
     {/* Mobile Menu */}
     {isMobileMenuOpen && (
-      <div ref={mobileMenuRef} className="md:hidden flex flex-col gap-2 px-4 pb-4">
+      <div ref={mobileMenuRef} className="md:hidden absolute top-full left-0 w-full bg-white border-b border-light-grey shadow-md flex flex-col">
         <NavLink to="/home" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
         <NavLink to="/explore" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Explore</NavLink>
         <NavLink to="/request" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Request</NavLink>

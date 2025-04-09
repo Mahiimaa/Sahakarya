@@ -20,13 +20,11 @@ function Home() {
 
   useEffect(() => {
     const fetchUserDetails = async () => {
+      if (!token) {
+        console.warn("Token missing. Skipping user fetch.");
+        return;
+      }
       try {
-    
-        console.log('Token:', token);
-        // if (!token) {
-        //   navigate('/login'); 
-        //   return;
-        // }
         const response = await axios.get(`${apiUrl}/api/user/me`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -40,9 +38,13 @@ function Home() {
     };
 
     fetchUserDetails();
-  }, [apiUrl, navigate]);
+  }, [apiUrl]);
 
     const fetchTopRatedUsers = async () => {
+      if (!token) {
+        console.warn("Token missing. Skipping top-rated fetch.");
+        return;
+      }    
       try {
         const response = await axios.get(`${apiUrl}/api/providers/top-rated`, {
           headers: {
@@ -83,6 +85,10 @@ function Home() {
     
     // Fetch Popular Services
     const fetchPopularServices = async () => {
+      if (!token) {
+        console.warn("No token, skipping popular services fetch.");
+        return;
+      }
       try {
         console.log('Fetching Popular Services', {
           url: `${apiUrl}/api/services/popular`,
@@ -140,6 +146,10 @@ function Home() {
 
     useEffect(() => {
       const fetchRecentBookings = async () => {
+        if (!token) {
+          console.warn("Token missing. Skipping recent bookings fetch.");
+          return;
+        }
         try {
           const response = await axios.get(`${apiUrl}/api/bookings/requester`, {
             headers: {
@@ -183,16 +193,21 @@ function Home() {
     },[apiUrl, token, navigate])
 
 
-  const handleLogout = async () => {
-    try {
-      await axios.post(`${apiUrl}/api/logout`);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate('/', { state: { message: 'You have successfully logged out!' } });
-    } catch (error) {
-      alert(error.response?.data?.message || 'Something went wrong!');
-    }
-  };
+    const handleLogout = async () => {
+      try {
+        await axios.post(`${apiUrl}/api/logout`, {}, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      } catch (error) {
+        console.warn("Logout error:", error.response?.data?.message);
+      } finally {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/", { state: { message: "You have successfully logged out!" } });
+      }
+    };    
 
   const toExplore = () => {
     navigate('/explore');
@@ -229,6 +244,7 @@ function Home() {
   const viewBookingDetails = () => {
     navigate('/request' );
   };
+  
   return (
     <div className ="flex flex-col font-poppins">
        <Navbar/>
@@ -240,7 +256,7 @@ function Home() {
               <p className="max-w-md">Explore to find the perfect service provider for your needs.</p>
             </div>
             <div className="flex items-center gap-4">
-              <button className="bg-white text-p py-2 px-6 rounded-md font-semibold border border-p hover:bg-p hover:text-white" onClick={toExplore}>Explore Now</button>
+              <button className="bg-white text-p py-2 px-6 rounded-md font-semibold border border-p hover:bg-p hover:text-white whitespace-nowrap" onClick={toExplore}>Explore Now</button>
               <button className="bg-white border hover:bg-p hover:text-white border-p text-p py-2 px-6 rounded-md font-semibold" onClick={handleLogout}>Logout</button>
             </div>
           </div>
@@ -314,7 +330,7 @@ function Home() {
             View All <ArrowRight size={16} />
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 gap-4">
           {popularServices.map((service) => (
             <div key={service.id} className="p-4 rounded-2xl shadow-md duration-200 cursor-pointer border border-light-grey hover:-translate-y-1.5 transition-transform" 
             onClick={() => navigate(`/services/${service._id}`)}>
