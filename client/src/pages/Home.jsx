@@ -309,20 +309,73 @@ function Home() {
             </div>
           </div>
 
-          <div className="relative flex flex-col md:flex-row justify-center items-center w-full md:w-3/4 rounded-3xl bg-light-grey mt-8">
-            <div className="bg-white m-4 rounded-lg p-4 w-full md:w-1/2">
-              <p className="text-h2 font-bold py-6">How it works?</p>
-              <p className="text-h3 font-poppins py-2">~ Explore the services you want</p>
-              <p className="text-h3 font-poppins py-2">~ View the task details</p>
-              <p className="text-h3 font-poppins py-2">~ See if the provider is the right fit</p>
-              <p className="text-h3 font-poppins py-2">~ Request service</p>
-              <p className="text-h3 font-poppins py-2">~ Set schedule</p>
-              <p className="text-h3 font-poppins py-2">~ Confirm task completion</p>
+          <div className="relative w-full md:w-3/4 mt-8 mb-8">
+            <div className="relative bg-light-grey rounded-3xl overflow-hidden p-6">
+              {/* Decorative circles */}
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-p/10 rounded-full -translate-x-1/2 translate-y-1/2"></div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-p/10 rounded-full translate-x-1/2 -translate-y-1/2"></div>
+
+              <div className="flex flex-col md:flex-row">
+                {/* Left side with text content */}
+                <div className="w-full md:w-3/5 z-10 relative">
+                  <div className="bg-white rounded-lg p-6 shadow-sm">
+                    <h2 className="text-h2 font-bold mb-6">How it works?</h2>
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <span className=" w-6 h-6 rounded-full bg-p/20 text-black flex items-center justify-center mr-3 text-sm flex-shrink-0">
+                          1
+                        </span>
+                        <p className="text-h3 font-poppins">Explore the services you want</p>
+                      </div>
+                      <div className="flex items-start">
+                        <span className=" w-6 h-6 rounded-full bg-p/20 text-black flex items-center justify-center mr-3 text-sm flex-shrink-0">
+                          2
+                        </span>
+                        <p className="text-h3 font-poppins">View the task details</p>
+                      </div>
+                      <div className="flex items-start">
+                        <span className=" w-6 h-6 rounded-full bg-p/20 text-black flex items-center justify-center mr-3 text-sm flex-shrink-0">
+                          3
+                        </span>
+                        <p className="text-h3 font-poppins">See if the provider is the right fit</p>
+                      </div>
+                      <div className="flex items-start">
+                        <span className=" w-6 h-6 rounded-full bg-p/20 text-black flex items-center justify-center mr-3 text-sm flex-shrink-0">
+                          4
+                        </span>
+                        <p className="text-h3 font-poppins">Request service</p>
+                      </div>
+                      <div className="flex items-start">
+                        <span className=" w-6 h-6 rounded-full bg-p/20 text-black flex items-center justify-center mr-3 text-sm flex-shrink-0">
+                          5
+                        </span>
+                        <p className="text-h3 font-poppins">Set schedule</p>
+                      </div>
+                      <div className="flex items-start">
+                        <span className=" w-6 h-6 rounded-full bg-p/20 text-black flex items-center justify-center mr-3 text-sm flex-shrink-0">
+                          6
+                        </span>
+                        <p className="text-h3 font-poppins">Confirm task completion</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right side with image that overlaps */}
+                <div className="w-full md:w-1/2 md:absolute md:right-0 md:top-1/2 md:transform md:-translate-y-1/2 md:translate-x-8 hidden md:block">
+                  <img
+                    className="w-full h-auto object-contain rounded-lg"
+                    src={userhome || "/placeholder.svg"}
+                    alt="Service illustration"
+                  />
+                </div>
+              </div>
             </div>
-            <img className="w-full md:w-1/2 h-auto object-contain p-4" src={userhome} alt="Service illustration" />
           </div>
         </div>
       </div>
+
+      {/* Rest of your component remains the same */}
       <div className="px-4 md:px-6 py-8 w-full md:w-3/4 self-center">
         <div className="flex justify-between mb-6">
           <h2 className="font-poppins text-2xl font-bold">Popular Services</h2>
@@ -332,10 +385,12 @@ function Home() {
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 gap-4">
           {popularServices.map((service) => (
-            <div key={service.id} className="p-4 rounded-2xl shadow-md duration-200 cursor-pointer border border-light-grey hover:-translate-y-1.5 transition-transform" 
-            onClick={() => navigate(`/services/${service._id}`)}>
+            <div
+              key={service.id}
+              className="p-4 rounded-2xl shadow-md duration-200 cursor-pointer border border-light-grey hover:-translate-y-1.5 transition-transform"
+              onClick={() => navigate(`/services/${service._id}`)}
+            >
               <div className="flex items-center gap-4">
-                {/* <span className="text-3xl">{service.icon}</span> */}
                 <h3 className="font-poppins font-semi-bold text-lg">{service.name}</h3>
               </div>
             </div>

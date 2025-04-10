@@ -158,13 +158,17 @@ function Explore() {
                     }
                   }}
                 >
-                  {service.image && (
+                  <div className="overflow-hidden rounded-t-lg" style={{ height: "200px" }}>
                     <img
-                      src={service.image.startsWith("http") ? service.image : `${apiUrl}${service.image}`}
-                      alt="Service"
-                      className="w-full h-40 object-cover rounded-md mb-3"
+                      src={service.image?.startsWith("http") ? service.image : `${apiUrl}${service.image}`}
+                      alt={service.serviceName}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = "/placeholder.svg?height=200&width=200"
+                        e.target.className = "w-full h-full object-contain p-4"
+                      }}
                     />
-                  )}
+                  </div>
 
                   {service.providers && service.providers.length > 0 && (
                     <div className="flex items-center gap-3 mb-3">

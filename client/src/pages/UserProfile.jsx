@@ -207,7 +207,7 @@ const UserProfileInfoPage = () => {
 
             {/* Services Offered */}
             <div className="sm:w-1/3">
-              <NavLink to="/my-services" className="hover:text-p hover:underline text-h2 font-semi-bold mb-3 block">
+              <NavLink to="/my-services" className="hover:text-p hover:underline text-h2 font-semi-bold mb-3 block whitespace-nowrap">
                 Services Offered
               </NavLink>
               {selectedServices.length > 0 ? (

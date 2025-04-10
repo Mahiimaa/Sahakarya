@@ -8,13 +8,19 @@ function AdminTop() {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${apiUrl}/api/logout`);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate('/', { state: { message: 'You have successfully logged out!' } });
-    } catch (error) {
-      alert(error.response?.data?.message || 'Something went wrong!');
-    }
+      const token = localStorage.getItem("token");
+    await axios.post(`${apiUrl}/api/logout`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.warn("Logout error:", error.response?.data?.message || error.message);
+  } finally {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/", { state: { message: "You have successfully logged out!" } });
+  }
   };
   return (
     <div className="bg-white w-[88vw] h-20 flex justify-between items-center font-poppins">
