@@ -74,13 +74,14 @@ const addReviews = async (req, res) => {
     try {
       const provider = await User.findById(providerId);
       if (!provider) return res.status(404).json({ error: "Provider not found" });
-  
+      const imageUrls = req.files?.map(file => `/uploads/${file.filename}`);
       const newReview = new Review({
         provider: providerId,
         user: userId,
         booking: bookingId,
         rating,
         comment,
+        images: imageUrls || [],
         createdAt: new Date(),
       });
       await newReview.save();
@@ -176,14 +177,13 @@ const deleteReview = async (req, res) => {
   
   const getTopRatedProviders = async (req, res) => {
     try {
-      const limit = 5; // Number of top providers to return
+      const limit = 5; 
       
-      // First find all provider IDs with their review counts and total ratings
       const providerStats = await Review.aggregate([
         { $group: {
             _id: "$provider",
             totalRating: { $sum: "$rating" },
-            completedJobs: { $sum: 1 } // Use $sum: 1 instead of $count for compatibility
+            completedJobs: { $sum: 1 }
           }
         },
         { $sort: { 
@@ -191,33 +191,29 @@ const deleteReview = async (req, res) => {
             completedJobs: -1 
           } 
         },
-        { $limit: limit * 2 } // Get a few extra to ensure we have enough valid ones
+        { $limit: limit * 2 } 
       ]);
       
-      // Ensure we have valid ObjectIds - add this part for safety
       const validProviderIds = providerStats
         .filter(stat => mongoose.Types.ObjectId.isValid(stat._id))
         .map(stat => new mongoose.Types.ObjectId(stat._id));
       
-      // Get the provider details for these IDs
       const providers = await User.find(
         { _id: { $in: validProviderIds } },
         { username: 1, profilePicture: 1 }
       ).lean();
       
-      // Match providers with their stats
       const providerMap = {};
       providers.forEach(p => {
         providerMap[p._id.toString()] = p;
       });
       
-      // Combine the data
       const topProviders = providerStats
-        .filter(stat => stat._id && providerMap[stat._id.toString()]) // Only keep stats with matching providers
+        .filter(stat => stat._id && providerMap[stat._id.toString()])
         .map(stat => {
           const provider = providerMap[stat._id.toString()];
           return {
-            _id: stat._id.toString(), // Convert ObjectId to string for the response
+            _id: stat._id.toString(),
             username: provider.username,
             profilePicture: provider.profilePicture || "",
             rating: Number((stat.totalRating / stat.completedJobs).toFixed(1)),

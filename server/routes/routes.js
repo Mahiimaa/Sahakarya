@@ -101,7 +101,7 @@ router.delete("/user/services/:serviceId", verifyToken, deleteUserService);
 router.get("/providers/top-rated", verifyToken, getTopRatedProviders);
 router.get("/providers/:providerId", verifyToken, getProviderDetails);
 router.get("/:providerId/previous-work", verifyToken, getPreviousWork);
-router.post("/reviews", verifyToken, addReviews);
+router.post("/reviews", upload.array("images", 5), verifyToken, addReviews);
 router.get('/reviews/provider/:providerId', verifyToken , getReviewsByProvider);
 router.get('/reviews/booking/:bookingId', verifyToken, getReviewsByBooking);
 router.get('/reviews/exists/:bookingId', verifyToken, checkReviewExists);

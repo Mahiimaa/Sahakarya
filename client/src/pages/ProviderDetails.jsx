@@ -358,7 +358,7 @@ function ProviderDetails() {
                   {reviews.map((review, index) => (
                     <div key={review._id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
                       <div className="flex flex-col">
-                        <div className="flex items-center gap-3 mb-3">
+                        <div className="flex items-center gap-4 mb-3">
                           <div className="flex-shrink-0">
                             <img
                               src={
@@ -376,9 +376,6 @@ function ProviderDetails() {
                             className="font-medium text-gray-800">{review.user.username}</p>
                             <p className="text-xs text-gray-500">{formatDate(review.createdAt || new Date())}</p>
                           </div>
-                        </div>
-
-                        <div className="pt-2">
                           <div className="flex mb-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star
@@ -387,7 +384,23 @@ function ProviderDetails() {
                               />
                             ))}
                           </div>
+                        </div>
+
+                        <div className="pt-2">
                           <p className="text-gray-700">{review.comment}</p>
+                          {review.images?.length > 0 && (
+                          <div className="grid grid-cols-3 md:grid-cols-10 gap-2 mt-2">
+                            {review.images.map((img, index) => (
+                              <img
+                                key={index}
+                                src={img.startsWith("http") ? img : `${apiUrl}${img}`}
+                                alt={`review-img-${index}`}
+                                 onClick={() => handleImageClick(img)}
+                                className="h-20 w-20 object-cover rounded cursor-pointer border border-gray-200 hover:scale-105 transition-transform"
+                              />
+                            ))}
+                          </div>
+                        )}
                         </div>
 
                         {isReviewOwner(review) && (
@@ -444,55 +457,6 @@ function ProviderDetails() {
               alt="Full Image"
               className="max-w-full max-h-[85vh] rounded-md object-contain"
             />
-          </div>
-        </div>
-      )}
-
-      {/* Review Modal */}
-      {showReviewModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
-            <button
-              className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
-              onClick={() => {
-                setShowReviewModal(false)
-                setEditingReview(null)
-                setRating(0)
-                setComment("")
-              }}
-            >
-              <X size={20} />
-            </button>
-            <h2 className="text-lg font-medium text-gray-800 mb-4">{editingReview ? "Edit Review" : "Add Review"}</h2>
-            <div className="flex justify-center mb-4">
-              <ReactStars
-                count={5}
-                size={36}
-                value={rating}
-                isHalf={true}
-                onChange={(newRating) => setRating(newRating)}
-              />
-            </div>
-            <textarea
-              className="w-full h-28 border rounded-md p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-[#7B7FEF] focus:border-transparent"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Write a review..."
-            />
-            <div className="flex justify-end gap-3">
-              <button
-                className="border text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors"
-                onClick={() => setShowReviewModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-[#7B7FEF] text-white px-4 py-2 rounded-md hover:bg-[#6A6EE0] transition-colors"
-                onClick={editingReview ? handleEditReview : handleReviewSubmit}
-              >
-                {editingReview ? "Update Review" : "Submit Review"}
-              </button>
-            </div>
           </div>
         </div>
       )}

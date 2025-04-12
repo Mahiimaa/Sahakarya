@@ -35,7 +35,7 @@ const Request = () => {
   const [mediationMessages, setMediationMessages] = useState([]);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
-
+  const [reviewImages, setReviewImages] = useState([]);
   const [searchQuery, setSearchQuery] = useState("")
   const [showFilters, setShowFilters] = useState(false)
   const [statusFilter, setStatusFilter] = useState("all")
@@ -335,14 +335,16 @@ const Request = () => {
 
   const submitReview = async () => {
     try {
+      const formData = new FormData();
+      formData.append("bookingId", reviewBookingId);
+      formData.append("providerId", reviewProviderId);
+      formData.append("rating", rating);
+      formData.append("comment", reviewText);
+      reviewImages.forEach((image, index) => {
+        formData.append("images", image);
+      });
       await axios.post(
-        `${apiUrl}/api/reviews`, 
-        {
-          bookingId: reviewBookingId,
-          providerId: reviewProviderId,
-          rating,
-          comment: reviewText
-        },
+        `${apiUrl}/api/reviews`, formData, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success("Review submitted successfully!");
@@ -839,6 +841,39 @@ const Request = () => {
             className="w-full p-2 border rounded mb-2"
             value={reviewText}
             onChange={(e) => setReviewText(e.target.value)}
+          />
+          {reviewImages.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              {reviewImages.map((img, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={URL.createObjectURL(img)}
+                  alt={`review-${index}`}
+                  className="h-24 w-full object-cover rounded"
+                />
+                <button
+                  className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 text-xs"
+                  onClick={() =>
+                    setReviewImages((prev) => prev.filter((_, i) => i !== index))
+                  }
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            </div>
+          )}
+
+          <label className="font-semi-bold text-h3">Upload Images (optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => {
+              const selectedFiles = Array.from(e.target.files);
+              setReviewImages(prev => [...prev, ...selectedFiles]);
+            }}
+            className="w-full p-2 border rounded mb-2"
           />
           
           <div className="flex justify-between mt-4">
