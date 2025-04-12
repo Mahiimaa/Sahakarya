@@ -210,9 +210,41 @@ const markMessagesAsRead = async (req, res) => {
   }
 };
 
+const sendImageMessage = async (req, res) => {
+  const { providerId, requesterId, receiver, sender } = req.body;
+
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image uploaded' });
+  }
+
+  try {
+    const imagePath = `/uploads/${req.file.filename}`;
+
+    const message = await Message.create({
+      sender,
+      receiver,
+      providerId,
+      requesterId,
+      imageUrl: imagePath,
+      content: '',
+    });
+
+    if (global.io) {
+      global.io.to(sender.toString()).emit("chat message", message);
+      global.io.to(receiver.toString()).emit("chat message", message);
+    }
+
+    res.status(201).json({ message: 'Image message sent', message });
+  } catch (err) {
+    console.error('Error uploading image message:', err);
+    res.status(500).json({ message: 'Image message failed', error: err.message });
+  }
+};
+
 module.exports = { 
   getMessages, 
   sendMessage, 
   getUserChats,
-  markMessagesAsRead
+  markMessagesAsRead,
+  sendImageMessage
 };

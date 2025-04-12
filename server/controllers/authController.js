@@ -1,9 +1,10 @@
 const express = require('express');
+const { OAuth2Client } = require('google-auth-library');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { transporter } = require('../config/nodemailer');
-
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 require('dotenv').config();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 
@@ -138,7 +139,7 @@ const resendVerification = async (req, res) => {
     const verificationOTP = generateOTP();
     const tokenExpiry = new Date();
     
-    const expiryTimeInMs = parseInt(process.env.OTP_EXPIRY_TIME) || 3600000; // Default 1 hour if not set
+    const expiryTimeInMs = parseInt(process.env.OTP_EXPIRY_TIME) || 3600000; 
     tokenExpiry.setTime(tokenExpiry.getTime() + expiryTimeInMs);
     
     user.verificationOTP = verificationOTP;
@@ -229,6 +230,84 @@ const logout = (req, res) => {
   }
 };
 
+const googleLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ message: "Token missing" });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    console.log("Token verified payload:", payload);
+
+    const { email, given_name, family_name, name, sub: googleId } = payload;
+    const fullName = name || `${given_name || ''} ${family_name || ''}`.trim();
+    const generatedUsername = email.split('@')[0] + '_' + Math.floor(Math.random() * 1000);
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        name: fullName,
+        email,
+        googleId,
+        role: 'user',
+        username: generatedUsername,
+      });
+      await user.save();
+    }
+
+    const authToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    return res.json({ token: authToken, role: user.role });
+  } catch (err) {
+    console.error("Google login backend error:", err.message);
+    return res.status(400).json({ message: "Google login failed", error: err.message });
+  }
+};
+
+const facebookLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+    const fbRes = await axios.get(
+      `https://graph.facebook.com/me?fields=id,name,email&access_token=${token}`
+    );
+
+    const { email, name, id: facebookId } = fbRes.data;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        name,
+        email,
+        facebookId,
+        role: 'user',
+      });
+      await user.save();
+    }
+
+    const authToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    res.json({
+      token: authToken,
+      role: user.role,
+    });
+  } catch (err) {
+    console.error('Facebook login error:', err.response?.data || err.message);
+    res.status(400).json({ message: 'Facebook login failed' });
+  }
+};
+
 
 module.exports = {
   login,
@@ -236,4 +315,7 @@ module.exports = {
   verifyEmail,
   resendVerification,
     logout,
+    googleLogin,
+    facebookLogin,
+
 };

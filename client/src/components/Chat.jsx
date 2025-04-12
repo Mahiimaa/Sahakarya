@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {io} from 'socket.io-client';
 import axios from "axios";
-import { X, Send, Loader2 } from "lucide-react"
+import { X, Send, Loader2, Camera } from "lucide-react"
 import { format, isToday, isYesterday } from "date-fns"
 
 const socket = io("ws://localhost:5000", { transports: ["websocket", "polling"] , autoConnect: false,  withCredentials: true,});
@@ -115,6 +115,55 @@ const formatChatDate = (timestamp) => {
   if (isYesterday(date)) return "Yesterday";
   return format(date, "MMMM d, yyyy"); 
 };
+
+const fileInputRef = useRef(null);
+
+const handleImageUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const tempId = `temp-${Date.now()}`;
+  const reader = new FileReader();
+
+  reader.onload = async () => {
+    const base64Image = reader.result;
+    const tempMessage = {
+      _id: tempId,
+      sender: userId,
+      receiver: String(userId) === String(provider._id) ? requester._id : provider._id,
+      imageUrl: base64Image,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages(prev => [...prev, tempMessage]);
+    scrollToBottom();
+
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("providerId", provider._id);
+    formData.append("requesterId", requester._id);
+    formData.append("sender", userId);
+    formData.append("receiver", tempMessage.receiver);
+
+    try {
+      const { data } = await axios.post(`${apiUrl}/api/messages/image`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setMessages(prev => prev.map(msg => msg._id === tempId ? data.message : msg));
+      socket.emit("chatMessage", data.message);
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      setError("Failed to upload image");
+      setMessages(prev => prev.filter(msg => msg._id !== tempId));
+    }
+  };
+
+  reader.readAsDataURL(file); 
+};
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4 font-poppins">
     <div className="bg-white w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl rounded-lg shadow-xl flex flex-col h-[80vh] max-h-[600px] overflow-hidden">
@@ -172,7 +221,15 @@ const formatChatDate = (timestamp) => {
                       : "bg-white border border-gray-200 rounded-bl-none"
                   }`}
                 >
-                  <div className="break-words text-sm sm:text-base">{msg.content}</div>
+                  
+                  {msg.imageUrl ? (
+                    <img
+                      src={msg.imageUrl}
+                      alt="shared"
+                      className="max-w-xs sm:max-w-sm rounded-md"
+                    />
+                  ) : (
+                  <div className="break-words text-sm sm:text-base">{msg.content}</div>)}
                   <div className={`text-xs mt-1 text-right ${isSentByUser ? "text-white/70" : "text-gray-500"}`}>
                     {formatMessageTime(msg.createdAt)}
                   </div>
@@ -208,6 +265,15 @@ const formatChatDate = (timestamp) => {
           }}
           disabled={isSending}
         />
+        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" ref={fileInputRef} />
+          <button
+            type="button"
+            className="text-p hover:bg-gray-100 p-2 rounded-full"
+            onClick={() => fileInputRef.current.click()}
+            aria-label="Upload Image"
+          >
+            <Camera className="h-5 w-5" />
+          </button>
         <button
           type="submit"
           className="bg-p hover:bg-p/90 text-white p-2 sm:p-3 rounded-lg disabled:opacity-50 transition-colors flex items-center justify-center min-w-[60px]"

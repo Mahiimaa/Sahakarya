@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { login, signup, verifyEmail, resendVerification,  logout } = require('../controllers/authController');
+const { login, signup, verifyEmail, resendVerification,  logout, googleLogin, facebookLogin } = require('../controllers/authController');
 const{requestOTP, submitOTP, resetPassword} = require('../controllers/forgotPassword');
 const { addCategory, getCategories, deleteCategory, editCategory } = require('../controllers/category');
 const {addService,editService,deleteService,getServices,selectService, addServiceOfferDetails, getPopularServices} = require('../controllers/service');
@@ -16,7 +16,7 @@ const {
 const { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService, getAllServiceDetails} = require('../controllers/serviceDetails');
 const {getProviderDetails, getPreviousWork, addReviews, getReviewsByProvider, getReviewsByBooking, checkReviewExists, editReview, deleteReview, getTopRatedProviders} = require('../controllers/ProviderController');
 const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, submitProviderCompletion, disputeCompletion, confirmServiceCompletion } = require("../controllers/bookingController");
-const { getMessages, sendMessage, markMessagesAsRead, getUserChats} = require('../controllers/messageController');
+const { getMessages, sendMessage, markMessagesAsRead, getUserChats, sendImageMessage} = require('../controllers/messageController');
 const {getNotifications,markAllAsRead, deleteNotification, deleteAllRead, readNotifications} = require('../controllers/notificationController');
 const {requestMediation, getMediationCases, getMediationCaseDetails, sendMediationMessage, resolveMediation, getMediationMessages, getResolvedMediationCases} = require("../controllers/mediationController");
 const {getTransactions, getTransactionById, getTransactionStats} = require('../controllers/transactionController');
@@ -60,6 +60,8 @@ const storage = multer.diskStorage({
 
 router.post("/signup", signup);
 router.post("/login", login);
+router.post('/google-login', googleLogin);
+router.post('/facebook-login', facebookLogin);
 router.post('/verify-email', verifyEmail);
 router.post('/resend-verification', resendVerification);
 
@@ -121,6 +123,7 @@ router.post("/sendMessage", verifyToken, (req, res) => {
   const io = req.app.get('io');
   sendMessage(req, res, io);
 });
+router.post('/messages/image', upload.single('image'), sendImageMessage);
 router.get("/messages/:providerId/:requesterId", verifyToken, getMessages);
 router.put("/messages/:providerId/read", verifyToken, (req, res) => {
   const io = req.app.get('io');

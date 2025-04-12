@@ -3,6 +3,8 @@ import axios from 'axios';
 import logo from "../assets/logo.png";
 import { useLocation } from 'react-router-dom';
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from '@react-oauth/google';
+import {jwtDecode} from 'jwt-decode';
 
 function Login() {
   const location = useLocation();
@@ -130,6 +132,31 @@ function Login() {
                   <p>Do not have an account?</p>
                   <Link to="/Signup" className='text-p'>Sign up</Link>
                 </div>
+              </div>
+            <div className="">
+              <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    try {
+                      const { credential } = credentialResponse;
+                      console.log("Google credential:", credential);
+
+                      const userInfo = jwtDecode(credential);
+                      console.log("Decoded user info:", userInfo);
+
+                      const res = await axios.post(`${apiUrl}/api/google-login`, { token: credential });
+
+                      localStorage.setItem("token", res.data.token);
+                      localStorage.setItem("role", res.data.role);
+                      navigate(res.data.role === "admin" ? "/adminhome" : "/home");
+                    } catch (err) {
+                      console.error("Google Login Error:", err);
+                      setError("Google Login Failed");
+                    }
+                  }}
+                  onError={() => {
+                    setError("Google Login Failed");
+                  }}
+                />
               </div>
             </form>
           </div>
