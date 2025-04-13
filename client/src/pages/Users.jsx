@@ -6,13 +6,19 @@ import axios from "axios";
 function Users() {
   const [users, setUsers]= useState([]);
   const [error, setError]= useState(null);
-
+  const token = localStorage.getItem("token");
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() =>{
     const fetchUsers = async() =>{
       try {
-        const response = await axios.get(`${apiUrl}/api/users`);
+        const response = await axios.get(`${apiUrl}/api/users`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          } 
+        );
         setUsers(response.data.users);
       } catch (error) {
         setError("Error fetching users");
@@ -23,7 +29,13 @@ function Users() {
 
   const deleteUser = async (id) => {
     try {
-      await axios.delete(`${apiUrl}/api/deleteUser/${id}`);
+      await axios.delete(`${apiUrl}/api/deleteUser/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setUsers(users.filter((user) => user._id !== id)); 
     } catch (err) {
       setError('Error deleting user');

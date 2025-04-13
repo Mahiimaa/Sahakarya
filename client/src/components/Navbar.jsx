@@ -268,7 +268,12 @@ function Navbar() {
                 {unreadCount > 0 && <button onClick={markAllAsRead} className="text-xs text-p hover:underline">Mark all as read</button>}
               </div>
               <div className="max-h-64 overflow-y-auto max-w-80">
-                {notifications.map((notif) => (
+              {notifications.length === 0 ? (
+              <div className="p-4 text-center text-sm text-gray-500">
+                No notifications yet.
+              </div>
+            ) : (
+                notifications.map((notif) => (
                   <div key={notif._id} onClick={() => handleNotificationClick(notif)} className={`p-2 cursor-pointer text-sm hover:bg-light-grey ${!notif.isRead ? 'bg-p/10' : ''}`}>
                     <div className="flex items-start text-body gap-2">
                      <p className="flex items-start text-body mt-2">{getNotificationIcon(notif.type)}</p> 
@@ -278,7 +283,8 @@ function Navbar() {
                       </div>
                     </div>
                   </div>
-                ))}
+                ))
+            )}
               </div>
             </div>
           )}

@@ -147,7 +147,11 @@ function Login() {
 
                       localStorage.setItem("token", res.data.token);
                       localStorage.setItem("role", res.data.role);
+                      if (res.data.passwordWasGenerated) {
+                        navigate("/changePassword", { state: { firstTimeGoogleLogin: true } });
+                      } else {
                       navigate(res.data.role === "admin" ? "/adminhome" : "/home");
+                      }
                     } catch (err) {
                       console.error("Google Login Error:", err);
                       setError("Google Login Failed");

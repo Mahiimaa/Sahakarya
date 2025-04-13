@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 require("dotenv").config();
+const { createNotification } = require('./bookingController');
 
 const requestCashout = async (req, res) => {
   const { creditAmount, phoneNumber, remarks } = req.body;
@@ -28,10 +29,28 @@ const requestCashout = async (req, res) => {
       phoneNumber,
       remarks,
       type: 'khalti-cashout', 
-      details: `Cashout request for ${creditAmount} credits to ${phoneNumber}`, // ✅ required
+      details: `Cashout request for ${creditAmount} credits to ${phoneNumber}`,
       status: 'pending',
       userId: userId
     });
+
+    try {
+      const admins = await User.find({ role: 'admin' });
+      for (const admin of admins) {
+        await createNotification(
+          admin._id,
+          `${user.username} requested a cashout of ${creditAmount} credits`,
+          'request',
+          {
+            senderId: user._id,
+            transactionId: transaction._id
+          },
+          user._id
+        );
+      }
+    } catch (notifError) {
+      console.error("Failed to notify admins about cashout:", notifError);
+    }
 
     res.status(200).json({
       message: 'Cashout request submitted successfully!',

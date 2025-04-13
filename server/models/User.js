@@ -22,6 +22,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required:  function () { return !this.googleId },
   },
+  passwordWasGenerated: { type: Boolean, default: true },
   role: 
   { 
     type: String, 

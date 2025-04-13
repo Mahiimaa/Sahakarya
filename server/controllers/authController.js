@@ -245,20 +245,26 @@ const googleLogin = async (req, res) => {
     const payload = ticket.getPayload();
     console.log("Token verified payload:", payload);
 
-    const { email, given_name, family_name, name, sub: googleId } = payload;
-    const fullName = name || `${given_name || ''} ${family_name || ''}`.trim();
-    const generatedUsername = email.split('@')[0] + '_' + Math.floor(Math.random() * 1000);
+    const { email, name, sub: googleId } = payload;
 
     let user = await User.findOne({ email });
 
     if (!user) {
+      const username = email.split("@")[0] + "_" + Math.floor(Math.random() * 1000);
+      const defaultPassword = Math.random().toString(36).slice(-8); 
+      const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
       user = new User({
-        name: fullName,
+        name,
         email,
         googleId,
+        username,
+        password: hashedPassword,
         role: 'user',
-        username: generatedUsername,
+        isVerified: true,
+        passwordWasGenerated: true,
       });
+
       await user.save();
     }
 
@@ -266,7 +272,12 @@ const googleLogin = async (req, res) => {
       expiresIn: '7d',
     });
 
-    return res.json({ token: authToken, role: user.role });
+    res.json({
+      token: authToken,
+      role: user.role,
+      email: user.email,
+      username: user.username
+    });
   } catch (err) {
     console.error("Google login backend error:", err.message);
     return res.status(400).json({ message: "Google login failed", error: err.message });

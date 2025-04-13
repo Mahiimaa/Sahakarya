@@ -1,4 +1,5 @@
 const ServiceRequest = require('../models/ServiceRequest');
+const { createNotification } = require('./bookingController');
 
 const createServiceRequest = async (req, res) => {
   try {
@@ -16,6 +17,20 @@ const createServiceRequest = async (req, res) => {
     });
 
     await serviceRequest.save();
+    const admins = await User.find({ role: "admin" });
+
+  for (const admin of admins) {
+    await createNotification(
+      admin._id,
+      `New service request received: ${serviceName}`,
+      "serviceRequest",
+      {
+        serviceId: serviceRequest._id,
+        senderId: userId,
+      },
+      admin._id.toString() === userId.toString() ? null : userId
+    );
+  }
 
     res.status(201).json({
       status: 'success',

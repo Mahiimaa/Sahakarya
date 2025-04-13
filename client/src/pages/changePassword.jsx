@@ -6,12 +6,13 @@ import { Icon } from "react-icons-kit";
 import { eyeOff } from "react-icons-kit/feather/eyeOff";
 import { eye } from "react-icons-kit/feather/eye";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const ChangePassword = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL
-
+  const location = useLocation();
+  const isFirstTimeGoogleLogin = location.state?.firstTimeGoogleLogin;
   const [password, setPassword] = useState({
     current_password: "",
     password: "",
@@ -83,6 +84,11 @@ const ChangePassword = () => {
 
   return (
     <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col font-poppins">
+      {isFirstTimeGoogleLogin && (
+        <p className="text-blue-500 text-center mb-4">
+          Please set a password for your account so you can log in without Google next time.
+        </p>
+      )}
       <div className="flex justify-start mb-8">
         <button className="bg-p hover:bg-p/90 text-white rounded py-2 px-4">
           <NavLink to="/home" className="flex items-center">

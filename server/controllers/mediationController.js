@@ -49,7 +49,8 @@ const requestMediation = async (req, res) => {
         {
           bookingId: booking._id,
           disputeReason: booking.disputeReason
-        }
+        },
+        userId
       );
     }
     const otherPartyId = userId === booking.requester.toString() ? booking.provider._id : booking.requester._id;
