@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import Navbar from "../components/Navbar"
 import { useNavigate } from 'react-router-dom';
-import userhome from "../assets/userhome.png"
+import home from "../assets/home.png"
 import axios from 'axios';
 import { toast } from "react-toastify";
 import { Star, CheckCircle, Search, ArrowRight, LogOut, Calendar, Clock } from 'lucide-react';
@@ -283,7 +283,7 @@ function Home() {
                     );
               
                     if (match) {
-                      navigate(`/services/${match._id}`);
+                      navigate(`/explore/services/${match._id}`);
                     } else {
                       toast.error("No matching service found.");
                     }
@@ -310,7 +310,7 @@ function Home() {
           </div>
 
           <div className="relative w-full md:w-3/4 mt-8 mb-8">
-            <div className="relative bg-light-grey rounded-3xl overflow-hidden p-6">
+            <div className="relative bg-p/20 rounded-3xl overflow-hidden p-6">
               {/* Decorative circles */}
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-p/10 rounded-full -translate-x-1/2 translate-y-1/2"></div>
               <div className="absolute top-0 right-0 w-24 h-24 bg-p/10 rounded-full translate-x-1/2 -translate-y-1/2"></div>
@@ -365,7 +365,7 @@ function Home() {
                 <div className="w-full md:w-1/2 md:absolute md:right-0 md:top-1/2 md:transform md:-translate-y-1/2 md:translate-x-8 hidden md:block">
                   <img
                     className="w-full h-auto object-contain rounded-lg"
-                    src={userhome || "/placeholder.svg"}
+                    src={home || "/placeholder.svg"}
                     alt="Service illustration"
                   />
                 </div>
@@ -388,7 +388,7 @@ function Home() {
             <div
               key={service.id}
               className="p-4 rounded-2xl shadow-md duration-200 cursor-pointer border border-light-grey hover:-translate-y-1.5 transition-transform"
-              onClick={() => navigate(`/services/${service._id}`)}
+              onClick={() => navigate(`/explore/services/${service._id}`)}
             >
               <div className="flex items-center gap-4">
                 <h3 className="font-poppins font-semi-bold text-lg">{service.name}</h3>
@@ -417,7 +417,7 @@ function Home() {
                     <span className="font-medium">{user.rating ? user.rating.toFixed(1) : "New"}</span>
                     <span className="text-grey text-sm">({user.completedJobs || 0} {user.completedJobs === 1 ? "task" : "tasks"})</span>
                   </div>
-                  <button className="mt-2 w-full py-2 px-4 rounded-md bg-p text-white font-medium hover:bg-opacity-90 transition-colors" onClick={() => navigate(`/provider-details/${user._id}`)}>
+                  <button className="mt-2 w-full py-2 px-4 rounded-md bg-p text-white font-medium hover:bg-opacity-90 transition-colors" onClick={() => navigate(`/explore/provider-details/${user._id}`)}>
                     View Profile
                   </button>
                 </div>

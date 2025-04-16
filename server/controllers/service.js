@@ -5,9 +5,9 @@ const Booking = require("../models/Booking");
 // Admin: Add a new service
 const addService = async (req, res) => {
   try {
-    const { serviceName, description, category } = req.body;
+    const { serviceName, category } = req.body;
 
-    const newService = new Service({ serviceName, description, category });
+    const newService = new Service({ serviceName, category });
     await newService.save();
 
     res.status(201).json({ message: 'Service added successfully', service: newService });

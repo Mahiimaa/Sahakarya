@@ -65,9 +65,9 @@ router.post('/facebook-login', facebookLogin);
 router.post('/verify-email', verifyEmail);
 router.post('/resend-verification', resendVerification);
 
-router.post('/requestOTP',verifyToken, requestOTP);
-router.post('/submitOTP',verifyToken, submitOTP);
-router.post('/resetPassword',verifyToken, resetPassword);
+router.post('/requestOTP', requestOTP);
+router.post('/submitOTP', submitOTP);
+router.post('/resetPassword', resetPassword);
 router.post('/logout',verifyToken, logout);
 
 router.post('/admin/category',[verifyToken, authorizeRoles("admin")], addCategory);

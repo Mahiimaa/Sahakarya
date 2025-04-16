@@ -404,7 +404,7 @@ function ServiceDetails() {
                   {provider.serviceDetail ? (
                     <div
                       className="p-1 sm:p-2 flex-grow cursor-pointer"
-                      onClick={() => navigate(`/provider-details/${provider._id}?serviceId=${service._id}`)}
+                      onClick={() => navigate(`/explore/provider-details/${provider._id}?serviceId=${service._id}`)}
                     >
                       {provider.serviceDetail.image && (
                         <img

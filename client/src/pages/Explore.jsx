@@ -71,7 +71,7 @@ function Explore() {
     service.duration &&
     service.timeCredits &&
     Array.isArray(service.providers) &&
-    service.providers.length > 0
+    service.providers.length > 0 
   );
   
 
@@ -129,7 +129,7 @@ function Explore() {
                 <div
                   key={service._id}
                   className="p-4 border border-dark-grey rounded-lg shadow-lg bg-white hover:-translate-y-1.5 transition-transform flex flex-col h-full cursor-pointer"
-                  onClick={() => navigate(`/services/${service._id}`)}
+                  onClick={() => navigate(`/explore/services/${service._id}`)}
                 >
                   <h3 className="font-semi-bold text-lg font-poppins ">{service.serviceName}</h3>
                   <p className="text-dark-grey">{service.category.categoryName}</p>
@@ -150,7 +150,7 @@ function Explore() {
                   onClick={() => {
                     if (service.providers && service.providers.length > 0) {
                       navigate(
-                        `/provider-details/${service.providers[0]._id}?serviceId=${service.serviceId || service._id}`,
+                        `/explore/provider-details/${service.providers[0]._id}?serviceId=${service.serviceId || service._id}`,
                       )
                     } else {
                       console.error("No provider available for this service.")

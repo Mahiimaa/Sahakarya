@@ -23,6 +23,19 @@ const signup = async (req, res) => {
     return res.status(400).json({ message: "Passwords do not match!" });
   }
 
+  if (password.length < 8) {
+    return res.status(400).json({ message: "Password must be at least 8 characters long." });
+  }
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password)) {
+    return res.status(400).json({ message: "Password must contain both uppercase and lowercase letters." });
+  }
+  if (!/\d/.test(password)) {
+    return res.status(400).json({ message: "Password must contain at least one number." });
+  }
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return res.status(400).json({ message: "Password must contain at least one special character." });
+  }
+
   try {
     const existingUser = await User.findOne({
       $or: [
@@ -39,6 +52,11 @@ const signup = async (req, res) => {
         return res.status(400).json({ message: "Username already exists" });
       }
     }
+    const wantsToBeAdmin = req.body.adminKey && req.body.adminKey.trim() !== "";
+    if (wantsToBeAdmin && req.body.adminKey !== process.env.ADMIN_SIGNUP_SECRET) {
+      return res.status(403).json({ message: "Invalid admin secret key" });
+    }    
+
     const isAdmin = req.body.adminKey === process.env.ADMIN_SIGNUP_SECRET;
     const userRole = isAdmin ? 'admin' : 'user';
 
@@ -183,6 +201,9 @@ const login = async (req, res) => {
 
     if (!user) {
       return res.status(401).json({ message: "Invalid email or username" });
+    }
+    if (!user.isVerified) {
+      return res.status(403).json({ message: "Please verify your email before logging in." });
     }
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {

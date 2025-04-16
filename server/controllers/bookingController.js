@@ -95,6 +95,7 @@ const requestService = async (req, res) => {
       return res.status(400).json({ error: "You have already requested this service." });
     }
     user.timeCredits -= requiredTimeCredits;
+    user.heldCredits = (user.heldCredits || 0) + requiredTimeCredits;
     await user.save();
 
     const service = await Service.findById(serviceId);
@@ -106,6 +107,7 @@ const requestService = async (req, res) => {
       requester: req.user.id,
       status: "pending",
       serviceDuration: serviceDetail.duration,
+      heldCredits: requiredTimeCredits,
       serviceDetailSnapshot: {
         title: serviceDetail.title,
         description: serviceDetail.description,

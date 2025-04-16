@@ -1,6 +1,7 @@
 const { initializeKhaltiPayment, verifyKhaltiPayment } = require('../services/khaltiService');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const Booking = require('../models/Booking');
 require("dotenv").config();
 const { sendEmail } = require("../email");
 

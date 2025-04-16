@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react'
 import logo from "../assets/logo.png"
 import profile from "../assets/profile.png"
-import {NavLink, useNavigate} from "react-router-dom"
+import {NavLink, useNavigate, useLocation} from "react-router-dom"
 import email from "../assets/email.png"
 import phone from "../assets/phone.png"
 import logout from "../assets/logout.png"
@@ -37,7 +37,12 @@ function Navbar() {
   const profileRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const navigate = useNavigate();
-  const navClass = ({ isActive }) => `px-4 py-2 text-semi-bold font-medium ${isActive ? 'text-p' : ''} hover:text-p`;
+  const location = useLocation();
+
+  const navClass = (path) => {
+    const isActive = location.pathname === path || location.pathname.startsWith(path);
+    return `px-4 py-2 text-semi-bold font-medium ${isActive ? 'text-p' : ''} hover:text-p`;
+  };
 
     const openChangePassword = () => {
       navigate("/changePassword");
@@ -241,15 +246,16 @@ function Navbar() {
       </div>
 
       <div className="hidden md:flex gap-6 items-center">
-        <NavLink to="/home" className={navClass}>Home</NavLink>
-        <NavLink to="/explore" className={navClass}>Explore</NavLink>
-        <NavLink to="/request" className={navClass}>Request</NavLink>
-        <NavLink to="/chat" className={navClass}>Chat</NavLink>
-        <NavLink to="/transactions" className={navClass}>Transactions</NavLink>
+      <NavLink to="/home" className={() => navClass("/home")}>Home</NavLink>
+      <NavLink to="/explore" className={() => navClass("/explore")}>Explore</NavLink>
+      <NavLink to="/request" className={() => navClass("/request")}>Request</NavLink>
+      <NavLink to="/chat" className={() => navClass("/chat")}>Chat</NavLink>
+      <NavLink to="/transactions" className={() => navClass("/transactions")}>Transactions</NavLink>
+
       </div>
 
       <div className="flex items-center gap-4">
-        <div className=" md:flex items-center text-sm text-p font-semibold" onClick={() => navigate("/transactions")}>
+        <div className=" md:flex items-center text-sm text-p font-semibold cursor-pointer" onClick={() => navigate("/timeCredit")}>
           Credits: <span className={userDetails?.timeCredits < 3 ? 'text-error ml-1' : 'ml-1'}>{userDetails?.timeCredits || 0}</span>
         </div>
 
@@ -304,7 +310,7 @@ function Navbar() {
                 <li className="font-bold text-sm mb-2 md:text-h3">{userDetails.username}</li>
                 <hr className="border border-p mb-2"/>
                 <li className="text-sm md:text-h3 flex items-center gap-2 py-2"><img src={email} className="w-4 h-4 md:w-6 md:h-6" /> {userDetails.email}</li>
-                <li className="text-sm md:text-h3 flex items-center gap-2 py-2"><img src={phone} className="w-4 h-4 md:w-6 md:h-6" /> {userDetails.phone}</li>
+                <li className="text-sm md:text-h3 flex items-center gap-2 py-2"><img src={phone} className="w-4 h-4 md:w-6 md:h-6" /> {userDetails.phone || "phone number"} </li>
                 <li className="text-sm md:text-h3 flex items-center gap-2 cursor-pointer py-2 hover:text-p" onClick={UserProfile}><img src={profile} className="w-4 h-4 md:w-6 md:h-6" /> Profile</li>
                 <li className="text-sm md:text-h3 flex items-center gap-2 cursor-pointer py-2 hover:text-p" onClick={handleLogout}><img src={logout} className="w-4 h-4 md:w-6 md:h-6" /> Logout</li>
                 <button className="w-full bg-p hover:bg-p/85 rounded p-2 mt-2 text-white md:text-h3 py-2" onClick={openChangePassword}>
@@ -321,11 +327,12 @@ function Navbar() {
     {/* Mobile Menu */}
     {isMobileMenuOpen && (
       <div ref={mobileMenuRef} className="md:hidden absolute top-full left-0 w-full bg-white border-b border-light-grey shadow-md flex flex-col">
-        <NavLink to="/home" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
-        <NavLink to="/explore" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Explore</NavLink>
-        <NavLink to="/request" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Request</NavLink>
-        <NavLink to="/chat" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Chat</NavLink>
-        <NavLink to="/transactions" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>Transactions</NavLink>
+        <NavLink to="/home" className={() => navClass("/home")} onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
+        <NavLink to="/explore" className={() => navClass("/explore")} onClick={() => setIsMobileMenuOpen(false)}>Explore</NavLink>
+        <NavLink to="/request" className={() => navClass("/request")} onClick={() => setIsMobileMenuOpen(false)}>Request</NavLink>
+        <NavLink to="/chat" className={() => navClass("/chat")} onClick={() => setIsMobileMenuOpen(false)}>Chat</NavLink>
+        <NavLink to="/transactions" className={() => navClass("/transactions")} onClick={() => setIsMobileMenuOpen(false)}>Transactions</NavLink>
+
       </div>
     )}
     </div>

@@ -60,8 +60,8 @@ return (
         } 
           />
         <Route path ="/explore" element={<Explore />} />
-        <Route path="/services/:_id" element={<ServiceDetails />} />
-        <Route path="/provider-details/:providerId" element={<ProviderDetails />} />
+        <Route path="/explore/services/:_id" element={<ServiceDetails />} />
+        <Route path="/explore/provider-details/:providerId" element={<ProviderDetails />} />
         <Route path ="/chat" element={<ChatHistory />} />
         <Route path="/forgot" element={<Forgot />} />
         <Route path ="/adminhome" element={<ProtectedRoute allowedRoles={['admin']}><AdminHome/></ProtectedRoute>} />

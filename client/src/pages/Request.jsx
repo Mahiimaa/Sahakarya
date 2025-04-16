@@ -730,7 +730,7 @@ const Request = () => {
           <label className="text-body">Notes (Optional)</label>
           <textarea
             placeholder="Any notes about the service completion"
-            className="w-full p-2 border rounded mb-2"
+            className="w-full p-2 border rounded mb-2 h-20"
             value={completionNotes}
             onChange={(e) => setCompletionNotes(e.target.value)}
           />

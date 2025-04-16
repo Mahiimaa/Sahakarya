@@ -177,7 +177,7 @@ function TimeCredit() {
     <div className="flex items-center justify-center min-h-screen bg-light-grey font-poppins">
       <div className="md:bg-white p-8 rounded-xl sm:hadow-lg w-full max-w-md">
         <div className="flex items-center justify-center mb-6">
-        <div onClick={() => navigate(-1)} className="flex items-center hover:text-p p-2 rounded-full hover:bg-light-grey md:hidden">
+        <div onClick={() => navigate("/home")} className="flex items-center hover:text-p p-2 rounded-full hover:bg-light-grey md:hidden">
             <ArrowLeft className="w-6 h-6" />
             <span className="sr-only">Back to Profile</span>
           </div>

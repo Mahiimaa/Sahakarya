@@ -52,15 +52,15 @@ const Khalti = ({ creditAmount, onSuccess, onError }) => {
       
       if (response.data && response.data.paymentUrl) {
         window.location.href = response.data.paymentUrl;
+        return;
       } else {
         throw new Error("Payment URL not received");
       }
       
     } catch (error) {
       console.error("Error initiating payment:", error);
-      toast.error("Failed to initiate payment. Please try again.");
       
-      if (onError) {
+      if (onError && !window.location.href.includes('khalti.com')) {
         onError(error);
       }
     } finally {

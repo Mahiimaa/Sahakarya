@@ -85,6 +85,7 @@ const UserSchema = new mongoose.Schema({
     },
   ],
   timeCredits: { type: Number, default: 0 },
+  heldCredits: {type: Number, default: 0},
 },
 {
   timestamps: true

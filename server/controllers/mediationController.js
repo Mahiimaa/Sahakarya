@@ -301,15 +301,37 @@ const resolveMediation = async (req, res) => {
     if (!requester || !provider) {
       return res.status(404).json({ error: "Requester or provider not found" });
     }
+    const held = requester.heldCredits || 0;
+    const available = requester.timeCredits || 0;
+
     let creditTransferred = false;
-    if (requester.timeCredits >= timeCreditsToTransfer) {
-    requester.timeCredits -= timeCreditsToTransfer;
-    provider.timeCredits += timeCreditsToTransfer;
-    
-    await requester.save();
-    await provider.save();
-    
-    creditTransferred = true;
+
+    if (held >= timeCreditsToTransfer) {
+      requester.heldCredits -= timeCreditsToTransfer;
+      provider.timeCredits += timeCreditsToTransfer;
+      creditTransferred = true;
+
+    } else if (held + available >= timeCreditsToTransfer) {
+      const extraNeeded = timeCreditsToTransfer - held;
+      requester.heldCredits = 0;
+      requester.timeCredits -= extraNeeded;
+      provider.timeCredits += timeCreditsToTransfer;
+      creditTransferred = true;
+
+    } else {
+      creditTransferred = false;
+
+      const shortfall = timeCreditsToTransfer - (held + available);
+      await sendEmail(
+        requester.email,
+        "Top Up Required to Complete Mediation",
+        `Hi ${requester.username},\n\nThe mediation for "${booking.service.serviceName}" has been resolved, but you don't have enough time credits.\n\nPlease top up at least ${shortfall} credits to allow the system to complete the transfer. Until this is done, you won't be able to request new services.\n\nThanks,\nSahakarya Team`
+      );
+    }
+
+    if (creditTransferred) {
+      await requester.save();
+      await provider.save();
 
     const mediationTransaction = new Transaction({
       transactionId: `mediation-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,

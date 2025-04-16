@@ -55,6 +55,10 @@ const bookingSchema = new mongoose.Schema({
   finaltimeCredits: {
     type: Number
   },
+  heldCredits: {
+    type: Number,
+    default: 0
+  },
   creditTransferred: {
     type: Boolean,
     default: false
