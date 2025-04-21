@@ -1,70 +1,92 @@
-# Getting Started with Create React App
+# Sahakarya – Service Exchange Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project uses the MERN stack: **MongoDB**, **Express.js**, **React.js**, and **Node.js**.
+Below are the steps to set it up on a new system.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🔧 Prerequisites
 
-### `npm start`
+Make sure the following tools are installed:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Node.js (v16 or higher): https://nodejs.org
+- MongoDB (local instance): https://www.mongodb.com/try/download/community
+- npm (comes with Node.js)
+- Git (optional, for cloning)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Backend Setup
 
-### `npm test`
+1. Open a terminal and navigate to the server directory:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+cd server
+npm install
+```
 
-### `npm run build`
+2. Create a `.env` file in `server/` based on the provided `.env.example`:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+``
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/sahakarya
+JWT_SECRET=your_jwt_secret
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+````
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. Start the backend server:
 
-### `npm run eject`
+```bash
+npm run dev
+````
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Frontend Setup
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Open a second terminal and go to the client folder:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+cd client
+npm install
+```
 
-## Learn More
+2. Start the React development server:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+npm start
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The frontend will run on [http://localhost:3000](http://localhost:3000)
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Importing MongoDB Database
 
-### Analyzing the Bundle Size
+1. Make sure MongoDB is installed and running.
+2. Use the following command to import the database:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+mongoimport --db sahakarya --collection users --file ./Database/sahakarya_db.json --jsonArray
+```
 
-### Making a Progressive Web App
+Repeat this for each collection (e.g., `services`, `bookings`, etc.) if your export includes multiple files.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
+## Accessing the App
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend API: [http://localhost:5000/api](http://localhost:5000/api)
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Notes
 
-### `npm run build` fails to minify
+- Do not commit `.env` files.
+- You can modify `MONGO_URI` if using a cloud DB like MongoDB Atlas.
+- Ensure ports 3000 (React) and 8000 (Node.js) are free.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+## Support
+
+For setup help, contact the developer team at sahakarya.help@gmail.com.

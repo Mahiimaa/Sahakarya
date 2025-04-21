@@ -146,8 +146,18 @@ function ProviderDetails() {
   };
 
   const isReviewOwner = (review) => {
-    return currentUser && review.user._id === currentUser._id;
+    return (
+      currentUser &&
+      review.user &&
+      review.user._id?.toString() === currentUser._id?.toString()
+    );
   };
+
+  useEffect(() => {
+    console.log("Current user ID:", currentUser?._id);
+    console.log("Reviews:", reviews.map(r => r.user));
+  }, [currentUser, reviews]);
+  
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -334,13 +344,21 @@ function ProviderDetails() {
                             <span className="text-gray-500 w-28">Completed:</span>
                             <span className="text-gray-700">{formatDate(work.completedDate)}</span>
                           </div>
+                          {work.status && (
+                            <div className="flex items-start">
+                              <span className="text-gray-500 w-28">Status:</span>
+                              <span className={`font-medium ${work.status === "mediation resolved" ? "text-yellow-600" : "text-green-600"}`}>
+                                {work.status === "mediation resolved" ? "Resolved via Mediation" : work.status}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 italic">No previous work found.</p>
+                <p className="text-s italic">No previous work found.</p>
               )}
             </div>
           )}
@@ -403,7 +421,8 @@ function ProviderDetails() {
                         )}
                         </div>
 
-                        {isReviewOwner(review) && (
+                        {isReviewOwner(review) ? ( 
+                          <>
                           <div className="flex justify-end gap-4 mt-3">
                             <button
                               className="text-[#7B7FEF] hover:text-[#6A6EE0] text-sm font-medium transition-colors"
@@ -423,13 +442,16 @@ function ProviderDetails() {
                               Delete
                             </button>
                           </div>
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">Only the author can edit this review</span>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 italic">No reviews yet. Be the first to leave a review!</p>
+                <p className="text-s italic">No reviews yet. Be the first to leave a review!</p>
               )}
             </div>
           )}
@@ -460,6 +482,55 @@ function ProviderDetails() {
           </div>
         </div>
       )}
+      {showReviewModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">{editingReview ? "Edit Review" : "Add Review"}</h2>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Rating</label>
+              <ReactStars
+                count={5}
+                value={rating}
+                onChange={(newRating) => setRating(newRating)}
+                size={24}
+                activeColor="#ffd700"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Comment</label>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                rows={4}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowReviewModal(false);
+                  setEditingReview(null);
+                  setRating(0);
+                  setComment("");
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={editingReview ? handleEditReview : handleReviewSubmit}
+                className="px-4 py-2 bg-[#7B7FEF] text-white rounded hover:bg-[#6A6EE0]"
+              >
+                {editingReview ? "Update" : "Submit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

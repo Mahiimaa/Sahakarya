@@ -38,8 +38,10 @@ const getPreviousWork = async (req, res) => {
 
       const completedBookings = await Booking.find({
           provider: providerId,
-          status: "completed",
-          confirmedByRequester: true,
+          status:
+            { $in: ["completed", "mediation resolved", "resolved"] ,
+          },
+          // confirmedByRequester: true,
           confirmedByProvider: true
       })
       .populate("service", "serviceName") 
@@ -55,6 +57,7 @@ const getPreviousWork = async (req, res) => {
           timeCredits: booking.serviceDuration, 
           scheduleDate: booking.scheduleDate,
           completedDate: booking.updatedAt,
+          status: booking.status,
       }));
 
       res.json({ previousWork });

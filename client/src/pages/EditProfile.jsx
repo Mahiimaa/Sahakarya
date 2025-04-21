@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { ArrowLeft } from 'lucide-react'
+import Select from 'react-select';
 
 const EditProfile = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -553,23 +554,28 @@ const EditProfile = () => {
               >
                 Services You Can Offer
               </label>
-              <select
-                id="services"
-                name="services"
-                multiple
-                value={profileData.selectedServices}
-                onChange={handleServiceChange}
-                className="w-full border rounded border-grey p-3"
-              >
-                {services.map((service) => (
-                  <option key={service._id} value={service._id}>
-                    {service.serviceName}
-                  </option>
-                ))}
-              </select>
-              <p className="text-grey text-h3 mt-1">
-                Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select
-                multiple options.
+              <Select
+              isMulti
+              name="services"
+              options={services.map(service => ({
+                value: service._id,
+                label: service.serviceName
+              }))}
+              value={services
+                .filter(service => profileData.selectedServices.includes(service._id))
+                .map(service => ({ value: service._id, label: service.serviceName }))
+              }
+              onChange={(selectedOptions) =>
+                setProfileData(prev => ({
+                  ...prev,
+                  selectedServices: selectedOptions.map(opt => opt.value)
+                }))
+              }
+              className="react-select-container"
+              classNamePrefix="react-select"
+            />
+              <p className="text-grey text-h3 p-2">
+                You can select multiple services.
               </p>
               <div className="mt-2 text-center">
                 <button

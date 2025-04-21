@@ -78,6 +78,7 @@ const getUserDetails = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     res.json({
+      _id: user._id.toString(),
       id: user._id,
       username: user.username,
       email: user.email,

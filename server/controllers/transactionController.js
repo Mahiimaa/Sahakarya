@@ -89,64 +89,6 @@ const getTransactionById = async (req, res) => {
   }
 };
 
-// const createDirectTransfer = async (req, res) => {
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(400).json({ errors: errors.array() });
-//   }
-
-//   const { recipientId, amount, details } = req.body;
-//   const senderId = req.user.id;
-
-//   try {
-//     const recipient = await User.findById(recipientId);
-//     if (!recipient) {
-//       return res.status(404).json({ message: 'Recipient not found' });
-//     }
-//     const sender = await User.findById(senderId);
-//     if (sender.timeCredits < amount) {
-//       return res.status(400).json({ message: 'Insufficient time credits' });
-//     }
-//     const transactionId = 'TX-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-//     const transaction = new Transaction({
-//       transactionId,
-//       sender: senderId,
-//       recipient: recipientId,
-//       amount,
-//       type: "service_payment",
-//       status: "completed",
-//       details: details || 'Direct transfer',
-//       userId: senderId,
-//       creditAmount: amount
-//     });
-//     sender.timeCredits -= amount;
-//     recipient.timeCredits += amount;
-//     const session = await Transaction.startSession();
-//     session.startTransaction();
-
-//     try {
-//       await transaction.save({ session });
-//       await sender.save({ session });
-//       await recipient.save({ session });
-      
-//       await session.commitTransaction();
-//       session.endSession();
-//       const populatedTransaction = await Transaction.findById(transaction._id)
-//         .populate('sender', 'username email')
-//         .populate('recipient', 'username email');
-
-//       res.status(201).json(populatedTransaction);
-//     } catch (error) {
-//       await session.abortTransaction();
-//       session.endSession();
-//       throw error;
-//     }
-//   } catch (err) {
-//     console.error('Error creating transfer:', err);
-//     res.status(500).json({ message: 'Server error while creating transfer' });
-//   }
-// };
-
 const createBookingTransaction = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
