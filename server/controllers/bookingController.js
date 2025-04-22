@@ -161,6 +161,10 @@ const acceptServiceRequest = async (req, res) => {
       if (booking.provider.toString() !== userId) {
         return res.status(403).json({ error: "Unauthorized to accept this request" });
       }
+
+      if (booking.status !== "accepted") {
+        return res.status(400).json({ error: "Only accepted requests can be scheduled" });
+      }
   
       if (!scheduleDate || !serviceDuration) {
         return res.status(400).json({ error: "Schedule date and duration required" });
@@ -200,6 +204,35 @@ const acceptServiceRequest = async (req, res) => {
       res.status(500).json({ error: "Server error while accepting request" });
     }
   };
+
+  const acceptRequestOnly = async (req, res) => {
+    const { bookingId } = req.params;
+    const userId = req.user.id;
+  
+    try {
+      let booking = await Booking.findById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ error: "Booking not found" });
+      }
+  
+      if (booking.provider.toString() !== userId) {
+        return res.status(403).json({ error: "Unauthorized to accept this request" });
+      }
+  
+      if (booking.status !== "pending") {
+        return res.status(400).json({ error: "Only pending requests can be accepted" });
+      }
+  
+      booking.status = "accepted";
+      await booking.save();
+  
+      res.json({ message: "Request accepted", booking });
+    } catch (error) {
+      console.error("Error accepting request:", error);
+      res.status(500).json({ error: "Server error while accepting request" });
+    }
+  };
+  
 
 const rejectServiceRequest = async (req, res) => {
   try {
@@ -416,4 +449,4 @@ const confirmServiceCompletion = async (req, res) => {
         }
       };
 
-module.exports = { requestService,getUserBookings, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, submitProviderCompletion, confirmServiceCompletion, disputeCompletion, createNotification };
+module.exports = { requestService,getUserBookings, acceptServiceRequest, rejectServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, submitProviderCompletion, confirmServiceCompletion, disputeCompletion, createNotification, acceptRequestOnly };

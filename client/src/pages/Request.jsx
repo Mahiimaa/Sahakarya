@@ -398,6 +398,24 @@ const Request = () => {
     fetchMediationMessages(bookingId);
   };
 
+  const acceptRequestOnly = async (bookingId) => {
+    try {
+      const { data } = await axios.put(
+        `${apiUrl}/api/${bookingId}/accept-only`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Request accepted successfully!");
+      setBookings((prev) =>
+        prev.map((b) =>
+          b._id === bookingId ? { ...b, status: "accepted" } : b
+        ).sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
+      );
+    } catch (error) {
+      toast.error("Error accepting request.");
+    }
+  };
+  
   return (
     <div className="flex flex-col min-h-screen font-poppins">
       <Navbar />
@@ -508,6 +526,8 @@ const Request = () => {
             className={`px-2 py-1 rounded-md font-semibold ${
         booking.status === "pending"
         ? "text-s " 
+        : booking.status === "accepted"
+        ? "text-p" 
         : booking.status === "scheduled"
         ? "text-p" 
         : booking.status === "completed"
@@ -534,9 +554,9 @@ const Request = () => {
                   <>
                   <button
                     className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded whitespace-nowrap"
-                    onClick={() => handleOpenScheduleModal(booking._id)}
+                    onClick={() => acceptRequestOnly(booking._id)}
                   >
-                    Accept & Schedule
+                    Accept
                   </button>
                   <button
                     className="bg-error hover:bg-error/90 text-white px-4 py-2 rounded"
@@ -546,8 +566,17 @@ const Request = () => {
                   </button>
                   </>
                   )} 
-                  {booking.status === "scheduled" && booking.scheduleDate && !isNaN(new Date(booking.scheduleDate)) && (
+                  {booking.status === "accepted" && (
+                    <button
+                      className="bg-p hover:bg-p/90 text-white px-4 py-2 rounded whitespace-nowrap"
+                      onClick={() => handleOpenScheduleModal(booking._id)}
+                    >
+                      Schedule
+                    </button>
+                  )}
+                  {(booking.status === "accepted" || booking.status === "scheduled") && (
                     <div className="flex flex-row gap-2 justify-end">
+                      {booking.status === "scheduled" && booking.scheduleDate && !isNaN(new Date(booking.scheduleDate)) && (
                       <button
                         className ="bg-p hover:bg-p/90 text-white px-4 py-2 rounded self-end" 
                         onClick={() => initiateCompletion(booking._id)}
@@ -558,6 +587,7 @@ const Request = () => {
                       ? "Completion Details Submitted"
                       : "Submit Completion Details"}
                       </button>
+                      )}
                     <button
                     className="bg-white text-p border border-p hover:bg-p hover:text-white px-4 py-2 rounded ml-4 self-end"
                     onClick={() => openChat(booking.provider, booking.requester)}

@@ -15,7 +15,7 @@ const {
 } = require("../controllers/Payment");
 const { getServiceDetails, getServiceById, getUserServices, updateServiceDetails, deleteUserService, getAllServiceDetails} = require('../controllers/serviceDetails');
 const {getProviderDetails, getPreviousWork, addReviews, getReviewsByProvider, getReviewsByBooking, checkReviewExists, editReview, deleteReview, getTopRatedProviders} = require('../controllers/ProviderController');
-const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, submitProviderCompletion, disputeCompletion, confirmServiceCompletion } = require("../controllers/bookingController");
+const { requestService, getUserBookings, acceptServiceRequest, getServiceRequestsForProvider, getOutgoingBookings, rejectServiceRequest, submitProviderCompletion, disputeCompletion, confirmServiceCompletion, acceptRequestOnly } = require("../controllers/bookingController");
 const { getMessages, sendMessage, markMessagesAsRead, getUserChats, sendImageMessage} = require('../controllers/messageController');
 const {getNotifications,markAllAsRead, deleteNotification, deleteAllRead, readNotifications} = require('../controllers/notificationController');
 const {requestMediation, getMediationCases, getMediationCaseDetails, sendMediationMessage, resolveMediation, getMediationMessages, getResolvedMediationCases} = require("../controllers/mediationController");
@@ -113,6 +113,7 @@ router.get("/my-services", verifyToken, getUserServices);
 router.post("/bookings", verifyToken, requestService);
 router.get("/bookings/provider", verifyToken, getServiceRequestsForProvider);
 router.get("/bookings/requester", verifyToken, getOutgoingBookings);
+router.put("/:bookingId/accept-only", verifyToken, acceptRequestOnly);
 router.put("/:bookingId/accept", verifyToken, acceptServiceRequest);
 router.put("/:bookingId/reject", verifyToken, rejectServiceRequest);
 router.put('/bookings/:bookingId/dispute', verifyToken, disputeCompletion);
