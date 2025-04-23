@@ -100,8 +100,9 @@ const Mediation = ({ booking, currentUser }) => {
       </p>
       )}
       
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex justify-between items-center flex-wrap gap-2 mb-2">
           <h4 className="text-h4 font-semi-bold">Communication</h4>
+          <div className="flex gap-2 ml-auto">
           <button
             className="text-p text-small hover:underline"
             onClick={() => setExpandedMessages(!expandedMessages)}
@@ -116,7 +117,8 @@ const Mediation = ({ booking, currentUser }) => {
             {loading ? "Loading..." : "Refresh"}
           </button>
         </div>
-
+        </div>
+        <div className="px-2 sm:px-0">
         <div className="bg-white rounded-lg p-3 shadow-sm">
         <div className={`${expandedMessages ? "max-h-96" : "max-h-60"} overflow-y-auto mb-3 p-2 bg-light-grey/30 rounded transition-all duration-300`}>
           {mediationMessages.length > 0 ? (
@@ -127,14 +129,14 @@ const Mediation = ({ booking, currentUser }) => {
               return (
               <div
                 key={msg._id}
-                className={`p-2 mb-2 rounded ${
+                className={`p-2 mb-2 rounded break-words whitespace-pre-wrap w-full sm:max-w-[65%] ${
                    isResolutionMessage
                       ? "bg-p/20 border border-p/50"
                   : isMediator
-                    ? "bg-s/20 border-l-4 border-s ml-auto max-w-[65%]"
+                    ? "bg-s/20 border-l-4 border-s ml-auto"
                     : isCurrentUser
-                    ? "bg-p/60 ml-auto max-w-[65%]"
-                    : "bg-p/20 max-w-[65%]"
+                    ? "bg-p/60 ml-auto "
+                    : "bg-p/20 "
                 }`}
               >
                 <div className="text-small text-grey mb-1 ">
@@ -156,18 +158,18 @@ const Mediation = ({ booking, currentUser }) => {
           )}
         </div>
         {!isResolved && (
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             placeholder="Type your message here..."
-            className="flex-1 p-2 border rounded"
+            className="w-full sm:flex-1 p-2 border rounded"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && sendMessage()}
             disabled={sendingMessage}
           />
           <button
-            className={`bg-p hover:bg-p/90 text-white px-4 py-2 rounded ${
+            className={`bg-p hover:bg-p/90 text-white px-4 py-2 rounded w-full sm:w-auto ${
               sendingMessage ? "opacity-70 cursor-not-allowed" : ""
             }`}
             onClick={sendMessage}
@@ -177,6 +179,7 @@ const Mediation = ({ booking, currentUser }) => {
           </button>
         </div>
         )}
+      </div>
       </div>
     </div>
   );

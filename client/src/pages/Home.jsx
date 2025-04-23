@@ -362,7 +362,7 @@ function Home() {
                 </div>
 
                 {/* Right side with image that overlaps */}
-                <div className="w-full md:w-1/2 md:absolute md:right-0 md:top-1/2 md:transform md:-translate-y-1/2 md:translate-x-8 hidden md:block">
+                <div className="w-full md:w-1/3 md:absolute md:right-0 md:top-1/2 md:transform md:-translate-y-1/2 md:translate-x-8 hidden md:block">
                   <img
                     className="w-full h-auto object-contain rounded-lg"
                     src={home || "/placeholder.svg"}

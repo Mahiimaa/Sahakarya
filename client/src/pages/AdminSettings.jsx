@@ -388,7 +388,7 @@ function AdminSettings() {
           {activeTab === 'system' && (
             <div className="space-y-6">
               <div className="max-w-3xl">
-                <h2 className="text-h2 font-semibold mb-4 flex items-center">
+                <h2 className="text-h2 font-semi-bold  flex items-center">
                   <Clock className="mr-2 h-5 w-5" /> System Settings
                 </h2>
                 <p className="text-gray-500 mb-6">Configure system-level settings for your platform.</p>
@@ -396,7 +396,7 @@ function AdminSettings() {
                 <div className="space-y-2">
                   <div className="flex justify-between w-full">
                   <div>
-                    <h3 className="font-medium mb-2">Maintenance Mode</h3>
+                    <h3 className="font-medium">Maintenance Mode</h3>
                     <div className="flex items-center justify-between p-3 border rounded-md">
                       <div>
                         <p className="font-medium">Enable Maintenance Mode</p>
@@ -428,7 +428,7 @@ function AdminSettings() {
                   </div>
                   </div>                 
                   <div>
-                    <h3 className="font-medium mb-2">System Logs</h3>
+                    <h3 className="font-medium ">System Logs</h3>
                     <div className="flex items-center gap-2">
                       <select className="flex-grow p-2 border rounded-md">
                         <option>All Logs</option>
@@ -443,7 +443,7 @@ function AdminSettings() {
                   </div>
                   
                   <div>
-                    <h3 className="font-medium mb-2">Database Backup</h3>
+                    <h3 className="font-medium ">Database Backup</h3>
                     <div className="flex items-center gap-2">
                       <button className="px-3 py-2 bg-p text-white rounded-md hover:bg-p/90">
                         Backup Now
@@ -455,7 +455,7 @@ function AdminSettings() {
                   </div>
                   
                   <div className="border-t pt-4 mt-6">
-                    <h3 className="font-medium mb-2 text-error">Danger Zone</h3>
+                    <h3 className="font-medium text-error">Danger Zone</h3>
                     <div className="flex items-center gap-2">
                       <button className="px-3 py-2 bg-white border border-error text-error rounded-md hover:bg-error hover:text-white">
                         Reset Platform
@@ -471,7 +471,7 @@ function AdminSettings() {
           )}
           
           {/* Save Button - Always visible */}
-          <div className="mt-8 border-t pt-4">
+          <div className=" border-t pt-4">
             <div className="flex justify-between items-center">
               <div className="text-sm text-gray-500">
                 <p className="flex items-center">

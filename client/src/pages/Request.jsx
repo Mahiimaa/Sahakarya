@@ -626,6 +626,7 @@ const Request = () => {
               <p><strong>Provider:</strong> {booking?.provider?.username}</p>
               <p><strong>Status:</strong> <span className={`px-2 py-1 rounded-md font-semi-bold 
                 ${booking.status === "pending" ? "text-s" : 
+                  booking.status === "accepted" ? "text-p" : 
                 booking.status === "scheduled" ? "text-p" : 
                 booking.status === "completed" ? "text-p" :
                 booking.status === "credit transferred" ? "text-p" :
