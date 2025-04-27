@@ -41,6 +41,9 @@ class OTPStore {
       }
     }
   }
+  stopCleanup() {
+    clearInterval(this.cleanupInterval); 
+  }
 }
 
 const otpStore = new OTPStore();

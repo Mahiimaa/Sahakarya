@@ -67,6 +67,12 @@ function AdminNav() {
                   <p className='font-poppins font-regular'>Requests</p>
                   </div>
                 </NavLink>
+                <NavLink to="/adminReport" className={setActiveClass}>
+                <div className='flex items-center gap-6 p-2'>
+                  <img className="w-8 h-8"  src={request} alt="" />
+                  <p className='font-poppins font-regular'>Reports</p>
+                  </div>
+                </NavLink>
               </div>
             </div>
 

@@ -134,6 +134,8 @@ mongoose.connect("mongodb://127.0.0.1:27017/Sahakarya", {
 
 app.use("/api", authRoutes); 
 
+if (process.env.NODE_ENV !== 'test') {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-module.exports = { io };
+}
+module.exports = { app, server, io };

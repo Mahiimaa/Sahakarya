@@ -10,6 +10,7 @@ import axios from "axios"
 import io from "socket.io-client";
 import { IoGitPullRequestOutline, IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { TfiAnnouncement } from "react-icons/tfi";
+import { AlertTriangle, X } from "lucide-react";
 
 const socket = io(process.env.REACT_APP_API_BASE_URL, {
   withCredentials: true,
@@ -38,6 +39,9 @@ function Navbar() {
   const mobileMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const [userWarnings, setUserWarnings] = useState([]);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+
 
   const navClass = (path) => {
     const isActive = location.pathname === path || location.pathname.startsWith(path);
@@ -66,6 +70,19 @@ function Navbar() {
             },
           });
           setUserDetails(response.data);
+          try {
+            const warningRes = await axios.get(`${apiUrl}/api/warnings/${userId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (Array.isArray(warningRes.data)) {
+              setUserWarnings(warningRes.data);
+            } else {
+              setUserWarnings([]);
+            }
+          } catch (warningError) {
+            console.error("Error fetching user warnings:", warningError);
+            setUserWarnings([]);
+          }
           console.log("User response:", response.data);
           console.log("Joining room with userId:", response.data.id);
           socket.emit("joinRoom", { userId: response.data.id });
@@ -258,7 +275,16 @@ function Navbar() {
         <div className=" md:flex items-center text-sm text-p font-semibold cursor-pointer" onClick={() => navigate("/timeCredit")}>
           Credits: <span className={userDetails?.timeCredits < 3 ? 'text-error ml-1' : 'ml-1'}>{userDetails?.timeCredits || 0}</span>
         </div>
-
+        {userWarnings.length > 0 && (
+          <div className="relative">
+            <button onClick={() => setShowWarningModal(true)}>
+              <AlertTriangle className="text-error" size={24} />
+            </button>
+            <div className="absolute -top-1 -right-1 text-xs bg-error text-white rounded-full w-5 h-5 flex items-center justify-center">
+              {userWarnings.length}
+            </div>
+          </div>
+        )}
         <div className="relative" ref={notifRef}>
           <button onClick={(e) =>{e.stopPropagation(); 
             setShowDropdown(!showDropdown);
@@ -335,6 +361,31 @@ function Navbar() {
 
       </div>
     )}
+    {showWarningModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-error">Important Warnings</h2>
+              <button className="text-xl" onClick={() => setShowWarningModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+
+            {userWarnings.length > 0 ? (
+              <ul className="space-y-3">
+                {userWarnings.map((warn) => (
+                  <li key={warn._id} className="p-3 border rounded-md bg-light-grey">
+                    <p className="text-sm">{warn.message}</p>
+                    <p className="text-xs text-dark-grey mt-1">Issued on: {new Date(warn.createdAt).toLocaleString()}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No warnings found.</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   </nav>
   );

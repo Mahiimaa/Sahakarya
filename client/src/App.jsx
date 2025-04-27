@@ -19,6 +19,7 @@ import Category from "./pages/Category";
 import AdminSettings from "./pages/AdminSettings";
 import AdminMediation from "./pages/AdminMediation";
 import AdminRequest from "./pages/AdminRequests";
+import AdminReport from "./pages/AdminReport";
 import Explore from "./pages/Explore";
 import ServiceDetails from "./pages/ServiceDetails";
 import ProviderDetails from "./pages/ProviderDetails";
@@ -84,6 +85,7 @@ return (
         <Route path="/adminsettings" element={<ProtectedRoute allowedRoles={['admin']}><AdminSettings /></ProtectedRoute>} />
         <Route path="/adminMediation" element={<ProtectedRoute allowedRoles={['admin']}><AdminMediation /></ProtectedRoute>} />
         <Route path="/adminrequest" element={<ProtectedRoute allowedRoles={['admin']}><AdminRequest/></ProtectedRoute>} />
+        <Route path="/adminreport" element={<ProtectedRoute allowedRoles={['admin']}><AdminReport/></ProtectedRoute>} />
         </Routes>
         </BrowserRouter>
         </div>

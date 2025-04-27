@@ -26,6 +26,7 @@ const {getSettings, updateSettings} = require("../controllers/settingsController
 const { requestCashout, updateTransactionStatus, getCashoutStatus} = require('../controllers/cashout');
 const {getMonthlyTrends, getServiceCategories, getRecentTransactions} = require("../controllers/adminDashboard")
 const {getSuggestions} = require("./address");
+const {reportUser, getReports, sendWarning, getWarnings} = require("../controllers/report");
 const multer = require('multer');
 const path = require('path');
 const { verifyToken, authorizeRoles } = require("../middleware/authmiddleware");
@@ -172,5 +173,9 @@ router.get("/settings", verifyToken, getSettings);
 router.put("/admin/settings", [verifyToken, authorizeRoles("admin")], updateSettings);
 
 router.get('/address/suggestions',verifyToken, getSuggestions);
+router.post('/reportUser', verifyToken, reportUser);
+router.get('/getReports', verifyToken, getReports);
+router.post('/send-warning', verifyToken, sendWarning);
+router.get('/warnings/:userId', verifyToken, getWarnings);
 
 module.exports = router;

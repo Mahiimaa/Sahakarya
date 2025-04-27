@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios"
 import { IoClose } from "react-icons/io5";
 import {toast} from "react-toastify";
-import { Filter, Search, Plus } from "lucide-react"
+import { Filter, Search, Plus} from "lucide-react"
 
 function Explore() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -285,6 +285,7 @@ function Explore() {
                           <option key={service._id} value={service._id}>{service.serviceName}</option>
                         ))}
                       </select>
+                      <p className= "text-grey font-regular">Make sure you have selected the services in your profile first.</p>
                     </div>
                     <div>
                       <label className="block font-semibold">Title</label>

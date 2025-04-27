@@ -6,7 +6,7 @@ import Chat from "../components/Chat";
 import ScheduleModal from "../components/Schedule";
 import Mediation from "../components/Mediation";
 import ReactStars from "react-rating-stars-component";
-import { Search, Filter, X } from "lucide-react" 
+import { Search, Filter, X, Flag } from "lucide-react" 
 
 const Request = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -42,6 +42,10 @@ const Request = () => {
   const [sortBy, setSortBy] = useState("newest")
   const [filteredIncomingBookings, setFilteredIncomingBookings] = useState([])
   const [filteredOutgoingBookings, setFilteredOutgoingBookings] = useState([])
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportBookingId, setReportBookingId] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+
 
     const openChat = (requester, provider) => {
       if (!requester || !provider) {
@@ -520,7 +524,19 @@ const Request = () => {
         {filteredIncomingBookings.length > 0 ? (
           filteredIncomingBookings.map(booking => (
             <div key={booking._id} className="p-4 border border-dark-grey rounded-lg shadow-md bg-white mb-4">
+              <div className=" flex justify-between">
               <h2 className="text-h2  pb-2">Request For {booking?.serviceDetailSnapshot?.title || booking?.service?.serviceName}</h2>
+              <button 
+                  className="p-2 bg-error text-white rounded hover:bg-error/90"
+                  title="Report Request"
+                  onClick={() => {
+                    setReportBookingId(booking._id);
+                    setShowReportModal(true);
+                  }}
+                >
+                  <Flag size={18} />
+                </button>
+                </div>
               <p><strong>Requester:</strong> {booking?.requester?.username}</p>
               <p><strong>Status:</strong> <span
             className={`px-2 py-1 rounded-md font-semibold ${
@@ -919,6 +935,63 @@ const Request = () => {
               onClick={submitReview}
             >
               Submit Review
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    {showReportModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white p-6 rounded-lg w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Report Request</h2>
+            <button className="text-xl" onClick={() => setShowReportModal(false)}>
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block font-semibold">Reason for Reporting</label>
+            <textarea
+              className="w-full border rounded-md p-2"
+              placeholder="Describe the issue with this request"
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 mt-4">
+            <button 
+              className="bg-white text-error border border-error hover:bg-error hover:text-white px-4 py-2 rounded"
+              onClick={() => setShowReportModal(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="bg-p text-white hover:bg-p/90 px-4 py-2 rounded"
+              onClick={async () => {
+                if (!reportDescription.trim()) {
+                  toast.error("Please provide a reason.");
+                  return;
+                }
+                try {
+                  await axios.post(`${apiUrl}/api/reportUser`, {
+                    bookingId: reportBookingId,
+                    description: reportDescription,
+                  }, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  toast.success("Report submitted successfully!");
+                  setShowReportModal(false);
+                  setReportBookingId('');
+                  setReportDescription('');
+                } catch (error) {
+                  console.error("Error reporting request:", error);
+                  toast.error("Failed to submit report.");
+                }
+              }}
+            >
+              Submit Report
             </button>
           </div>
         </div>
