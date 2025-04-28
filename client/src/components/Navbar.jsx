@@ -41,6 +41,7 @@ function Navbar() {
   const location = useLocation();
   const [userWarnings, setUserWarnings] = useState([]);
   const [showWarningModal, setShowWarningModal] = useState(false);
+  const [hasViewedWarnings, setHasViewedWarnings] = useState(false);
 
 
   const navClass = (path) => {
@@ -71,7 +72,7 @@ function Navbar() {
           });
           setUserDetails(response.data);
           try {
-            const warningRes = await axios.get(`${apiUrl}/api/warnings/${userId}`, {
+            const warningRes = await axios.get(`${apiUrl}/api/my-warnings`, {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (Array.isArray(warningRes.data)) {
@@ -277,10 +278,12 @@ function Navbar() {
         </div>
         {userWarnings.length > 0 && (
           <div className="relative">
-            <button onClick={() => setShowWarningModal(true)}>
+            <button onClick={() => {setShowWarningModal(true);
+            setHasViewedWarnings(true);}
+            }>
               <AlertTriangle className="text-error" size={24} />
             </button>
-            <div className="absolute -top-1 -right-1 text-xs bg-error text-white rounded-full w-5 h-5 flex items-center justify-center">
+            <div className={`absolute -top-1 -right-1 text-xs bg-error text-white rounded-full w-5 h-5 flex items-center justify-center ${!hasViewedWarnings ? "animate-bounce" : ""}`}>
               {userWarnings.length}
             </div>
           </div>

@@ -65,15 +65,11 @@ const sendWarning = async (req, res) => {
 
 const getWarnings = async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    const warnings = await Warning.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    const warnings = await Warning.find({ userId: req.user.id }).sort({ createdAt: -1});
     res.json(warnings);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch warnings' });
+    res.status(500).json({ error: 'Failed to fetch your warnings' });
   }
 }
 

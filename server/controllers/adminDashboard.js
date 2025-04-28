@@ -10,14 +10,12 @@ const inspectUserDocument = async () => {
     console.log('User date fields:', {
       createdAt: user.createdAt ? typeof user.createdAt : 'not present',
       creationDate: user.creationDate ? typeof user.creationDate : 'not present',
-      // Add any other potential date fields
     });
   } catch (error) {
     console.error('Error inspecting user document:', error);
   }
 };
 
-// Inspect Service document structure
 const inspectServiceDocument = async () => {
   try {
     const service = await Service.findOne().lean();
@@ -25,14 +23,13 @@ const inspectServiceDocument = async () => {
     console.log('Service date fields:', {
       createdAt: service.createdAt ? typeof service.createdAt : 'not present',
       creationDate: service.creationDate ? typeof service.creationDate : 'not present',
-      // Add any other potential date fields
     });
   } catch (error) {
     console.error('Error inspecting service document:', error);
   }
 };
 
-// Inspect Transaction document structure
+
 const inspectTransactionDocument = async () => {
   try {
     const transaction = await Transaction.findOne().lean();
@@ -40,7 +37,6 @@ const inspectTransactionDocument = async () => {
     console.log('Transaction date fields:', {
       createdAt: transaction.createdAt ? typeof transaction.createdAt : 'not present',
       date: transaction.date ? typeof transaction.date : 'not present',
-      // Add any other potential date fields
     });
   } catch (error) {
     console.error('Error inspecting transaction document:', error);
@@ -53,31 +49,22 @@ const getMonthlyTrends =  async (req, res) => {
 await inspectServiceDocument();
 await inspectTransactionDocument();
       const currentDate = new Date();
-      const monthsToShow = 6; // Show last 6 months
-      
-      // Prepare array to hold the result
+      const monthsToShow = 6; 
       const result = [];
       
-      // Calculate data for each month
       for (let i = 0; i < monthsToShow; i++) {
         const date = new Date(currentDate);
         date.setMonth(date.getMonth() - i);
         
-        // Start of month
         const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-        // End of month
         const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-        
-        // Get month name
         const monthName = startOfMonth.toLocaleString('default', { month: 'short' });
         
-        // DEBUGGING: Log the date range we're checking
         console.log(`Checking range for ${monthName}:`, {
           startOfMonth: startOfMonth.toISOString(),
           endOfMonth: endOfMonth.toISOString()
         });
         
-        // Count new users in this month - check both createdAt and creationDate fields
         const userQuery = {
           $or: [
             { createdAt: { $gte: startOfMonth, $lte: endOfMonth } },
@@ -86,7 +73,6 @@ await inspectTransactionDocument();
         };
         const newUsers = await User.countDocuments(userQuery);
         
-        // Count new services in this month - check both createdAt and creationDate fields
         const serviceQuery = {
           $or: [
             { createdAt: { $gte: startOfMonth, $lte: endOfMonth } },
@@ -95,7 +81,6 @@ await inspectTransactionDocument();
         };
         const newServices = await Service.countDocuments(serviceQuery);
         
-        // Count transactions in this month - check both date and createdAt fields
         const transactionQuery = {
           $or: [
             { date: { $gte: startOfMonth, $lte: endOfMonth } },
@@ -104,14 +89,11 @@ await inspectTransactionDocument();
         };
         const monthlyTransactions = await Transaction.countDocuments(transactionQuery);
         
-        // DEBUGGING: Log the counts for this month
         console.log(`Counts for ${monthName}:`, {
           users: newUsers,
           services: newServices,
           transactions: monthlyTransactions
         });
-        
-        // Add to result array
         result.unshift({
           month: monthName,
           users: newUsers,
@@ -120,7 +102,6 @@ await inspectTransactionDocument();
         });
       }
       
-      // DEBUGGING: Log the final result
       console.log('Monthly trend data:', result);
       
       res.json(result);

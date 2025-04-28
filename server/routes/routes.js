@@ -176,6 +176,6 @@ router.get('/address/suggestions',verifyToken, getSuggestions);
 router.post('/reportUser', verifyToken, reportUser);
 router.get('/getReports', verifyToken, getReports);
 router.post('/send-warning', verifyToken, sendWarning);
-router.get('/warnings/:userId', verifyToken, getWarnings);
+router.get('/my-warnings', verifyToken, getWarnings);
 
 module.exports = router;
