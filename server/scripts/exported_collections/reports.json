@@ -1,0 +1,11 @@
+[
+  {
+    "_id": "680e40df96c39ea37ab812a8",
+    "bookingId": "67ffd6a01406e51d70b4f380",
+    "reportedBy": "67ff25b10df7d759915b0f1c",
+    "description": "I observed a malicious behaviour",
+    "status": "warning_sent",
+    "createdAt": "2025-04-27T14:36:15.679Z",
+    "__v": 0
+  }
+]

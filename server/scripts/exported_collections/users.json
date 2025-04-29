@@ -1,0 +1,41 @@
+[
+  {
+    "_id": "67fe194d8ff49a587fb4cb50",
+    "email": "prinshashrestha686@gmail.com",
+    "username": "nabistha",
+    "password": "$2a$10$wP8X6QhAbTGr6cOq3MFOu.GsuqFWhNB/y.u93kdlX8WljdfBduq9i",
+    "passwordWasGenerated": true,
+    "role": "user",
+    "isVerified": true,
+    "bio": "",
+    "phone": "9810559933",
+    "address": "Kathmandu",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        85.324,
+        27.7172
+      ]
+    },
+    "profilePicture": "/uploads/profile-1745589057130-641866860.JPG",
+    "servicesOffered": [
+      "67ff22a20df7d759915b0c16"
+    ],
+    "timeCredits": 33,
+    "serviceDetails": [
+      {
+        "serviceId": "67ff22a20df7d759915b0c16",
+        "title": "Software Developer",
+        "description": "I will make your webiste/ app as your preference.",
+        "image": "/uploads/profile-1745589720373-537206297.JPG",
+        "duration": 3,
+        "timeCredits": 3,
+        "_id": "680b95a3f0e0953271d5f3eb"
+      }
+    ],
+    "createdAt": "2025-04-15T08:31:09.129Z",
+    "updatedAt": "2025-04-25T14:02:00.379Z",
+    "__v": 1,
+    "heldCredits": 7
+  }
+]

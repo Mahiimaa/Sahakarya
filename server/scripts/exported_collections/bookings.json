@@ -1,0 +1,33 @@
+[
+  {
+    "_id": "67ff36380df7d759915b1e11",
+    "service": "67ff22a20df7d759915b0c16",
+    "provider": "67fe6d116d23a9c1478377cc",
+    "requester": "67ff25b10df7d759915b0f1c",
+    "status": "completed",
+    "serviceDuration": 5,
+    "confirmedByRequester": true,
+    "confirmedByProvider": true,
+    "disputeReason": "",
+    "reviewed": true,
+    "mediationAdditionalInfo": "",
+    "mediationStatus": "pending",
+    "mediationDecision": "",
+    "creditTransferred": true,
+    "serviceDetailSnapshot": {
+      "title": "Software Developer",
+      "description": "I will make web apps for you making sure your requirements are met.",
+      "duration": 2,
+      "timeCredits": 3,
+      "image": "/uploads/profile-1744778511859-308088849.jpg"
+    },
+    "dateRequested": "2025-04-16T04:46:48.369Z",
+    "createdAt": "2025-04-16T04:46:48.370Z",
+    "updatedAt": "2025-04-16T04:58:36.874Z",
+    "__v": 0,
+    "scheduleDate": "2025-04-29T14:15:00.000Z",
+    "actualDuration": 7,
+    "completionNotes": "Initially, I thought I would get this done within 5 hours, but it took longer than expected.",
+    "proposedCredits": 6
+  }
+]

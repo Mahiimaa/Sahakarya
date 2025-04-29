@@ -1,0 +1,16 @@
+[
+  {
+    "_id": "67ff34a60df7d759915b1bd2",
+    "userId": "67ff25b10df7d759915b0f1c",
+    "message": "You have a new service request for Event manager from mahima",
+    "type": "booking",
+    "data": {
+      "bookingId": "67ff34a60df7d759915b1bd0",
+      "serviceId": "67ff22690df7d759915b0c0a",
+      "requesterId": "67fe6d116d23a9c1478377cc"
+    },
+    "isRead": true,
+    "createdAt": "2025-04-16T04:40:06.535Z",
+    "__v": 0
+  }
+]

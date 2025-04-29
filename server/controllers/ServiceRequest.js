@@ -1,5 +1,6 @@
 const ServiceRequest = require('../models/ServiceRequest');
 const { createNotification } = require('./bookingController');
+const User = require('../models/User');
 
 const createServiceRequest = async (req, res) => {
   try {

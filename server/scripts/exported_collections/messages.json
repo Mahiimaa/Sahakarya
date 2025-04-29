@@ -1,0 +1,12 @@
+[
+  {
+    "_id": "67ff42a70df7d759915b2cbc",
+    "sender": "67ff25b10df7d759915b0f1c",
+    "receiver": "67fe6d116d23a9c1478377cc",
+    "content": "Hello!!",
+    "createdAt": "2025-04-16T05:39:51.715Z",
+    "read": true,
+    "__v": 0,
+    "readAt": "2025-04-16T05:40:24.730Z"
+  }
+]
