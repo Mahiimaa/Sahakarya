@@ -564,6 +564,10 @@ const Request = () => {
     {booking.status}
   </span></p>
               <p><strong>Requested on:</strong> {new Date(booking.dateRequested).toLocaleString()}</p>
+              <p><strong>Initial Duration:</strong> {booking?.serviceDetailSnapshot?.duration || booking?.service?.duration}</p>
+              <p><strong>Time Credits:</strong> {booking?.serviceDetailSnapshot?.timeCredits || booking?.service?.timeCredits}</p>
+              <p><strong>Scheduled for:</strong> {new Date(booking.scheduleDate).toLocaleString()}</p>
+              <p><strong>Duration:</strong> {booking.serviceDuration} hour(s)</p>
 
                 <div className="mt-4 flex gap-2">
                 {booking.status === "pending" && (
@@ -654,6 +658,8 @@ const Request = () => {
                 {booking.status}
               </span></p>
               <p><strong>Requested on:</strong> {new Date(booking.dateRequested).toLocaleString()}</p>
+              <p><strong>Initial Duration:</strong> {booking?.serviceDetailSnapshot?.duration || booking?.service?.duration} </p>
+              <p><strong>Time Credits:</strong> {booking?.serviceDetailSnapshot?.timeCredits || booking?.service?.timeCredits}</p>
               {booking.status === "scheduled" && (
               <div className="">
           <p><strong>Scheduled for:</strong> {new Date(booking.scheduleDate).toLocaleString()}</p>

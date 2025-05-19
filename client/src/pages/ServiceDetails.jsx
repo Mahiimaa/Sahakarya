@@ -39,7 +39,7 @@ function ServiceDetails() {
         },
         (err) => {
           console.error("Failed to get location:", err);
-          toast.error("Please enable location access.");
+          // toast.error("Please enable location access.");
         }
       );
     }

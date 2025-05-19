@@ -144,6 +144,10 @@ const sendMediationMessage = async (req, res) => {
     const userId = req.user.id;
     const { bookingId } = req.params;
     const { message, isFromMediator } = req.body;
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: "Message cannot be empty" });
+    }
     
     const booking = await Booking.findById(bookingId)
       .populate('requester', 'username')
@@ -157,7 +161,7 @@ const sendMediationMessage = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    const isAdmin = user && user.role === "admin";
+    const isAdmin = user.role === "admin";
     
     if (!isAdmin && 
         booking.requester._id.toString() !== userId && 
@@ -172,19 +176,30 @@ const sendMediationMessage = async (req, res) => {
     const newMessage = new Mediation({
       booking: bookingId,
       sender: userId,
-      senderName: user.username,
-      message,
+      senderName: isAdmin && isFromMediator ? "Mediator" : user.username,
+      message : message.trim(),
       isFromMediator: isAdmin && isFromMediator,
       timestamp: new Date()
     });
     
     const savedMessage = await newMessage.save();
 
+    const messageToEmit = {
+      caseId: bookingId,
+      message: savedMessage.message,
+      sender: savedMessage.sender,
+      senderName: savedMessage.senderName,
+      isFromMediator: savedMessage.isFromMediator,
+      _id: savedMessage._id,
+      timestamp: savedMessage.timestamp.toISOString(),
+    };
+    io.to(bookingId.toString()).emit("mediationMessage", messageToEmit);
+
     try {
     if (isAdmin) {
       if (booking.requester && booking.requester._id) {
       await createNotification(
-        booking.requester,
+        booking.requester._id.toString(),
         `New message from mediator in your disputed booking`,
         'mediation_message',
         { bookingId: booking._id }
@@ -193,14 +208,14 @@ const sendMediationMessage = async (req, res) => {
       
       if (booking.provider && booking.provider._id) {
       await createNotification(
-        booking.provider,
+        booking.provider._id.toString(),
         `New message from mediator in your disputed booking`,
         'mediation_message',
         { bookingId: booking._id }
       );
     }
     } else {
-      const otherPartyId = userId === booking.requester.toString() 
+      const otherPartyId = userId === booking.requester._id.toString() 
       ? (booking.provider ? booking.provider._id.toString() : null)
       : (booking.requester ? booking.requester._id.toString() : null);
       
@@ -245,8 +260,7 @@ const getMediationMessages = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ error: "Booking not found" });
     }
-    const user = await User.findById(userId);
-    const isAdmin = user && user.role === "admin";
+    const isAdmin = req.user.role === "admin";
     
     if (!isAdmin && 
         booking.requester.toString() !== userId && 
@@ -255,7 +269,13 @@ const getMediationMessages = async (req, res) => {
     }
     
     const messages = await Mediation.find({ booking: bookingId })
+      .populate("sender", "username")
       .sort({ timestamp: 1 });
+
+      const formattedMessages = messages.map((msg) => ({
+      ...msg.toObject(),
+      senderName: msg.isFromMediator ? "Mediator" : msg.sender.username,
+    }));
     
     res.json(messages);
   } catch (error) {

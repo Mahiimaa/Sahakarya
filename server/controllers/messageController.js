@@ -54,16 +54,36 @@ const sendMessage = async (req, res, io) => {
       return res.status(404).json({ message: 'Sender not found' });
     }
 
+     const existingMessage = await Message.findOne({
+      sender: senderId,
+      receiver: receiverId,
+      content: content.trim(),
+      createdAt: { $gte: new Date(Date.now() - 1000) },
+    });
+    if (existingMessage) {
+      console.log(`Duplicate message detected in sendMessage, ID: ${existingMessage._id}`);
+      return res.status(200).json({ message: 'Message already exists', data: existingMessage });
+    }
     const message = new Message({
       sender: senderId,
       receiver: receiverId,
+      providerId,
+      requesterId,
       content: content.trim(),
       createdAt: new Date(),
     });
 
     await message.save();
     console.log(`Sending message from ${senderId} to ${receiverId}`);
-    
+
+    const roomId = getRoomId(providerId, requesterId);
+    // if (global.io) {
+    //   global.io.to(roomId.toString()).emit("chatMessage", message);
+    //   console.log(`Emitted chatMessage to room ${roomId}, message ID: ${message._id}`);
+    // } else {
+    //   console.warn("Socket.io is not initialized yet.");
+    // }
+
     const truncatedContent = content.length > 30 
       ? `${content.substring(0, 30)}...` 
       : content;
@@ -76,12 +96,6 @@ const sendMessage = async (req, res, io) => {
         senderId: senderId
       }
     );
-    if (global.io) {
-      global.io.to(senderId.toString()).emit("chat message", message);
-      global.io.to(receiverId.toString()).emit("chat message", message);
-    } else {
-      console.warn("Socket.io is not initialized yet.");
-    }
     res.status(201).json({ message: 'Message sent successfully', data: message });
   } catch (error) {
     console.error('Error in sendMessage:', error);

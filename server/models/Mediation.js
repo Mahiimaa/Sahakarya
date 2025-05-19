@@ -30,5 +30,6 @@ const MediationSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+MediationSchema.index({ booking: 1, sender: 1, timestamp: 1 }, { unique: true });
 
 module.exports = mongoose.model('Mediation', MediationSchema);

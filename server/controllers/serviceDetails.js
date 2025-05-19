@@ -172,16 +172,20 @@ const getAllServiceDetails = async (req, res) => {
       "username email profilePicture serviceDetails"
     ).populate({
       path: "serviceDetails",
-      select: "serviceId title description image", 
+      select: "serviceId title description image duration timeCredits", 
     });
 
     const servicesMap = {};
 
     users.forEach((user) => {
       user.serviceDetails.forEach((detail) => {
+        if (!detail.title || !detail.description || !detail.duration || !detail.timeCredits) {
+          return;
+        }
         if (!servicesMap[detail.serviceId]) {
           servicesMap[detail.serviceId] = {
             serviceId: detail.serviceId,
+            _id: detail._id,
             serviceName: detail.title,
             description: detail.description,
             duration: detail.duration,

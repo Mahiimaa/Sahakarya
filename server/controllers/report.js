@@ -29,9 +29,17 @@ const getReports = async (req, res) => {
       }
   
       const reports = await Report.find()
-        .populate('bookingId', 'service requester provider') 
-        .populate('reportedBy', 'username email') 
-        .sort({ createdAt: -1 });
+        .populate({
+        path: 'bookingId',
+        populate: [
+          { path: 'service', select: 'serviceName' }, 
+          { path: 'requester', select: 'username _id' },
+          { path: 'provider', select: 'username _id' },
+        ],
+        select: 'service requester provider', 
+      })
+      .populate('reportedBy', 'username email _id')
+      .sort({ createdAt: -1 });
   
       res.json(reports);
     } catch (error) {

@@ -27,6 +27,7 @@ function AdminReport() {
             headers: { Authorization: `Bearer ${token}` },
         });
         setReports(data);
+        console.log(data);
         } catch (error) {
         console.error('Error fetching reports:', error);
         toast.error('Failed to load reports');
@@ -52,6 +53,7 @@ function AdminReport() {
                 <thead>
                   <tr>
                     <th className="py-2 px-4 border-b text-left">Service/Request</th>
+                    <th className="py-2 px-4 border-b text-left">User</th>
                     <th className="py-2 px-4 border-b text-left">Reported By</th>
                     <th className="py-2 px-4 border-b text-left">Description</th>
                     <th className="py-2 px-4 border-b text-left">Status</th>
@@ -59,10 +61,19 @@ function AdminReport() {
                   </tr>
                 </thead>
                 <tbody>
-                  {reports.map((report) => (
+                  {reports.map((report) => {
+                    const isReporterRequester = report.reportedBy?._id === report.bookingId?.requester?._id;
+                    const otherUser = isReporterRequester
+                      ? report.bookingId?.provider?.username
+                      : report.bookingId?.requester?.username;
+
+                    return (
                     <tr key={report._id} className="hover:bg-light-grey/50">
                       <td className="py-2 px-4 border-b">
                         {report.bookingId?.service?.serviceName || 'N/A'}
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                        {otherUser || 'N/A'}
                       </td>
                       <td className="py-2 px-4 border-b">
                         {report.reportedBy?.username || 'N/A'}
@@ -78,10 +89,10 @@ function AdminReport() {
                           <button
                             className="flex items-center gap-2 bg-error hover:bg-error/90 text-white px-4 py-2 rounded"
                             onClick={() => {
-                                setWarningUserId(report.reportedBy?._id);
-                                setShowWarningModal(true);
-                                setWarningMessage('');
-                              }}
+                              setWarningUserId(isReporterRequester ? report.bookingId?.provider?._id : report.bookingId?.requester?._id);
+                              setShowWarningModal(true);
+                              setWarningMessage('');
+                            }}
                             >
                             {sendingWarningId === report.reportedBy?._id ? "Sending..." : (
                               <>
@@ -95,7 +106,8 @@ function AdminReport() {
                         )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -6,6 +6,9 @@ const http = require('http');
 const {Server} = require('socket.io');
 const authRoutes = require("./routes/routes"); 
 const Message = require("./models/Message");
+const Mediation = require('./models/Mediation');
+const Booking = require("./models/Booking");
+const User = require("./models/User");
 require("dotenv").config();
 const Notification = require("./models/Notification");
 
@@ -35,38 +38,74 @@ app.set("io", io);
 const users = new Map();
 
 global.io = io;
+
+const getRoomId = (providerId, requesterId) => {
+  return [providerId, requesterId].sort().join('_');
+};
 io.on('connection', (socket) => {
   console.log('user connected :', socket.id);
 
-  socket.on("joinRoom", ({ userId }) => {
-    if (!userId) {
-      console.error("Missing userId in joinRoom event");
+  socket.on("joinRoom", ({ roomId, userId }) => {
+    console.log(`User ${userId} attempting to join room ${roomId}`);
+    if (!roomId || !userId) {
+      console.error("Missing userId in joinRoom event", { roomId, userId });
       return;
     }
-    socket.join(userId.toString());
+    socket.join(roomId.toString());
     users.set(userId.toString(), socket.id);
-    console.log(`User ${userId} joined room`);
+    console.log(`User ${userId} joined room ${roomId} `);
   });
 
-  socket.on("chatMessage", async ({ sender, receiver, content, providerId, requesterId }) => {
-    if (!sender || !receiver || !content.trim()) {
-      console.error("Invalid message data received:", { sender, receiver, content });
+  socket.on('leaveRoom', ({ roomId, userId }) => {
+    if (!roomId || !userId) {
+      console.error('Missing roomId or userId in leaveRoom event', { roomId, userId });
+      return;
+    }
+    socket.leave(roomId.toString());
+    console.log(`User ${userId} left room ${roomId}`);
+  });
+
+  socket.on("chatMessage", async (msg, callback) => {
+    const { roomId, sender, receiver, content, providerId, requesterId, imageUrl } = msg;
+    const computedRoomId = getRoomId(providerId, requesterId);
+    if (roomId !== computedRoomId) {
+      console.error("Room ID mismatch:", { received: roomId, expected: computedRoomId });
+      if (callback) callback({ error: "Invalid room ID" });
+      return;
+    }
+    if (!sender || !receiver || (!content && !imageUrl) || !providerId || !requesterId) {
+      console.error("Invalid message data received:", msg);
+      if (callback) callback({ error: "Invalid message data" });
       return;
     }
     try {
+      const existingMessage = await Message.findOne({
+        sender,
+        receiver,
+        content,
+        createdAt: { $gte: new Date(Date.now() - 1000) },
+      });
+      if (existingMessage) {
+        console.log(`Duplicate message detected, ID: ${existingMessage._id}`);
+        if (callback) callback(existingMessage);
+        return;
+      }
+
       const message = new Message({
         sender,
         receiver,
         providerId,
         requesterId,
-        content: content.trim(),
+        content: content ? content.trim() : undefined,
+        imageUrl,
         createdAt: new Date(),
       });
 
       await message.save();
 
-      io.to(sender.toString()).emit("chatMessage", message);
-      io.to(receiver.toString()).emit("chatMessage", message);
+      io.to(computedRoomId.toString()).emit("chatMessage", message);
+      console.log(`Emitted chatMessage to room ${computedRoomId}, message ID: ${message._id}`);
+      if (callback) callback(message);
 
       const senderUser = await mongoose.model('User').findById(sender);
       const senderName = senderUser ? senderUser.username : 'Someone';
@@ -85,13 +124,48 @@ io.on('connection', (socket) => {
         await notification.save();
         io.to(receiver.toString()).emit("newNotification", notification);
   
-      console.log(`Message sent from ${sender} to ${receiver}: ${content}`);
+      console.log(`Message sent in room ${roomId} from ${sender} to ${receiver}: ${content}`);
     } catch (error) {
       console.error("Error saving message:", error);
     }
   });
 
-  socket.on("sendNotification", async ({ userId, message }) => {
+  socket.on(
+    "mediationMessage",
+    async ({ caseId, message, sender, senderName, isFromMediator, _id, timestamp }) => {
+      console.log(
+        `Received mediationMessage for room ${caseId}, message: ${message}`
+      );
+      if (!caseId || !message || !sender || !senderName || !_id) {
+        console.error("Invalid mediation message data:", {
+          caseId,
+          message,
+          sender,
+          senderName,
+          _id,
+        });
+        return;
+      }
+      try {
+        const messageToEmit = {
+          caseId,
+          message: message.trim(),
+          sender,
+          senderName,
+          isFromMediator,
+          _id,
+          timestamp: new Date(timestamp).toISOString(),
+        };
+        console.log(`Emitting mediationMessage to room ${caseId}`);
+        io.to(caseId.toString()).emit("mediationMessage", messageToEmit);
+        console.log(`Mediation message sent to room ${caseId}: ${message}`);
+      } catch (error) {
+        console.error("Error broadcasting mediation message:", error);
+      }
+    }
+  );
+
+  socket.on("sendNotification", async ({ userId, message, type, data}) => {
     if (!userId || !message) {
       console.error("Invalid notification data:", { userId, message, type, data });
       return;

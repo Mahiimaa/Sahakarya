@@ -5,6 +5,8 @@ import axios from "axios"
 import { IoClose } from "react-icons/io5";
 import {toast} from "react-toastify";
 import { Filter, Search, Plus} from "lucide-react"
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Explore() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -72,6 +74,8 @@ function Explore() {
           },
         });
         console.log("All services from backend:", data.services);
+        console.log("Raw API response:", data);
+      console.log("Services:", data.services);
         setAllServiceDetails(data.services);
       } catch (error) {
         console.error("Error fetching all service details:", error);
@@ -79,6 +83,7 @@ function Explore() {
     };
     fetchAllServiceDetails();
   }, [apiUrl]);
+  
 
   useEffect(() => {
     let filtered = services.filter(service =>
@@ -93,13 +98,14 @@ function Explore() {
   }
 
   const validServices = allServiceDetails.filter(service =>
-    service.serviceName &&
-    service.description &&
-    service.duration &&
-    service.timeCredits &&
-    Array.isArray(service.providers) &&
-    service.providers.length > 0 
-  );
+  service.serviceName &&
+  (service.description || "") &&
+  (service.duration || 0) &&
+  (service.timeCredits || 0) &&
+  Array.isArray(service.providers) &&
+  service.providers.length > 0
+);
+console.log("Valid services:", validServices);
 
   const closeTaskModal = () => {
     setShowTaskModal(false);
@@ -108,6 +114,19 @@ function Explore() {
 
   return (
     <div className = "flex flex-col font-poppins">
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        className="z-[100]"
+      />
         <Navbar />
         <div className="flex flex-col md:flex-row p-4 mx-4 md:mx-8 lg:mx-16 xl:mx-28 gap-4">
         {/* Mobile Filter Toggle */}
@@ -183,7 +202,7 @@ function Explore() {
             )}
           </div>
 
-          <h2 className="text-h2 font-semi-bold mt-8 mb-2 font-poppins">All Services</h2>
+          <h2 className="text-h2 font-semi-bold mt-8 mb-2 font-poppins">Services</h2>
           <div className="grid   lg:grid-cols-3 gap-4 md:gap-6">
             {validServices.length > 0 ? (
               validServices.map((service) => (

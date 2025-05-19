@@ -34,6 +34,10 @@ function Home() {
         console.log(response.data);
       } catch (err) {
         setError('Failed to load user details.');
+        if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/', { state: { message: 'Session expired. Please log in again.' } });
+      }
       }
     };
 
@@ -257,7 +261,16 @@ function Home() {
             </div>
             <div className="flex items-center gap-4">
               <button className="bg-white text-p py-2 px-6 rounded-md font-semibold border border-p hover:bg-p hover:text-white whitespace-nowrap" onClick={toExplore}>Explore Now</button>
+              {token ? (
               <button className="bg-white border hover:bg-p hover:text-white border-p text-p py-2 px-6 rounded-md font-semibold" onClick={handleLogout}>Logout</button>
+              ) : (
+          <button
+            className="bg-white border hover:bg-p hover:text-white border-p text-p py-2 px-6 rounded-md font-semibold"
+            onClick={() => navigate('/')}
+          >
+            Login
+          </button>
+              )}
             </div>
           </div>
         </div>

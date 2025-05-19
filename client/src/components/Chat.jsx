@@ -4,6 +4,10 @@ import axios from "axios";
 import { X, Send, Loader2, Camera } from "lucide-react"
 import { format, isToday, isYesterday } from "date-fns"
 
+const getRoomId = (providerId, requesterId) => {
+  return [providerId, requesterId].sort().join('_');
+};
+
 const socket = io("ws://localhost:5000", { transports: ["websocket", "polling"] , autoConnect: false,  withCredentials: true,});
 const Chat = ({ onClose, provider, requester}) => {
   const [messages, setMessages] = useState([]);
@@ -16,6 +20,7 @@ const Chat = ({ onClose, provider, requester}) => {
   const chatContainerRef = useRef(null)
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const token = localStorage.getItem("token");
+  const listenerRegistered = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,24 +63,73 @@ const Chat = ({ onClose, provider, requester}) => {
   
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !provider?._id || !requester?._id) return;
+    const roomId = getRoomId(provider._id, requester._id);
     if (!socket.connected) {
       socket.connect();
-      socket.emit("joinRoom", { userId });
+      socket.on('connect', () => {
+        console.log(`Socket connected: ${socket.id}`);
+        socket.emit("joinRoom", { roomId, userId });
+        console.log(`Emitted joinRoom for user ${userId} to room ${roomId}`);
+      });
+      socket.on('connect_error', (err) => {
+        console.error('Socket connection error:', err);
+        setError('Failed to connect to chat server');
+      });
+    } else {
+      socket.emit("joinRoom", { roomId, userId });
+      console.log(`Emitted joinRoom for user ${userId} to room ${roomId}`);
     }
 
     const handleIncomingMessage = (msg) => {
+      console.log(`Received message in room ${roomId}, ID: ${msg._id}, Content: ${msg.content}, Sender: ${msg.sender}`);
       setMessages((prevMessages) => {
-        const messageExists = prevMessages.some((m) => m._id === msg._id);
-        return messageExists ? prevMessages : [...prevMessages, msg];
+        const messageExists = prevMessages.some(
+          (m) =>
+            (m._id === msg._id && m._id !== undefined && msg._id !== undefined) ||
+            (m.sender === msg.sender &&
+             m.content === msg.content &&
+             m.createdAt === msg.createdAt &&
+             m.isTemp !== true)
+        );
+        if (messageExists) {
+          console.log(`Duplicate message detected, ID: ${msg._id}, Content: ${msg.content}`);
+          return prevMessages;
+        }
+        const tempMessage = prevMessages.find(
+          (m) => m.isTemp && m.sender === msg.sender && m.content === msg.content && m.createdAt === msg.createdAt
+        );
+        if (tempMessage) {
+          console.log(`Removing temp message, Temp ID: ${tempMessage._id}, Replacing with server ID: ${msg._id}`);
+          return [
+            ...prevMessages.filter((m) => m._id !== tempMessage._id),
+            { ...msg, isTemp: false }
+          ];
+        }
+        return [...prevMessages, { ...msg, isTemp: false }];
       });
-        scrollToBottom();
-      };
+      scrollToBottom();
+    };
+
+    if (!listenerRegistered.current) {
+      console.log(`Registering chatMessage listener for room ${roomId}`);
       socket.on("chatMessage", handleIncomingMessage);
-  return () => {
-    socket.off("chatMessage", handleIncomingMessage);
-  };
-}, [userId]);
+      listenerRegistered.current = true;
+    } else {
+      console.log(`chatMessage listener already registered for room ${roomId}`);
+    }
+
+    return () => {
+      console.log(`Cleaning up chatMessage listener for room ${roomId}`);
+      socket.off("chatMessage", handleIncomingMessage);
+      socket.off('connect');
+      socket.off('connect_error');
+      listenerRegistered.current = false;
+      if (socket.connected) {
+        socket.emit("leaveRoom", { roomId, userId });
+      }
+    };
+  }, [userId, provider?._id, requester?._id])
   
 useEffect(() => {
   scrollToBottom();
@@ -85,20 +139,58 @@ const handleSendMessage = async (e) => {
   e.preventDefault();
   if (!newMessage.trim()) return;
   const receiverId = String(userId) === String(provider._id) ? requester._id : provider._id;
-
-    const msg = {
-      providerId: provider._id,
-      requesterId:requester._id,
+  const roomId = getRoomId(provider._id, requester._id);
+  const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const tempMessage = {
+      _id: tempId,
+      sender: userId,
       receiver: receiverId,
       content: newMessage.trim(),
-      sender:userId,
+      createdAt: new Date().toISOString(),
+      isTemp: true,
     };
+    console.log(`Adding optimistic message, temp ID: ${tempId}`);
+    setMessages((prev) => [...prev, tempMessage]);
+    setNewMessage("");
     setIsSending(true);
-   
-    socket.emit("chatMessage", msg);
-      setNewMessage(""); 
-    setIsSending(false)
-};
+    const msg = {
+      roomId,
+      providerId: provider._id,
+      requesterId: requester._id,
+      receiver: receiverId,
+      content: newMessage.trim(),
+      sender: userId,
+    };
+
+    try {
+      socket.emit("chatMessage", msg, (response) => {
+        if (response && response.error) {
+          console.error("Error sending message:", response.error);
+          setError("Failed to send message");
+          setMessages((prev) => prev.filter((m) => m._id !== tempId));
+        } else {
+          console.log(`Server confirmed message, ID: ${response._id}, Content: ${response.content}`);
+          setMessages((prev) => {
+            const updatedMessages = prev.filter((m) => m._id !== tempId);
+            const messageExists = updatedMessages.some(
+              (m) => m._id === response._id
+            );
+            if (messageExists) {
+              console.log(`Message already added by chatMessage event, ID: ${response._id}`);
+              return updatedMessages;
+            }
+            return [...updatedMessages, { ...response, isTemp: false }];
+          });
+        }
+      });
+    } catch (error) {
+      console.error("Error emitting message:", error);
+      setError("Failed to send message");
+      setMessages((prev) => prev.filter((m) => m._id !== tempId));
+    } finally {
+      setIsSending(false);
+    }
+  };
 
 const formatMessageTime = (timestamp) => {
   if (!timestamp) return ""
@@ -144,7 +236,7 @@ const handleImageUpload = async (e) => {
     formData.append("requesterId", requester._id);
     formData.append("sender", userId);
     formData.append("receiver", tempMessage.receiver);
-
+    formData.append("roomId", getRoomId(provider._id, requester._id));
     try {
       const { data } = await axios.post(`${apiUrl}/api/messages/image`, formData, {
         headers: {
@@ -153,7 +245,11 @@ const handleImageUpload = async (e) => {
         },
       });
       setMessages(prev => prev.map(msg => msg._id === tempId ? data.message : msg));
-      socket.emit("chatMessage", data.message);
+      const messageWithRoom = {
+        ...data.message,
+        roomId: getRoomId(provider._id, requester._id),
+      };
+      socket.emit("chatMessage", messageWithRoom);
     } catch (error) {
       console.error("Image upload failed:", error);
       setError("Failed to upload image");
